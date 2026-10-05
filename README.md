@@ -1,37 +1,19 @@
-# Vineeth & Sofiya — Cinematic Wedding Invitation
+# Vineeth & Sofiya — Luxury Engagement Invitation & Ring Ceremony
 
-## Run
-Open `index.html` in a browser, or deploy the folder to Vercel / Netlify / GitHub Pages.
+An ultra-premier, interactive mobile-responsive Engagement Ceremony invitation featuring scroll-driven classic engagement ring physics, collision shockwave particles, and ring locking animation.
 
-## Replace the dummy assets
-Put your real files in `assets/` using these names:
-- cover.jpg
-- couple-1.jpg
-- couple-2.jpg
-- couple-3.jpg
-- gallery-1.jpg
-- gallery-2.jpg
-- gallery-3.jpg
-- gallery-4.jpg
-- temple.jpg
-- church.jpg
-- wedding-music.mp3
+## Features
+- **Classic Solitaire Engagement Rings**: Pristine 3D gold bands with 6-prong crown setting and brilliant-cut sparkling solitaire diamonds.
+- **Scroll Collision & Lock Animation**: As you scroll to the bottom of the page, the left and right engagement rings accelerate towards the center, collide with a golden sparkle explosion shockwave, and snap into a locked interlocked position with the `✦ RINGS LOCKED • FOREVER ENGAGED ✦` badge.
+- **Scratch-to-Reveal Card**: Interactive golden foil scratch card that reveals the ceremony date and venue with particle sparkles.
+- **Live Countdown Timer**: Real-time ticker counting down Days, Hours, Minutes, and Seconds to the Ring Ceremony.
+- **Interactive RSVP Modal**: Guests can confirm attendance, specify party size, and leave warm wishes.
+- **Google Calendar & Directions**: Direct buttons to add the event to Google Calendar and open Google Maps navigation.
+- **Ambient Romantic Music & Background Sparkles**: Canvas particle background with optional audio player.
 
-The HTML already references these names, so no code changes are required for the basic replacement.
-
-## Edit invitation details
-At the top of the `<script>` section in `index.html`, edit `CONFIG`.
-For visible names/date/venue/message, search the HTML for the text and replace it.
-
-## Important
-Mobile browsers normally block autoplay. The invitation intentionally starts music after the user taps "Tap to open", which is the reliable mobile-friendly behaviour.
-
-
-## Engagement ring animation
-The floating rings are designed as engagement rings with:
-- raised diamond setting
-- faceted diamond appearance
-- gold band highlights
-- diamond glow
-- independent scroll movement
-- final approach/interlocking animation near the end of the page
+## Usage
+Open `index.html` directly in any web browser, or serve via local web server:
+```bash
+python -m http.server 8123
+```
+Then visit `http://localhost:8123` in your browser.
