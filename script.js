@@ -128,11 +128,9 @@ const openInviteBtn = document.getElementById('openInviteBtn');
 const musicBtn = document.getElementById('musicBtn');
 const bgMusic = document.getElementById('bgMusic');
 
-// Configure robust audio properties for seamless continuous playing
 bgMusic.loop = true;
 bgMusic.volume = 0.75;
 
-// Fallback loop event listener in case loop attribute is ignored by browser
 bgMusic.addEventListener('ended', () => {
   bgMusic.currentTime = 0;
   bgMusic.play().catch(() => {});
@@ -143,7 +141,7 @@ async function startContinuousMusic() {
     await bgMusic.play();
     musicBtn.classList.add('playing');
   } catch (err) {
-    console.log("Audio play request waiting for interaction:", err);
+    console.log("Audio waiting for user interaction:", err);
   }
 }
 
@@ -162,7 +160,6 @@ musicBtn.addEventListener('click', async () => {
   }
 });
 
-// Resume playback seamlessly on user touch if audio is interrupted
 function autoResumeAudio() {
   if (openingModal.classList.contains('opened') && bgMusic.paused) {
     bgMusic.play().then(() => {
@@ -193,7 +190,7 @@ updateCountdown();
 setInterval(updateCountdown, 1000);
 
 /* -------------------------------------------------------------
-   SCROLL REVEAL OBSERVER
+   SCROLL REVEAL OBSERVER & BOTTOM NAV HIGHLIGHTING
    ------------------------------------------------------------- */
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
@@ -201,6 +198,51 @@ const revealObserver = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.12 });
 document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+const navItems = document.querySelectorAll('.bottom-nav-item');
+const navSections = document.querySelectorAll('section[id], header[id]');
+
+function highlightActiveNav() {
+  let currentSectionId = 'hero';
+  const scrollPosition = window.scrollY + window.innerHeight * 0.35;
+
+  navSections.forEach(section => {
+    const sectionTop = section.offsetTop;
+    const sectionHeight = section.offsetHeight;
+    if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+      currentSectionId = section.getAttribute('id');
+    }
+  });
+
+  if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) {
+    currentSectionId = 'closingSection';
+  }
+
+  navItems.forEach(item => {
+    item.classList.remove('active');
+    if (item.getAttribute('href') === `#${currentSectionId}`) {
+      item.classList.add('active');
+    }
+  });
+}
+
+navItems.forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.preventDefault();
+    const targetId = item.getAttribute('href').replace('#', '');
+    if (targetId === 'hero') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const targetElem = document.getElementById(targetId);
+      if (targetElem) {
+        targetElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  });
+});
+
+window.addEventListener('scroll', highlightActiveNav, { passive: true });
+highlightActiveNav();
 
 /* -------------------------------------------------------------
    SCRATCH-TO-REVEAL CARD
@@ -244,12 +286,21 @@ function doScratch(x, y) {
   sCtx.arc(x - rect.left, y - rect.top, 32, 0, Math.PI * 2);
   sCtx.fill();
 
+  triggerScratchSpark(x, y);
+
   scratchedPixels++;
-  if (scratchedPixels > 28 && !isRevealed) {
+  if (scratchedPixels > 25 && !isRevealed) {
     isRevealed = true;
     scratchCanvas.style.opacity = '0';
     document.getElementById('scratchInstruction').style.opacity = '0';
-    triggerSparkleBurst(window.innerWidth / 2, window.innerHeight / 2);
+    
+    scratchWrapper.classList.add('pop-bounce');
+
+    const cardRect = scratchWrapper.getBoundingClientRect();
+    const cx = cardRect.left + cardRect.width / 2;
+    const cy = cardRect.top + cardRect.height / 2;
+
+    triggerMultiStagePop(cx, cy);
   }
 }
 
@@ -266,7 +317,7 @@ initScratch();
 window.addEventListener('resize', initScratch);
 
 /* -------------------------------------------------------------
-   ENGRAVED CLASSIC RINGS SCROLL COLLISION & LOCK ANIMATION LOGIC
+   ENGRAVED CLASSIC RINGS & SCRATCH REVEAL POP CRACKLE CELEBRATION
    ------------------------------------------------------------- */
 const ringLeft = document.getElementById('ringLeft');
 const ringRight = document.getElementById('ringRight');
@@ -283,31 +334,150 @@ function resizeColCanvas() {
 resizeColCanvas();
 window.addEventListener('resize', resizeColCanvas);
 
-function triggerSparkleBurst(cx, cy) {
-  for (let i = 0; i < 75; i++) {
+// High-Energy "Pop Cracking" Fireworks & Confetti Celebration
+function triggerPopCrackleBurst(cx, cy) {
+  const colors = ['#bf953f', '#fcf6ba', '#b38728', '#ffffff', '#ff6b81', '#f5d688', '#ffd700'];
+
+  // Popping Shockwave Ring
+  colParticles.push({
+    type: 'shockwave',
+    x: cx,
+    y: cy,
+    radius: 10,
+    maxRadius: 180,
+    alpha: 0.9,
+    color: '#fcf6ba',
+    lineWidth: 5
+  });
+
+  // 1. Confetti Ribbon Poppers
+  for (let i = 0; i < 90; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 9 + 3;
+    const speed = Math.random() * 14 + 4;
     colParticles.push({
+      type: 'confetti',
+      x: cx,
+      y: cy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 2,
+      w: Math.random() * 8 + 4,
+      h: Math.random() * 14 + 6,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      alpha: 1,
+      decay: Math.random() * 0.015 + 0.008,
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.2,
+      gravity: 0.15
+    });
+  }
+
+  // 2. High Velocity Golden Star Particles
+  for (let i = 0; i < 80; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 12 + 2;
+    colParticles.push({
+      type: 'star',
       x: cx,
       y: cy,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
-      size: Math.random() * 4 + 2,
-      color: Math.random() > 0.4 ? '#f9e4b7' : '#ffffff',
+      size: Math.random() * 6 + 3,
+      color: Math.random() > 0.3 ? '#f9e4b7' : '#ffffff',
       alpha: 1,
-      decay: Math.random() * 0.03 + 0.015
+      decay: Math.random() * 0.025 + 0.01
+    });
+  }
+
+  if (navigator.vibrate) navigator.vibrate([40, 40, 60, 40, 80]);
+}
+
+// Staggered Pop Burst for Scratch Reveal Celebration
+function triggerMultiStagePop(cx, cy) {
+  triggerPopCrackleBurst(cx, cy);
+
+  setTimeout(() => {
+    triggerPopCrackleBurst(cx - 90, cy - 30);
+  }, 110);
+
+  setTimeout(() => {
+    triggerPopCrackleBurst(cx + 90, cy - 30);
+  }, 220);
+}
+
+// Micro sparks while scratching
+function triggerScratchSpark(x, y) {
+  for (let i = 0; i < 3; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 4 + 1;
+    colParticles.push({
+      type: 'star',
+      x: x,
+      y: y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      size: Math.random() * 3 + 1.5,
+      color: '#fcf6ba',
+      alpha: 1,
+      decay: 0.05
     });
   }
 }
 
+function triggerSparkleBurst(cx, cy) {
+  triggerPopCrackleBurst(cx, cy);
+}
+
 function animateCollisionParticles() {
   colCtx.clearRect(0, 0, colCanvas.width, colCanvas.height);
+
   for (let i = colParticles.length - 1; i >= 0; i--) {
     const p = colParticles[i];
+
+    if (p.type === 'shockwave') {
+      p.radius += 8;
+      p.alpha -= 0.04;
+      if (p.alpha <= 0 || p.radius >= p.maxRadius) {
+        colParticles.splice(i, 1);
+        continue;
+      }
+      colCtx.save();
+      colCtx.globalAlpha = p.alpha;
+      colCtx.strokeStyle = p.color;
+      colCtx.lineWidth = p.lineWidth;
+      colCtx.beginPath();
+      colCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      colCtx.stroke();
+      colCtx.restore();
+      continue;
+    }
+
     p.x += p.vx;
     p.y += p.vy;
-    p.vx *= 0.96;
-    p.vy *= 0.96;
+
+    if (p.type === 'confetti') {
+      p.vy += p.gravity || 0.1;
+      p.vx *= 0.96;
+      p.rotation += p.rotSpeed || 0.05;
+      p.alpha -= p.decay;
+
+      if (p.alpha <= 0) {
+        colParticles.splice(i, 1);
+        continue;
+      }
+
+      colCtx.save();
+      colCtx.translate(p.x, p.y);
+      colCtx.rotate(p.rotation);
+      colCtx.globalAlpha = p.alpha;
+      colCtx.fillStyle = p.color;
+      colCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      colCtx.restore();
+      continue;
+    }
+
+    // Default Star / Sparkle
+    p.vx *= 0.95;
+    p.vy *= 0.95;
     p.alpha -= p.decay;
 
     if (p.alpha <= 0) {

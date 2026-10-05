@@ -87,7 +87,17 @@
   </button>
   <audio id="bgMusic" loop preload="auto">
     <source src="assets/engagement.mp3" type="audio/mpeg">
+    <source src="assets/wedding-music.mp3" type="audio/mpeg">
   </audio>
+
+  <!-- FLOATING GLASSMORPHIC BOTTOM NAVIGATION BAR -->
+  <nav class="bottom-nav-bar" id="bottomNavBar" aria-label="Invitation Navigation">
+    <a href="#heroSection" class="bottom-nav-item active"><span class="nav-icon">🏠</span>Home</a>
+    <a href="#harmonySection" class="bottom-nav-item"><span class="nav-icon">🕊️</span>Faiths</a>
+    <a href="#gallerySection" class="bottom-nav-item"><span class="nav-icon">📸</span>Story</a>
+    <a href="#venueSection" class="bottom-nav-item"><span class="nav-icon">📍</span>Venue</a>
+    <a href="#closingSection" class="bottom-nav-item"><span class="nav-icon">💍</span>Rings</a>
+  </nav>
 
   <!-- -------------------------------------------------------------
        CLASSIC ROUND GOLD RINGS WITH TRANSPARENT HOLE (VINEETH & SOFIYA)
@@ -184,7 +194,7 @@
 
   <main>
     <!-- 1. HERO SECTION -->
-    <section class="hero">
+    <section class="hero" id="hero">
       <div class="container reveal">
         <div class="kicker">SAVE THE DATE FOR THE ENGAGEMENT OF</div>
         <h1 class="hero-names">Vineeth <span class="hero-amp">&</span> Sofiya</h1>
@@ -199,7 +209,7 @@
     </section>
 
     <!-- 2. INVITATION MESSAGE SECTION -->
-    <section>
+    <section id="messageSection">
       <div class="container reveal">
         <div class="invitation-card">
           <div class="kicker">THE ENGAGEMENT CEREMONY</div>
@@ -212,7 +222,7 @@
     </section>
 
     <!-- 3. INTERFAITH HARMONY SECTION (HINDU & CHRISTIAN UNION) -->
-    <section>
+    <section id="interfaithSection">
       <div class="container reveal">
         <div class="kicker">TWO TRADITIONS · ONE DIVINE HARMONY</div>
         <h2 class="section-title gold-text">A Union of Faith & Culture</h2>
@@ -286,7 +296,7 @@
     </section>
 
     <!-- 6. GALLERY SECTION (TRIPLE PORTRAIT GRID: ETHNIC, CHRISTIAN & RINGS) -->
-    <section>
+    <section id="gallerySection">
       <div class="container reveal">
         <div class="kicker">MEMORIES & MOMENTS</div>
         <h2 class="section-title gold-text">Our Engagement Story</h2>
@@ -308,7 +318,7 @@
     </section>
 
     <!-- 7. CEREMONY RITES SECTION -->
-    <section>
+    <section id="ritesSection">
       <div class="container reveal">
         <div class="kicker">SACRED TRADITIONS</div>
         <h2 class="section-title">The Engagement Rites</h2>
@@ -330,7 +340,7 @@
     </section>
 
     <!-- 8. HIGH PREMIER EVENT & VENUE DETAILS SECTION (DUAL CHURCH & AUDITORIUM VENUES) -->
-    <section>
+    <section id="venueSection">
       <div class="container reveal">
         <div class="kicker">PREMIER EVENT & LOCATION</div>
         <h2 class="section-title gold-text">The Celebration Details</h2>
@@ -400,6 +410,34 @@
       </div>
     </section>
   </main>
+
+  <!-- FLOATING LUXURY BOTTOM NAVIGATION MENU -->
+  <nav class="bottom-nav-bar" id="bottomNav">
+    <a href="#hero" class="bottom-nav-item active">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Home</span>
+    </a>
+    <a href="#messageSection" class="bottom-nav-item">
+      <span class="nav-icon">📜</span>
+      <span class="nav-label">Story</span>
+    </a>
+    <a href="#interfaithSection" class="bottom-nav-item">
+      <span class="nav-icon">🕊️</span>
+      <span class="nav-label">Unity</span>
+    </a>
+    <a href="#gallerySection" class="bottom-nav-item">
+      <span class="nav-icon">📸</span>
+      <span class="nav-label">Gallery</span>
+    </a>
+    <a href="#venueSection" class="bottom-nav-item">
+      <span class="nav-icon">⛪</span>
+      <span class="nav-label">Venue</span>
+    </a>
+    <a href="#closingSection" class="bottom-nav-item">
+      <span class="nav-icon">💍</span>
+      <span class="nav-label">Rings</span>
+    </a>
+  </nav>
 
   <!-- External JavaScript -->
   <script src="script.js"></script>
