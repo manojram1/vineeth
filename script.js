@@ -37,7 +37,7 @@ class StarParticle {
   draw() {
     bgCtx.save();
     bgCtx.globalAlpha = Math.max(0.1, Math.min(0.9, this.alpha));
-    bgCtx.fillStyle = '#f7dda0';
+    bgCtx.fillStyle = Math.random() > 0.4 ? '#e0829d' : '#ffccd5';
     bgCtx.beginPath();
     bgCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
     bgCtx.fill();
@@ -55,7 +55,7 @@ function animateBg() {
 animateBg();
 
 /* -------------------------------------------------------------
-   FLOWER PETAL FALLING ANIMATION SYSTEM (ROSE & JASMINE PETALS)
+   REALISTIC LUXURY ROSE PETAL FALLING ANIMATION SYSTEM
    ------------------------------------------------------------- */
 const petalCanvas = document.getElementById('petalCanvas');
 const pCtx = petalCanvas.getContext('2d');
@@ -68,30 +68,41 @@ function resizePetalCanvas() {
 resizePetalCanvas();
 window.addEventListener('resize', resizePetalCanvas);
 
+const ROSE_COLORS = [
+  { fill: '#e62e5c', highlight: '#ff7597' }, // Classic Ruby Red Rose
+  { fill: '#d81b60', highlight: '#ff669a' }, // Deep Velvet Rose
+  { fill: '#c2185b', highlight: '#f48fb1' }, // Rich Crimson Rose
+  { fill: '#e91e63', highlight: '#ff80ab' }, // Bright Romantic Rose
+  { fill: '#f06292', highlight: '#ffb2c9' }  // Soft Blush Pink Rose
+];
+
 class FlowerPetal {
   constructor() {
     this.reset(true);
   }
   reset(initial = false) {
     this.x = Math.random() * petalCanvas.width;
-    this.y = initial ? Math.random() * petalCanvas.height : -30;
-    this.size = Math.random() * 10 + 8;
-    this.speedY = Math.random() * 1.2 + 0.6;
+    this.y = initial ? Math.random() * petalCanvas.height : -40;
+    this.size = Math.random() * 12 + 10;
+    this.speedY = Math.random() * 1.3 + 0.7;
     this.speedX = Math.random() * 0.8 - 0.4;
-    this.swaySpeed = Math.random() * 0.03 + 0.01;
+    this.swaySpeed = Math.random() * 0.035 + 0.012;
     this.swayAngle = Math.random() * Math.PI * 2;
+    this.flipSpeed = Math.random() * 0.04 + 0.015;
+    this.flipAngle = Math.random() * Math.PI * 2;
     this.rotation = Math.random() * Math.PI * 2;
-    this.rotSpeed = (Math.random() - 0.5) * 0.04;
-    this.color = Math.random() > 0.4 ? '#f7d3d9' : '#fff4d6';
-    this.opacity = Math.random() * 0.7 + 0.3;
+    this.rotSpeed = (Math.random() - 0.5) * 0.03;
+    this.colorScheme = ROSE_COLORS[Math.floor(Math.random() * ROSE_COLORS.length)];
+    this.opacity = Math.random() * 0.55 + 0.45;
   }
   update() {
     this.swayAngle += this.swaySpeed;
-    this.x += Math.sin(this.swayAngle) * 0.8 + this.speedX;
+    this.flipAngle += this.flipSpeed;
+    this.x += Math.sin(this.swayAngle) * 1.1 + this.speedX;
     this.y += this.speedY;
     this.rotation += this.rotSpeed;
 
-    if (this.y > petalCanvas.height + 40) {
+    if (this.y > petalCanvas.height + 50) {
       this.reset();
     }
   }
@@ -99,19 +110,37 @@ class FlowerPetal {
     pCtx.save();
     pCtx.translate(this.x, this.y);
     pCtx.rotate(this.rotation);
-    pCtx.globalAlpha = this.opacity;
-    pCtx.fillStyle = this.color;
+    const flipScale = Math.sin(this.flipAngle);
+    pCtx.scale(1, flipScale);
 
+    pCtx.globalAlpha = this.opacity;
+
+    // Rose Petal Gradient
+    const grad = pCtx.createRadialGradient(0, 0, 2, 0, 0, this.size);
+    grad.addColorStop(0, this.colorScheme.highlight);
+    grad.addColorStop(0.7, this.colorScheme.fill);
+    grad.addColorStop(1, 'rgba(120, 10, 40, 0.9)');
+
+    pCtx.fillStyle = grad;
     pCtx.beginPath();
-    pCtx.moveTo(0, -this.size / 2);
-    pCtx.bezierCurveTo(this.size / 2, -this.size / 2, this.size / 1.5, this.size / 2, 0, this.size);
-    pCtx.bezierCurveTo(-this.size / 1.5, this.size / 2, -this.size / 2, -this.size / 2, 0, -this.size / 2);
+    pCtx.moveTo(0, -this.size * 0.8);
+    pCtx.bezierCurveTo(this.size * 0.8, -this.size * 0.7, this.size * 0.9, this.size * 0.5, 0, this.size);
+    pCtx.bezierCurveTo(-this.size * 0.9, this.size * 0.5, -this.size * 0.8, -this.size * 0.7, 0, -this.size * 0.8);
     pCtx.fill();
+
+    // Delicate Rose Petal Vein Accent
+    pCtx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+    pCtx.lineWidth = 0.8;
+    pCtx.beginPath();
+    pCtx.moveTo(0, -this.size * 0.5);
+    pCtx.quadraticCurveTo(0, 0, 0, this.size * 0.6);
+    pCtx.stroke();
+
     pCtx.restore();
   }
 }
 
-for (let i = 0; i < 40; i++) petals.push(new FlowerPetal());
+for (let i = 0; i < 55; i++) petals.push(new FlowerPetal());
 
 function animatePetals() {
   pCtx.clearRect(0, 0, petalCanvas.width, petalCanvas.height);
@@ -260,15 +289,15 @@ function initScratch() {
   sCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   const grad = sCtx.createLinearGradient(0, 0, rect.width, rect.height);
-  grad.addColorStop(0, '#bf953f');
-  grad.addColorStop(0.3, '#fcf6ba');
-  grad.addColorStop(0.6, '#b38728');
-  grad.addColorStop(1, '#aa771c');
+  grad.addColorStop(0, '#e57d9b');
+  grad.addColorStop(0.35, '#ffc2d1');
+  grad.addColorStop(0.7, '#c84b72');
+  grad.addColorStop(1, '#a63255');
 
   sCtx.fillStyle = grad;
   sCtx.fillRect(0, 0, rect.width, rect.height);
 
-  sCtx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+  sCtx.fillStyle = 'rgba(255, 255, 255, 0.25)';
   for (let x = -rect.height; x < rect.width + rect.height; x += 18) {
     sCtx.beginPath();
     sCtx.moveTo(x, 0);
@@ -336,7 +365,7 @@ window.addEventListener('resize', resizeColCanvas);
 
 // High-Energy "Pop Cracking" Fireworks & Confetti Celebration
 function triggerPopCrackleBurst(cx, cy) {
-  const colors = ['#bf953f', '#fcf6ba', '#b38728', '#ffffff', '#ff6b81', '#f5d688', '#ffd700'];
+  const colors = ['#d96b8d', '#ffc2d1', '#c84b72', '#ffffff', '#ff6b81', '#ffe3eb', '#f5a6bd'];
 
   // Popping Shockwave Ring
   colParticles.push({
@@ -346,7 +375,7 @@ function triggerPopCrackleBurst(cx, cy) {
     radius: 10,
     maxRadius: 180,
     alpha: 0.9,
-    color: '#fcf6ba',
+    color: '#ffc2d1',
     lineWidth: 5
   });
 
