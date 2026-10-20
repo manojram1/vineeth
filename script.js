@@ -69,11 +69,11 @@ resizePetalCanvas();
 window.addEventListener('resize', resizePetalCanvas);
 
 const ROSE_COLORS = [
-  { fill: '#e62e5c', highlight: '#ff7597' }, // Classic Ruby Red Rose
-  { fill: '#d81b60', highlight: '#ff669a' }, // Deep Velvet Rose
-  { fill: '#c2185b', highlight: '#f48fb1' }, // Rich Crimson Rose
-  { fill: '#e91e63', highlight: '#ff80ab' }, // Bright Romantic Rose
-  { fill: '#f06292', highlight: '#ffb2c9' }  // Soft Blush Pink Rose
+  { fill: '#a63d50', highlight: '#f0a1a8' }, // Velvet rose
+  { fill: '#b84b61', highlight: '#f5b2b6' }, // Dusty rose
+  { fill: '#8f3349', highlight: '#df8794' }, // Deep rose
+  { fill: '#c45b72', highlight: '#f4bdc3' }, // Blush rose
+  { fill: '#ad5266', highlight: '#ed9da9' }  // Antique rose
 ];
 
 class FlowerPetal {
@@ -174,10 +174,28 @@ async function startContinuousMusic() {
   }
 }
 
-openInviteBtn.addEventListener('click', async () => {
-  openingModal.classList.add('opened');
-  document.body.classList.remove('locked');
-  await startContinuousMusic();
+function openInvitationCard() {
+  if (openingModal.classList.contains('previewing') || openingModal.classList.contains('opened')) return;
+
+  const cardRect = document.querySelector('.cover-card').getBoundingClientRect();
+  openingModal.classList.add('previewing');
+  document.body.classList.add('card-opening');
+  triggerMultiStagePop(cardRect.left + cardRect.width / 2, cardRect.top + cardRect.height * 0.52);
+  startContinuousMusic();
+
+  window.setTimeout(() => {
+    openingModal.classList.add('opened');
+    document.body.classList.remove('locked');
+  }, 5900);
+  window.setTimeout(() => document.body.classList.remove('card-opening'), 6800);
+}
+
+openInviteBtn.addEventListener('click', openInvitationCard);
+openInviteBtn.addEventListener('keydown', event => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    openInvitationCard();
+  }
 });
 
 musicBtn.addEventListener('click', async () => {
@@ -365,7 +383,7 @@ window.addEventListener('resize', resizeColCanvas);
 
 // High-Energy "Pop Cracking" Fireworks & Confetti Celebration
 function triggerPopCrackleBurst(cx, cy) {
-  const colors = ['#d96b8d', '#ffc2d1', '#c84b72', '#ffffff', '#ff6b81', '#ffe3eb', '#f5a6bd'];
+  const colors = ['#9f5c52', '#e5c5a1', '#c78e77', '#fffaf4', '#875047', '#ead8c5', '#d9ad8d'];
 
   // Popping Shockwave Ring
   colParticles.push({
@@ -375,7 +393,7 @@ function triggerPopCrackleBurst(cx, cy) {
     radius: 10,
     maxRadius: 180,
     alpha: 0.9,
-    color: '#ffc2d1',
+    color: '#e5c5a1',
     lineWidth: 5
   });
 
@@ -535,75 +553,44 @@ function handleScrollRings() {
 
   const screenW = window.innerWidth;
   const screenH = window.innerHeight;
-  const ringW = screenW >= 768 ? 125 : 95;
-  const sideMargin = screenW >= 768 ? screenW * 0.07 : screenW * 0.04;
-
+  const ringW = screenW >= 768 ? 86 : 70;
+  const sideMargin = screenW * 0.02;
+  const baseY = screenH * 0.28;
   const startXLeft = sideMargin;
   const startXRight = screenW - sideMargin - ringW;
-
-  const targetXLeft = (screenW / 2) - ringW + 20;
-  const targetXRight = (screenW / 2) - 20;
-
+  const targetXLeft = (screenW / 2) - ringW;
+  const targetXRight = screenW / 2;
   const deltaLeft = targetXLeft - startXLeft;
   const deltaRight = targetXRight - startXRight;
-
   const ringStage = document.getElementById('ringSpotlightStage');
-  let targetOffsetY = 0;
-  if (ringStage) {
-    const stageRect = ringStage.getBoundingClientRect();
-    const initialRingY = screenH * 0.28;
-    const stageCenterY = stageRect.top + (stageRect.height / 2);
-    targetOffsetY = stageCenterY - initialRingY;
-  }
+  const stageRect = ringStage ? ringStage.getBoundingClientRect() : null;
+  const stageCenterY = stageRect ? stageRect.top + stageRect.height / 2 : screenH * .72;
+  const joinStart = .92;
+  const ease = value => value * value * (3 - 2 * value);
+  const fallProgress = ease(Math.min(1, progress / joinStart));
+  const joinProgress = ease(Math.max(0, Math.min(1, (progress - joinStart) / (1 - joinStart))));
+  const fallY = baseY + (screenH * .76 - baseY) * fallProgress;
+  const currentY = fallY + (stageCenterY - fallY) * joinProgress;
+  const currentDxLeft = deltaLeft * joinProgress;
+  const currentDxRight = deltaRight * joinProgress;
+  const rotation = progress * 150 * (1 - joinProgress);
+  const softFloat = Math.sin(progress * Math.PI * 8) * 3 * (1 - joinProgress);
 
-  if (progress < 0.86) {
+  ringLeft.style.transform = `translate3d(${currentDxLeft}px, ${currentY - baseY + softFloat}px, 0) rotate(${rotation}deg)`;
+  ringRight.style.transform = `translate3d(${currentDxRight}px, ${currentY - baseY - softFloat}px, 0) rotate(${-rotation}deg)`;
+
+  const joined = joinProgress >= .985;
+  document.body.classList.toggle('rings-joined', joined);
+  if (joined) {
+    if (!hasCollided) {
+      hasCollided = true;
+      triggerSparkleBurst(screenW / 2, stageCenterY);
+      if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
+    }
+    lockedBadge.classList.add('active');
+  } else {
     hasCollided = false;
     lockedBadge.classList.remove('active');
-
-    const travelP = progress / 0.86;
-    const currentDxLeft = travelP * deltaLeft;
-    const currentDxRight = travelP * deltaRight;
-
-    const floatYLeft = Math.sin(progress * Math.PI * 5) * 14;
-    const floatYRight = Math.cos(progress * Math.PI * 5) * 14;
-
-    const rotL = progress * 360;
-    const rotR = -progress * 360;
-
-    ringLeft.style.transform = `translate3d(${currentDxLeft}px, ${floatYLeft}px, 0) rotate(${rotL}deg)`;
-    ringRight.style.transform = `translate3d(${currentDxRight}px, ${floatYRight}px, 0) rotate(${rotR}deg)`;
-
-  } else {
-    const lockProgress = Math.min(1, (progress - 0.86) / 0.14);
-    const easeLock = lockProgress * lockProgress * (3 - 2 * lockProgress);
-
-    const currentDxLeft = deltaLeft;
-    const currentDxRight = deltaRight;
-
-    const floatYLeft = Math.sin(0.86 * Math.PI * 5) * 14;
-    const floatYRight = Math.cos(0.86 * Math.PI * 5) * 14;
-
-    const currentDyLeft = floatYLeft * (1 - easeLock) + targetOffsetY * easeLock;
-    const currentDyRight = floatYRight * (1 - easeLock) + targetOffsetY * easeLock;
-
-    const rotL = 360 + easeLock * 20;
-    const rotR = -360 - easeLock * 20;
-
-    ringLeft.style.transform = `translate3d(${currentDxLeft}px, ${currentDyLeft}px, 0) rotate(${rotL}deg)`;
-    ringRight.style.transform = `translate3d(${currentDxRight}px, ${currentDyRight}px, 0) rotate(${rotR}deg)`;
-
-    if (progress >= 0.93) {
-      if (!hasCollided) {
-        hasCollided = true;
-        const ringStageRect = ringStage.getBoundingClientRect();
-        triggerSparkleBurst(screenW / 2, ringStageRect.top + ringStageRect.height / 2);
-        if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
-      }
-      lockedBadge.classList.add('active');
-    } else {
-      hasCollided = false;
-      lockedBadge.classList.remove('active');
-    }
   }
 }
 
@@ -618,3 +605,123 @@ document.getElementById('addToCalBtn').addEventListener('click', () => {
   const calUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text=Vineeth+%26+Sofiya+Engagement+Ceremony&dates=20261113T063000Z/20261113T103000Z&details=Engagement+Ring+Exchange+%26+Celebration&location=Vettukad+Auditorium%2C+Trivandrum";
   window.open(calUrl, '_blank');
 });
+
+/* -------------------------------------------------------------
+   PHOTO ALBUM SLIDER
+   ------------------------------------------------------------- */
+const albumTrack = document.getElementById('albumTrack');
+if (albumTrack) {
+  const albumSlides = Array.from(albumTrack.querySelectorAll('.photo-frame'));
+  const previousClone = albumSlides[albumSlides.length - 1].cloneNode(true);
+  const nextClone = albumSlides[0].cloneNode(true);
+  previousClone.setAttribute('aria-hidden', 'true');
+  previousClone.setAttribute('inert', '');
+  nextClone.setAttribute('aria-hidden', 'true');
+  nextClone.setAttribute('inert', '');
+  albumTrack.insertBefore(previousClone, albumSlides[0]);
+  albumTrack.appendChild(nextClone);
+  const albumVisualSlides = [previousClone, ...albumSlides, nextClone];
+  const albumDots = document.getElementById('albumDots');
+  const albumCount = document.getElementById('albumCount');
+  const albumSlider = albumTrack.closest('.album-slider');
+  const albumViewport = albumTrack.closest('.album-viewport');
+  let albumIndex = 0;
+  let albumVisualIndex = 1;
+  let swipeStartX = null;
+  let albumTimer = null;
+  let albumInView = false;
+  let albumHovered = false;
+  let albumFocused = false;
+  const albumMotionReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function centerAlbumPhoto(animate = true) {
+    const activeSlide = albumVisualSlides[albumVisualIndex];
+    if (!activeSlide) return;
+    if (!animate) albumTrack.classList.add('no-transition');
+    const offset = albumViewport.clientWidth / 2 - activeSlide.offsetLeft - activeSlide.clientWidth / 2;
+    albumTrack.style.transform = `translate3d(${offset}px, 0, 0)`;
+    if (!animate) window.requestAnimationFrame(() => window.requestAnimationFrame(() => albumTrack.classList.remove('no-transition')));
+  }
+
+  function scheduleAlbumAutoplay() {
+    window.clearTimeout(albumTimer);
+    if (albumMotionReduced || document.hidden || !albumInView || albumHovered || albumFocused) return;
+    albumTimer = window.setTimeout(() => showAlbumPhoto(albumIndex + 1), 5600);
+  }
+
+  function showAlbumPhoto(index) {
+    const nextIndex = (index + albumSlides.length) % albumSlides.length;
+    const stepForward = (nextIndex - albumIndex + albumSlides.length) % albumSlides.length === 1;
+    if (stepForward && albumIndex === albumSlides.length - 1 && nextIndex === 0) albumVisualIndex = albumSlides.length + 1;
+    else if (!stepForward && albumIndex === 0 && nextIndex === albumSlides.length - 1) albumVisualIndex = 0;
+    else albumVisualIndex = nextIndex + 1;
+    albumIndex = nextIndex;
+    albumSlides.forEach((slide, i) => {
+      slide.setAttribute('aria-hidden', String(i !== albumIndex));
+      if (i === albumIndex) slide.removeAttribute('inert');
+      else slide.setAttribute('inert', '');
+    });
+    albumVisualSlides.forEach((slide, i) => slide.classList.toggle('is-active', i === albumVisualIndex));
+    centerAlbumPhoto();
+    albumDots.querySelectorAll('button').forEach((dot, i) => {
+      dot.classList.toggle('active', i === albumIndex);
+      dot.setAttribute('aria-current', String(i === albumIndex));
+    });
+    albumCount.innerHTML = `<span>${String(albumIndex + 1).padStart(2, '0')}</span> <i>/</i> ${String(albumSlides.length).padStart(2, '0')}`;
+    scheduleAlbumAutoplay();
+  }
+
+  albumSlides.forEach((slide, i) => {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'album-dot';
+    dot.setAttribute('aria-label', `Show photo ${i + 1} of ${albumSlides.length}`);
+    dot.addEventListener('click', () => showAlbumPhoto(i));
+    albumDots.appendChild(dot);
+  });
+
+  document.querySelector('.album-arrow-prev').addEventListener('click', () => showAlbumPhoto(albumIndex - 1));
+  document.querySelector('.album-arrow-next').addEventListener('click', () => showAlbumPhoto(albumIndex + 1));
+  albumViewport.addEventListener('keydown', event => {
+    if (event.key === 'ArrowLeft') showAlbumPhoto(albumIndex - 1);
+    if (event.key === 'ArrowRight') showAlbumPhoto(albumIndex + 1);
+  });
+  albumViewport.addEventListener('pointerdown', event => { swipeStartX = event.clientX; });
+  albumViewport.addEventListener('pointerup', event => {
+    if (swipeStartX === null) return;
+    const swipeDistance = event.clientX - swipeStartX;
+    if (Math.abs(swipeDistance) > 45) showAlbumPhoto(albumIndex + (swipeDistance < 0 ? 1 : -1));
+    swipeStartX = null;
+  });
+  albumViewport.addEventListener('pointercancel', () => { swipeStartX = null; });
+  window.addEventListener('resize', () => centerAlbumPhoto(false));
+  albumTrack.addEventListener('transitionend', event => {
+    if (event.target !== albumTrack || event.propertyName !== 'transform') return;
+    if (albumVisualIndex === 0) albumVisualIndex = albumSlides.length;
+    else if (albumVisualIndex === albumSlides.length + 1) albumVisualIndex = 1;
+    else return;
+    albumVisualSlides.forEach((slide, i) => slide.classList.toggle('is-active', i === albumVisualIndex));
+    centerAlbumPhoto(false);
+  });
+  albumSlider.addEventListener('pointerenter', () => { albumHovered = true; scheduleAlbumAutoplay(); });
+  albumSlider.addEventListener('pointerleave', () => { albumHovered = false; scheduleAlbumAutoplay(); });
+  albumSlider.addEventListener('focusin', () => { albumFocused = true; scheduleAlbumAutoplay(); });
+  albumSlider.addEventListener('focusout', event => {
+    if (!albumSlider.contains(event.relatedTarget)) {
+      albumFocused = false;
+      scheduleAlbumAutoplay();
+    }
+  });
+  document.addEventListener('visibilitychange', scheduleAlbumAutoplay);
+  if ('IntersectionObserver' in window) {
+    const albumObserver = new IntersectionObserver(entries => {
+      albumInView = entries[0].isIntersecting;
+      scheduleAlbumAutoplay();
+    }, { threshold: .25 });
+    albumObserver.observe(albumSlider);
+  } else {
+    albumInView = true;
+  }
+  showAlbumPhoto(0);
+  centerAlbumPhoto(false);
+}
