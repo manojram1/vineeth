@@ -2325,8 +2325,25 @@ body.locked .bottom-nav-bar {
 
   /* Hero Section */
   .hero {
-    min-height: 80vh !important;
-    padding: 36px 14px !important;
+    min-height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    padding: 24px 14px 28px !important;
+    box-sizing: border-box !important;
+  }
+  .hero .container {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+  .scroll-hint {
+    position: relative !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: none !important;
+    margin-top: 24px !important;
+    margin-bottom: 6px !important;
   }
   .hero-names {
     font: 400 clamp(28px, 7.6vw, 42px) / 1.15 var(--serif) !important;
@@ -2430,10 +2447,12 @@ body.locked .bottom-nav-bar {
 
   /* Scratch Card Section */
   .scratch-wrapper {
-    width: min(92vw, 340px) !important;
+    width: 100% !important;
+    max-width: 320px !important;
     height: 180px !important;
     margin: 20px auto 0 !important;
     border-radius: 18px !important;
+    box-sizing: border-box !important;
   }
   .scratch-content {
     padding: 16px 12px !important;
