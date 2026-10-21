@@ -692,7 +692,9 @@ function updateRingsPhysics() {
   const scrollPos = window.scrollY;
   const screenW = window.innerWidth;
   const screenH = window.innerHeight;
-  const ringW = screenW >= 1200 ? 128 : (screenW >= 768 ? 110 : 84);
+  const isMobile = screenW < 768;
+  const isSmallMobile = screenW < 480;
+  const ringW = screenW >= 1200 ? 128 : (screenW >= 768 ? 110 : (isSmallMobile ? 52 : 64));
 
   // Outer away-side margins (placed far to the sides away from text and photos)
   let sideMarginLeft = 8;
@@ -701,8 +703,10 @@ function updateRingsPhysics() {
     sideMarginLeft = Math.max(24, Math.min(110, (gutter - ringW) / 2));
   } else if (screenW >= 768) {
     sideMarginLeft = 16;
+  } else if (isSmallMobile) {
+    sideMarginLeft = 2;
   } else {
-    sideMarginLeft = 8;
+    sideMarginLeft = 6;
   }
   const sideMarginRight = screenW - sideMarginLeft - ringW;
 
@@ -1068,8 +1072,20 @@ document.getElementById('addToCalBtn').addEventListener('click', () => {
 });
 
 // Quick Share button (Direct WhatsApp + Clipboard fallback - 100% safe across file:// and web)
+// Quick Share button (Direct Multi-App Luxury Modal — Safe across file://, localhost & live web)
 const shareBtn = document.getElementById('shareBtn');
 const shareToast = document.getElementById('shareToast');
+const shareModal = document.getElementById('shareModal');
+const shareModalBackdrop = document.getElementById('shareModalBackdrop');
+const shareModalClose = document.getElementById('shareModalClose');
+const shareModalWa = document.getElementById('shareModalWa');
+const shareModalTg = document.getElementById('shareModalTg');
+const shareModalFb = document.getElementById('shareModalFb');
+const shareModalSms = document.getElementById('shareModalSms');
+const shareModalEmail = document.getElementById('shareModalEmail');
+const shareModalMore = document.getElementById('shareModalMore');
+const shareModalCopyBtn = document.getElementById('shareModalCopyBtn');
+const shareModalUrlPreview = document.getElementById('shareModalUrlPreview');
 
 function triggerShareToast(message) {
   if (!shareToast) return;
@@ -1080,38 +1096,115 @@ function triggerShareToast(message) {
   }, 3200);
 }
 
-if (shareBtn) {
-  shareBtn.addEventListener('click', (e) => {
+function openShareModal(fullMessage, shareUrl) {
+  if (!shareModal) return;
+
+  const displayUrl = shareUrl && shareUrl.startsWith('http') ? shareUrl : "https://vineeth-sofiya-engagement.com";
+
+  if (shareModalUrlPreview) {
+    shareModalUrlPreview.textContent = displayUrl;
+  }
+  if (shareModalWa) {
+    shareModalWa.href = "https://api.whatsapp.com/send?text=" + encodeURIComponent(fullMessage);
+  }
+  if (shareModalTg) {
+    shareModalTg.href = "https://t.me/share/url?url=" + encodeURIComponent(displayUrl) + "&text=" + encodeURIComponent(fullMessage);
+  }
+  if (shareModalFb) {
+    shareModalFb.href = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(displayUrl);
+  }
+  if (shareModalSms) {
+    shareModalSms.href = "sms:?body=" + encodeURIComponent(fullMessage);
+  }
+  if (shareModalEmail) {
+    shareModalEmail.href = "mailto:?subject=" + encodeURIComponent("💍 Vineeth & Sofiya Das — Engagement Ceremony Invitation") + "&body=" + encodeURIComponent(fullMessage);
+  }
+
+  // System share (Only available on secure origins like https:// or localhost, strictly NEVER on file://)
+  const canUseSystemShare = window.location.protocol !== 'file:' && 
+                            window.isSecureContext === true && 
+                            typeof navigator.share === 'function';
+
+  if (shareModalMore) {
+    if (canUseSystemShare) {
+      shareModalMore.style.display = 'flex';
+      shareModalMore.onclick = async (e) => {
+        e.preventDefault();
+        try {
+          await navigator.share({
+            title: "Vineeth & Sofiya Das — Engagement Ceremony Invitation",
+            text: fullMessage,
+            url: displayUrl
+          });
+          closeShareModal();
+        } catch (err) {}
+      };
+    } else {
+      shareModalMore.style.display = 'none';
+    }
+  }
+
+  shareModal.classList.add('active');
+}
+
+function closeShareModal() {
+  if (shareModal) shareModal.classList.remove('active');
+}
+
+if (shareModalBackdrop) shareModalBackdrop.addEventListener('click', closeShareModal);
+if (shareModalClose) shareModalClose.addEventListener('click', closeShareModal);
+
+if (shareModalCopyBtn) {
+  shareModalCopyBtn.addEventListener('click', (e) => {
     e.stopPropagation();
-
-    // Check if running on web (http/https) or local file
     const isWeb = window.location.protocol.startsWith('http');
-    const invitationLink = isWeb ? window.location.href : "";
-
-    const shareMessage = 
+    const invitationLink = isWeb ? window.location.href : "https://vineeth-sofiya-engagement.com";
+    const fullMessage = 
       "💍 *Engagement Ceremony Invitation* 💍\n\n" +
       "*Vineeth Rajendran & Sofiya Das*\n\n" +
       "📅 *Date:* Friday, 13 November 2026\n" +
       "⏰ *Time:* Starts at 12:00 PM\n" +
-      "⛪ *Venue:* Little Flower Parish Hall, Trivandrum\n" +
+      "⛪ *Venue:* Little Flower Parish Hall, Kazhakkoottam, Trivandrum\n" +
       "📍 *Location Map:* https://www.google.com/maps/place/Little+Flower,+Saint+Therese+of+Lisieux+Roman+Catholic+Latin+Church/@8.5427005,76.8926937,17z/\n\n" +
-      (invitationLink ? "✨ *View Wedding Invitation:* " + invitationLink : "With warm blessings & prayers!");
+      (isWeb ? "✨ *View Wedding Invitation:* " + window.location.href : "With warm blessings & prayers!");
 
-    // Safely copy invitation text to clipboard
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(shareMessage).catch(() => {});
+        navigator.clipboard.writeText(fullMessage).then(() => {
+          triggerShareToast("📋 Invitation link copied to clipboard!");
+          closeShareModal();
+        }).catch(() => {
+          triggerShareToast("📋 Link copied!");
+          closeShareModal();
+        });
+      } else {
+        triggerShareToast("📋 Link copied!");
+        closeShareModal();
       }
-    } catch (clipErr) {}
+    } catch (err) {
+      triggerShareToast("📋 Link copied!");
+      closeShareModal();
+    }
+  });
+}
 
-    // Show toast notification
-    triggerShareToast("💍 Opening WhatsApp with invitation...");
+// When Share button is clicked, open the multi-app luxury chooser directly
+if (shareBtn) {
+  shareBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
 
-    // Direct WhatsApp share URL (Works on both mobile WhatsApp app & desktop WhatsApp Web)
-    const waUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(shareMessage);
+    const isWeb = window.location.protocol.startsWith('http');
+    const invitationLink = isWeb ? window.location.href : "https://vineeth-sofiya-engagement.com";
+    const shareText = 
+      "💍 *Engagement Ceremony Invitation* 💍\n\n" +
+      "*Vineeth Rajendran & Sofiya Das*\n\n" +
+      "📅 *Date:* Friday, 13 November 2026\n" +
+      "⏰ *Time:* Starts at 12:00 PM\n" +
+      "⛪ *Venue:* Little Flower Parish Hall, Kazhakkoottam, Trivandrum\n" +
+      "📍 *Location Map:* https://www.google.com/maps/place/Little+Flower,+Saint+Therese+of+Lisieux+Roman+Catholic+Latin+Church/@8.5427005,76.8926937,17z/\n\n" +
+      (isWeb ? "✨ *View Wedding Invitation:* " + window.location.href : "With warm blessings & prayers!");
 
-    // Open WhatsApp in a new tab/window
-    window.open(waUrl, '_blank');
+    openShareModal(shareText, invitationLink);
   });
 }
 
@@ -1322,8 +1415,11 @@ function handleSliderScrollParallax() {
   if (rect.top < winH && rect.bottom > 0) {
     const progress = (winH - rect.top) / (winH + rect.height);
     // Smooth horizontal parallax drift as page scrolls
-    const driftX = (progress - 0.5) * -70;
-    const tiltDeg = (progress - 0.5) * -4;
+    const isMobile = window.innerWidth < 768;
+    const maxDrift = isMobile ? 18 : 70;
+    const maxTilt = isMobile ? 2 : 4;
+    const driftX = (progress - 0.5) * -maxDrift;
+    const tiltDeg = (progress - 0.5) * -maxTilt;
     storySliderTrack.style.transform = `translateX(${driftX}px) rotateZ(${tiltDeg}deg)`;
   }
 }
