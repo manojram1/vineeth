@@ -53,7 +53,12 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
 body {
   background-color: var(--bg-dark);
   background-image: var(--bg-texture);
@@ -63,6 +68,8 @@ body {
   overflow-x: hidden;
   position: relative;
   min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
 }
 body.locked { height: 100vh; overflow: hidden; }
 body.locked main,
@@ -119,8 +126,12 @@ main {
   background-image: var(--bg-texture);
   background-repeat: repeat;
   opacity: 1 !important;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 16px;
+  box-sizing: border-box;
   transition: opacity 1.1s cubic-bezier(0.4, 0, 0.2, 1), visibility 1.1s;
 }
 .opening.opened {
@@ -130,19 +141,20 @@ main {
 }
 
 .envelope-wrapper {
-  width: min(92vw, 430px);
+  width: min(90vw, 380px);
+  max-width: 380px;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
   z-index: 10;
-  margin-top: 55px;
+  margin: 0 auto;
 }
 
 /* PHYSICAL 3D LUXURY ENVELOPE BOX */
 .envelope-box {
   width: 100%;
-  height: clamp(340px, 64vh, 450px);
+  height: clamp(300px, 48vh, 390px);
   position: relative;
   perspective: 1200px;
   background: var(--envelope-bg);
@@ -1084,6 +1096,8 @@ section {
   width: min(100%, 960px);
   margin: 0 auto;
   text-align: center;
+  padding: 0 16px;
+  box-sizing: border-box;
 }
 
 .kicker {
@@ -1230,7 +1244,8 @@ section {
    ------------------------------------------------------------- */
 .gallery-slider-section {
   position: relative;
-  overflow: visible;
+  overflow: hidden;
+  contain: paint;
   padding: 110px 24px;
 }
 
@@ -1264,8 +1279,7 @@ section {
   left: 50%;
   width: clamp(260px, 34vw, 360px);
   height: clamp(380px, 50vh, 480px);
-  margin-top: -clamp(190px, 25vh, 240px);
-  margin-left: -clamp(130px, 17vw, 180px);
+  margin: 0;
   border-radius: 24px;
   transform-style: preserve-3d;
   cursor: pointer;
@@ -1485,30 +1499,53 @@ section {
 }
 
 @media (max-width: 768px) {
+  .gallery-slider-section {
+    overflow: hidden !important;
+    padding: 55px 12px !important;
+  }
   .story-slider-container {
-    height: 440px;
+    height: 380px !important;
+    margin: 20px auto 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow: hidden !important;
   }
   .story-slide {
-    width: 250px;
-    height: 360px;
-    margin-top: -180px;
-    margin-left: -125px;
+    width: min(74vw, 240px) !important;
+    height: min(105vw, 340px) !important;
+    margin: 0 !important;
+    border-radius: 18px !important;
+  }
+  .story-slide-frame {
+    border-radius: 18px !important;
+  }
+  .story-slide.active {
+    transform: translate(-50%, -50%) translateX(0px) scale(1) translateZ(30px) !important;
   }
   .story-slide.prev {
-    transform: translate(-50%, -50%) translateX(-48%) scale(0.85) rotateY(15deg);
+    transform: translate(-50%, -50%) translateX(-38%) scale(0.82) rotateY(12deg) translateZ(-30px) !important;
+    opacity: 0.35 !important;
   }
   .story-slide.next {
-    transform: translate(-50%, -50%) translateX(48%) scale(0.85) rotateY(-15deg);
+    transform: translate(-50%, -50%) translateX(38%) scale(0.82) rotateY(-12deg) translateZ(-30px) !important;
+    opacity: 0.35 !important;
   }
   .slider-arrow {
-    width: 44px;
-    height: 44px;
+    width: 38px !important;
+    height: 38px !important;
   }
   .slider-arrow.slider-prev {
-    left: 4px;
+    left: 4px !important;
   }
   .slider-arrow.slider-next {
-    right: 4px;
+    right: 4px !important;
+  }
+  .slide-caption-title {
+    font-size: 18px !important;
+  }
+  .slide-caption-desc {
+    font-size: 11px !important;
+    line-height: 1.35 !important;
   }
 }
 
@@ -1856,24 +1893,6 @@ body.locked .bottom-nav-bar {
   transform: scale(1.15);
 }
 
-@media (max-width: 480px) {
-  .bottom-nav-bar {
-    bottom: 12px;
-    padding: 4px 8px;
-    gap: 2px;
-  }
-  .bottom-nav-item {
-    padding: 5px 8px;
-    min-width: 44px;
-  }
-  .bottom-nav-item .nav-icon {
-    font-size: 15px;
-  }
-  .bottom-nav-item .nav-label {
-    font-size: 8.5px;
-  }
-}
-
 /* 11. SCRATCH TO REVEAL CARD & POP CRACKLE CELEBRATION STYLES */
 .scratch-wrapper {
   position: relative;
@@ -1994,14 +2013,467 @@ body.locked .bottom-nav-bar {
   pointer-events: none;
 }
 
-@media (max-width: 767px) {
+/* =============================================================
+   COMPREHENSIVE MOBILE RESPONSIVE ENGINE (ANDROID & IOS PHONES)
+   ============================================================= */
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+  
+  main {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+
+  .container {
+    padding: 0 16px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+  }
+
+  section {
+    padding: 48px 14px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  /* 3D Envelope Responsive Sizing on Mobile */
+  .opening {
+    padding: 12px !important;
+    overflow: hidden !important;
+  }
+  .envelope-wrapper {
+    width: min(84vw, 305px) !important;
+    max-width: 305px !important;
+    margin: 0 auto !important;
+  }
+  .envelope-box {
+    height: clamp(250px, 42vh, 285px) !important;
+    border-radius: 18px !important;
+    box-shadow: 0 16px 45px rgba(142, 22, 59, 0.25), 0 4px 18px rgba(0, 0, 0, 0.15) !important;
+  }
+  .envelope-box.unwrapping .letter-card {
+    transform: translateY(-40px) scale(1.02) !important;
+  }
+  .letter-card {
+    border-radius: 80px 80px 14px 14px !important;
+    padding: 10px 8px 8px !important;
+    height: 94% !important;
+    width: 90% !important;
+  }
+  .card-couple-thumb-frame {
+    margin: 2px 0 2px 0 !important;
+  }
+  .card-photo-ring {
+    width: 44px !important;
+    height: 44px !important;
+  }
+  .cover-monogram-emblem {
+    display: none !important;
+  }
+  .cover-eyebrow {
+    font-size: 8px !important;
+    letter-spacing: 0.14em !important;
+    margin-bottom: 2px !important;
+  }
+  .cover-title {
+    font: 400 clamp(17px, 5vw, 20px) / 1.15 var(--serif) !important;
+    margin-bottom: 2px !important;
+  }
+  .cover-interfaith-tag {
+    font-size: 8px !important;
+    margin-bottom: 2px !important;
+    line-height: 1.2 !important;
+  }
+  .cover-date-badge {
+    font-size: 7.5px !important;
+    letter-spacing: 0.1em !important;
+    padding: 2px 8px !important;
+    margin-top: 2px !important;
+  }
+  .card-entering-badge {
+    margin-top: 4px !important;
+    gap: 2px !important;
+  }
+  .entering-text {
+    font-size: 7.5px !important;
+    letter-spacing: 0.1em !important;
+  }
+  .entering-progress-bar {
+    width: 85px !important;
+    height: 3px !important;
+  }
+  .wax-seal-wrapper {
+    top: 48% !important;
+  }
+  .wax-seal-btn {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  .wax-seal-btn svg {
+    width: 38px !important;
+    height: 38px !important;
+  }
+  .seal-action-hint {
+    font-size: 8.5px !important;
+    letter-spacing: 0.14em !important;
+    padding: 4px 12px !important;
+    margin-top: 8px !important;
+  }
+  .envelope-ribbon-bar {
+    height: 10px !important;
+    top: 48% !important;
+  }
+  .ribbon-band {
+    width: calc(50% - 17px) !important;
+  }
+
+  /* Hero Section */
+  .hero {
+    min-height: 80vh !important;
+    padding: 36px 14px !important;
+  }
+  .hero-names {
+    font: 400 clamp(28px, 7.6vw, 42px) / 1.15 var(--serif) !important;
+    margin: 12px 0 !important;
+    word-break: break-word !important;
+  }
+  .hero-sub {
+    font-size: 13px !important;
+    line-height: 1.6 !important;
+    max-width: 94% !important;
+  }
+  .ornament-line {
+    margin: 12px auto !important;
+  }
+
+  /* Section Titles & Kickers */
+  .kicker {
+    font-size: 9px !important;
+    letter-spacing: 0.2em !important;
+    margin-bottom: 8px !important;
+  }
+  .section-title {
+    font: 400 clamp(24px, 6.5vw, 36px) / 1.2 var(--serif) !important;
+    margin-bottom: 14px !important;
+  }
+
+  /* Invitation Message Card */
+  .invitation-card {
+    padding: 22px 14px !important;
+    border-radius: 18px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .quote-text {
+    font-size: clamp(17px, 4.6vw, 21px) !important;
+    margin-bottom: 12px !important;
+    line-height: 1.35 !important;
+  }
+  .body-text {
+    font-size: 12.5px !important;
+    line-height: 1.65 !important;
+    max-width: 100% !important;
+  }
+
+  /* Interfaith Harmony Cards */
+  .harmony-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    margin-top: 18px !important;
+    width: 100% !important;
+  }
+  .harmony-card {
+    padding: 20px 14px !important;
+    border-radius: 18px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .harmony-icon {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 20px !important;
+    margin-bottom: 8px !important;
+  }
+  .harmony-card h3 {
+    font-size: 18px !important;
+  }
+  .harmony-subtitle {
+    font-size: 9.5px !important;
+    margin-bottom: 8px !important;
+  }
+  .harmony-quote {
+    font-size: 12px !important;
+    margin-bottom: 8px !important;
+  }
+  .harmony-desc {
+    font-size: 11.5px !important;
+    line-height: 1.55 !important;
+  }
+
+  /* Countdown Grid */
+  .countdown-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6px !important;
+    margin-top: 18px !important;
+    width: 100% !important;
+    padding: 0 !important;
+  }
+  .count-card {
+    padding: 10px 2px !important;
+    border-radius: 12px !important;
+    min-width: 0 !important;
+  }
+  .count-num {
+    font-size: clamp(18px, 5.5vw, 24px) !important;
+  }
+  .count-label {
+    font-size: 7.5px !important;
+    letter-spacing: 0.1em !important;
+    margin-top: 2px !important;
+  }
+
+  /* Scratch Card Section */
+  .scratch-wrapper {
+    width: min(92vw, 340px) !important;
+    height: 180px !important;
+    margin: 20px auto 0 !important;
+    border-radius: 18px !important;
+  }
+  .scratch-content {
+    padding: 16px 12px !important;
+  }
+  .scratch-date {
+    font-size: clamp(18px, 5vw, 22px) !important;
+    margin-bottom: 4px !important;
+  }
+  .scratch-venue {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+  }
+  .scratch-instruction {
+    font-size: 9px !important;
+    padding: 4px 10px !important;
+    bottom: 10px !important;
+  }
+
+  /* 3D Floating Rings Sizing & Positioning on Mobile */
+  .classic-ring,
+  .ring-interlock-weave {
+    width: 52px !important;
+    height: 52px !important;
+    pointer-events: none !important;
+  }
   .rings-lock-bay {
-    min-height: 125px;
-    margin: 32px auto 10px;
+    min-height: 80px !important;
+    margin: 16px auto 6px !important;
   }
   .rings-lock-slot {
-    width: 100px;
-    height: 90px;
+    width: 80px !important;
+    height: 60px !important;
+  }
+  .locked-badge {
+    font-size: 8px !important;
+    letter-spacing: 0.1em !important;
+    padding: 4px 10px !important;
+  }
+
+  /* Image Coverflow Slider Section */
+  .gallery-slider-section {
+    overflow: hidden !important;
+    contain: paint !important;
+    padding: 48px 10px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+  .story-slider-container {
+    height: 350px !important;
+    margin: 16px auto 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow: hidden !important;
+    contain: paint !important;
+  }
+  .story-slide {
+    width: min(72vw, 230px) !important;
+    height: min(98vw, 310px) !important;
+    margin: 0 !important;
+    border-radius: 18px !important;
+  }
+  .story-slide-frame {
+    border-radius: 18px !important;
+  }
+  .story-slide.active {
+    transform: translate(-50%, -50%) translateX(0px) scale(1) translateZ(20px) !important;
+  }
+  .story-slide.prev {
+    transform: translate(-50%, -50%) translateX(-36%) scale(0.82) rotateY(12deg) translateZ(-20px) !important;
+    opacity: 0.35 !important;
+  }
+  .story-slide.next {
+    transform: translate(-50%, -50%) translateX(36%) scale(0.82) rotateY(-12deg) translateZ(-20px) !important;
+    opacity: 0.35 !important;
+  }
+  .slider-arrow {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  .slider-arrow.slider-prev {
+    left: 2px !important;
+  }
+  .slider-arrow.slider-next {
+    right: 2px !important;
+  }
+  .slide-caption-title {
+    font-size: 17px !important;
+  }
+  .slide-caption-desc {
+    font-size: 10.5px !important;
+    line-height: 1.35 !important;
+  }
+
+  /* Ceremony Rites */
+  .rites-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    width: 100% !important;
+  }
+  .rite-card {
+    padding: 20px 14px !important;
+    border-radius: 18px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Celebration Details Section */
+  .venue-card-lux {
+    padding: 20px 12px !important;
+    border-radius: 18px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .venue-dual-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    margin-bottom: 16px !important;
+    width: 100% !important;
+  }
+  .venue-hero-frame {
+    height: 175px !important;
+    width: 100% !important;
+    border-radius: 14px !important;
+  }
+  .venue-hero-caption {
+    padding: 8px 6px !important;
+    font-size: 10px !important;
+  }
+  .venue-details-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    margin: 16px auto !important;
+    width: 100% !important;
+  }
+  .venue-detail-item {
+    padding: 12px 14px !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .venue-detail-item h4 {
+    font-size: 9px !important;
+    margin-bottom: 3px !important;
+  }
+  .venue-detail-item p {
+    font-size: 16px !important;
+  }
+  .venue-detail-item span {
+    font-size: 11px !important;
+  }
+  .btn-group {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-top: 18px !important;
+    width: 100% !important;
+  }
+  .lux-btn {
+    width: 100% !important;
+    max-width: 280px !important;
+    padding: 12px 16px !important;
+    justify-content: center !important;
+    font-size: 10px !important;
+  }
+
+  /* Floating Controls (Share + Music) */
+  .floating-actions-container {
+    right: 10px !important;
+    bottom: 64px !important;
+    gap: 8px !important;
+    z-index: 950 !important;
+  }
+  .action-btn {
+    width: 38px !important;
+    height: 38px !important;
+  }
+  .action-btn svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  .music-icon {
+    font-size: 15px !important;
+  }
+  .share-toast {
+    right: 10px !important;
+    bottom: 112px !important;
+    font-size: 10px !important;
+    padding: 6px 12px !important;
+    max-width: calc(100vw - 20px) !important;
+  }
+
+  /* Bottom Navigation Bar */
+  .bottom-nav-bar {
+    bottom: 6px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    padding: 3px 4px !important;
+    gap: 1px !important;
+    width: calc(100vw - 16px) !important;
+    max-width: 380px !important;
+    border-radius: 25px !important;
+    display: flex !important;
+    justify-content: space-around !important;
+    align-items: center !important;
+  }
+  .bottom-nav-item {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    padding: 4px 1px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .bottom-nav-item .nav-icon {
+    font-size: 14px !important;
+  }
+  .bottom-nav-item .nav-label {
+    font-size: 7.5px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* Closing Section */
+  .closing-section {
+    min-height: 40vh !important;
+    padding-bottom: 80px !important;
   }
 }
 

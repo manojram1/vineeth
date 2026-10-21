@@ -692,7 +692,9 @@ function updateRingsPhysics() {
   const scrollPos = window.scrollY;
   const screenW = window.innerWidth;
   const screenH = window.innerHeight;
-  const ringW = screenW >= 1200 ? 128 : (screenW >= 768 ? 110 : 84);
+  const isMobile = screenW < 768;
+  const isSmallMobile = screenW < 480;
+  const ringW = screenW >= 1200 ? 128 : (screenW >= 768 ? 110 : (isSmallMobile ? 52 : 64));
 
   // Outer away-side margins (placed far to the sides away from text and photos)
   let sideMarginLeft = 8;
@@ -701,8 +703,10 @@ function updateRingsPhysics() {
     sideMarginLeft = Math.max(24, Math.min(110, (gutter - ringW) / 2));
   } else if (screenW >= 768) {
     sideMarginLeft = 16;
+  } else if (isSmallMobile) {
+    sideMarginLeft = 2;
   } else {
-    sideMarginLeft = 8;
+    sideMarginLeft = 6;
   }
   const sideMarginRight = screenW - sideMarginLeft - ringW;
 
@@ -1322,8 +1326,11 @@ function handleSliderScrollParallax() {
   if (rect.top < winH && rect.bottom > 0) {
     const progress = (winH - rect.top) / (winH + rect.height);
     // Smooth horizontal parallax drift as page scrolls
-    const driftX = (progress - 0.5) * -70;
-    const tiltDeg = (progress - 0.5) * -4;
+    const isMobile = window.innerWidth < 768;
+    const maxDrift = isMobile ? 18 : 70;
+    const maxTilt = isMobile ? 2 : 4;
+    const driftX = (progress - 0.5) * -maxDrift;
+    const tiltDeg = (progress - 0.5) * -maxTilt;
     storySliderTrack.style.transform = `translateX(${driftX}px) rotateZ(${tiltDeg}deg)`;
   }
 }
