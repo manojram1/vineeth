@@ -1,9 +1,25 @@
 // Configuration
 const CONFIG = {
   engagementDate: "2026-11-13T12:00:00+05:30",
-  venue: "Vettukad Auditorium",
-  mapUrl: "https://share.google/mMGFLypsmjwbw9kCy"
+  venue: "Little Flower Parish Hall, Trivandrum",
+  mapUrl: "https://www.google.com/maps/place/Little+Flower,+Saint+Therese+of+Lisieux+Roman+Catholic+Latin+Church/@8.5427005,76.8926937,17z/data=!3m1!4b1!4m6!3m5!1s0x3b05bebfd57325af:0x61ac11a787baf502!8m2!3d8.5426952!4d76.8952686!16s%2Fg%2F1hhx9msxl?hl=en-US&entry=ttu&g_ep=EgoyMDI2MTAxOC4wIKXMDSoASAFQAw%3D%3D"
 };
+
+// Fixed Client Theme Palette: Warm Ivory Parchment + Royal Maroon & Burnished Gold
+const THEME_PALETTE = {
+  starColors: ['#C59B27', '#B8860B', '#E5C170', '#D4AF37'],
+  // Authentic Romantic Rose Petals (Crimson Red, Scarlet, Velvet Ruby, Carmine & Blush Rose)
+  roseColors: [
+    { fill: '#C8102E', highlight: '#FF4D6D', edge: '#85001C' }, // Crimson Rose
+    { fill: '#E6194B', highlight: '#FF6B8B', edge: '#9B0028' }, // Vibrant Scarlet Rose
+    { fill: '#B30B2D', highlight: '#F43F5E', edge: '#73051B' }, // Velvet Red Rose
+    { fill: '#D91C4A', highlight: '#FF7597', edge: '#8F0024' }, // Ruby Red Rose
+    { fill: '#9E0A28', highlight: '#E11D48', edge: '#600014' }, // Deep Romantic Rose
+    { fill: '#E0315E', highlight: '#FFA4BC', edge: '#9C0D36' }  // Fresh Rose Petal Pink
+  ]
+};
+
+let currentStarColors = THEME_PALETTE.starColors;
 
 /* -------------------------------------------------------------
    BACKGROUND CANVAS: FLOATING GOLD PARTICLES & STARLIGHT
@@ -37,7 +53,7 @@ class StarParticle {
   draw() {
     bgCtx.save();
     bgCtx.globalAlpha = Math.max(0.1, Math.min(0.9, this.alpha));
-    bgCtx.fillStyle = '#f7dda0';
+    bgCtx.fillStyle = currentStarColors[Math.floor(Math.random() * currentStarColors.length)];
     bgCtx.beginPath();
     bgCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
     bgCtx.fill();
@@ -55,7 +71,7 @@ function animateBg() {
 animateBg();
 
 /* -------------------------------------------------------------
-   FLOWER PETAL FALLING ANIMATION SYSTEM (ROSE & JASMINE PETALS)
+   REALISTIC LUXURY ROSE PETAL FALLING ANIMATION SYSTEM
    ------------------------------------------------------------- */
 const petalCanvas = document.getElementById('petalCanvas');
 const pCtx = petalCanvas.getContext('2d');
@@ -68,30 +84,35 @@ function resizePetalCanvas() {
 resizePetalCanvas();
 window.addEventListener('resize', resizePetalCanvas);
 
+const ROSE_COLORS = THEME_PALETTE.roseColors;
+
 class FlowerPetal {
   constructor() {
     this.reset(true);
   }
   reset(initial = false) {
     this.x = Math.random() * petalCanvas.width;
-    this.y = initial ? Math.random() * petalCanvas.height : -30;
-    this.size = Math.random() * 10 + 8;
-    this.speedY = Math.random() * 1.2 + 0.6;
-    this.speedX = Math.random() * 0.8 - 0.4;
-    this.swaySpeed = Math.random() * 0.03 + 0.01;
+    this.y = initial ? Math.random() * petalCanvas.height : -40;
+    this.size = Math.random() * 11 + 11; // 11px to 22px realistic petal size
+    this.speedY = Math.random() * 1.25 + 0.75; // Graceful drifting downward
+    this.speedX = Math.random() * 0.6 - 0.3;
+    this.swaySpeed = Math.random() * 0.028 + 0.014;
     this.swayAngle = Math.random() * Math.PI * 2;
+    this.flipSpeed = Math.random() * 0.035 + 0.016;
+    this.flipAngle = Math.random() * Math.PI * 2;
     this.rotation = Math.random() * Math.PI * 2;
-    this.rotSpeed = (Math.random() - 0.5) * 0.04;
-    this.color = Math.random() > 0.4 ? '#f7d3d9' : '#fff4d6';
-    this.opacity = Math.random() * 0.7 + 0.3;
+    this.rotSpeed = (Math.random() - 0.5) * 0.025;
+    this.colorScheme = ROSE_COLORS[Math.floor(Math.random() * ROSE_COLORS.length)];
+    this.opacity = Math.random() * 0.35 + 0.6; // High visibility and rich color saturation
   }
   update() {
     this.swayAngle += this.swaySpeed;
-    this.x += Math.sin(this.swayAngle) * 0.8 + this.speedX;
+    this.flipAngle += this.flipSpeed;
+    this.x += Math.sin(this.swayAngle) * 1.25 + this.speedX;
     this.y += this.speedY;
     this.rotation += this.rotSpeed;
 
-    if (this.y > petalCanvas.height + 40) {
+    if (this.y > petalCanvas.height + 50) {
       this.reset();
     }
   }
@@ -99,19 +120,63 @@ class FlowerPetal {
     pCtx.save();
     pCtx.translate(this.x, this.y);
     pCtx.rotate(this.rotation);
-    pCtx.globalAlpha = this.opacity;
-    pCtx.fillStyle = this.color;
 
+    // 3D tumbling flip effect
+    const flipScale = Math.sin(this.flipAngle);
+    pCtx.scale(1, flipScale);
+
+    pCtx.globalAlpha = this.opacity;
+
+    // Organic Rose Petal Gradient Shading
+    const isBackside = flipScale < 0;
+    const grad = pCtx.createRadialGradient(-this.size * 0.2, -this.size * 0.25, 1, 0, 0, this.size);
+
+    if (!isBackside) {
+      grad.addColorStop(0, this.colorScheme.highlight);
+      grad.addColorStop(0.6, this.colorScheme.fill);
+      grad.addColorStop(1, this.colorScheme.edge);
+    } else {
+      // Petal underside is slightly softer velvety matte
+      grad.addColorStop(0, '#FFA8BC');
+      grad.addColorStop(0.6, this.colorScheme.highlight);
+      grad.addColorStop(1, this.colorScheme.fill);
+    }
+
+    pCtx.fillStyle = grad;
+    pCtx.shadowColor = 'rgba(160, 15, 40, 0.22)';
+    pCtx.shadowBlur = 4;
+    pCtx.shadowOffsetY = 2;
+
+    // Authentic Rose Petal Curved Heart/Tear Contour
     pCtx.beginPath();
-    pCtx.moveTo(0, -this.size / 2);
-    pCtx.bezierCurveTo(this.size / 2, -this.size / 2, this.size / 1.5, this.size / 2, 0, this.size);
-    pCtx.bezierCurveTo(-this.size / 1.5, this.size / 2, -this.size / 2, -this.size / 2, 0, -this.size / 2);
+    pCtx.moveTo(0, -this.size * 0.85);
+    // Right lobe curve to tapered stem base
+    pCtx.bezierCurveTo(this.size * 0.85, -this.size * 0.78, this.size * 0.95, this.size * 0.38, 0, this.size);
+    // Left lobe curve back to top indentation
+    pCtx.bezierCurveTo(-this.size * 0.95, this.size * 0.38, -this.size * 0.85, -this.size * 0.78, 0, -this.size * 0.85);
     pCtx.fill();
+
+    // Delicate translucent petal highlight curve along upper rim
+    pCtx.shadowColor = 'transparent';
+    pCtx.strokeStyle = isBackside ? 'rgba(255, 255, 255, 0.45)' : 'rgba(255, 235, 240, 0.35)';
+    pCtx.lineWidth = 0.85;
+    pCtx.beginPath();
+    pCtx.arc(0, -this.size * 0.42, this.size * 0.45, Math.PI * 0.85, Math.PI * 2.15);
+    pCtx.stroke();
+
+    // Subtle natural center vein
+    pCtx.strokeStyle = 'rgba(255, 220, 230, 0.22)';
+    pCtx.lineWidth = 0.7;
+    pCtx.beginPath();
+    pCtx.moveTo(0, -this.size * 0.55);
+    pCtx.quadraticCurveTo(this.size * 0.05, 0, 0, this.size * 0.7);
+    pCtx.stroke();
+
     pCtx.restore();
   }
 }
 
-for (let i = 0; i < 40; i++) petals.push(new FlowerPetal());
+for (let i = 0; i < 58; i++) petals.push(new FlowerPetal());
 
 function animatePetals() {
   pCtx.clearRect(0, 0, petalCanvas.width, petalCanvas.height);
@@ -120,11 +185,15 @@ function animatePetals() {
 }
 animatePetals();
 
+
+
 /* -------------------------------------------------------------
-   CONTINUOUS MUSIC PLAYBACK SYSTEM
+   CONTINUOUS MUSIC PLAYBACK & 3D ENVELOPE UNWRAPPING SYSTEM
    ------------------------------------------------------------- */
 const openingModal = document.getElementById('openingModal');
 const openInviteBtn = document.getElementById('openInviteBtn');
+const envContainer = document.getElementById('envContainer');
+const letterCard = document.getElementById('letterCard');
 const musicBtn = document.getElementById('musicBtn');
 const bgMusic = document.getElementById('bgMusic');
 
@@ -145,20 +214,120 @@ async function startContinuousMusic() {
   }
 }
 
-openInviteBtn.addEventListener('click', async () => {
+let isUnwrapping = false;
+let unwrapTimeout = null;
+let countdownInterval = null;
+
+function completeOpening() {
+  if (!openingModal || openingModal.classList.contains('opened')) return;
+  if (unwrapTimeout) clearTimeout(unwrapTimeout);
+  if (countdownInterval) clearInterval(countdownInterval);
   openingModal.classList.add('opened');
   document.body.classList.remove('locked');
-  await startContinuousMusic();
-});
+  document.body.style.overflow = '';
+  updateRingsPhysics();
+}
 
-musicBtn.addEventListener('click', async () => {
-  if (bgMusic.paused) {
-    await startContinuousMusic();
+async function triggerUnwrapSequence(event) {
+  if (openingModal && openingModal.classList.contains('opened')) return;
+
+  if (!isUnwrapping) {
+    isUnwrapping = true;
+
+    // Calculate center of wax seal coin button or event click point for ribbon cutting popper burst
+    let cx = window.innerWidth / 2;
+    let cy = window.innerHeight * 0.48;
+    if (openInviteBtn) {
+      const rect = openInviteBtn.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        cx = rect.left + rect.width / 2;
+        cy = rect.top + rect.height / 2;
+      }
+    }
+    if (event && event.clientX && event.clientY) {
+      cx = event.clientX;
+      cy = event.clientY;
+    }
+
+    // Trigger Ribbon Cutting Popper Confetti Burst
+    if (typeof triggerMultiStagePop === 'function') {
+      try { triggerMultiStagePop(cx, cy); } catch (e) {}
+    }
+
+    // Add clicked state to wax seal wrapper
+    if (openInviteBtn) openInviteBtn.classList.add('clicked');
+
+    // Trigger 3D Envelope Flap Open, Ribbon Split & Invitation Card Slide Out
+    if (envContainer) envContainer.classList.add('unwrapping');
+
+    // Start background music playback
+    startContinuousMusic().catch(() => {});
+
+    // 5-Second Countdown Timer UI
+    let secLeft = 5;
+    const cdSecEl = document.getElementById('countdownSec');
+    if (cdSecEl) cdSecEl.textContent = secLeft;
+
+    countdownInterval = setInterval(() => {
+      secLeft--;
+      if (cdSecEl && secLeft >= 0) cdSecEl.textContent = secLeft;
+      if (secLeft <= 0) {
+        clearInterval(countdownInterval);
+        completeOpening();
+      }
+    }, 1000);
+
+    // Smoothly fade out modal after 5 full seconds (5000ms)
+    unwrapTimeout = setTimeout(() => {
+      completeOpening();
+    }, 5000);
   } else {
-    bgMusic.pause();
-    musicBtn.classList.remove('playing');
+    // If clicked AGAIN while popped out during the 5s window, open immediately!
+    completeOpening();
+  }
+}
+
+// Bind click events on Wax Seal, Letter Card, Envelope, and Modal
+if (openInviteBtn) openInviteBtn.addEventListener('click', (e) => { e.stopPropagation(); triggerUnwrapSequence(e); });
+if (letterCard) letterCard.addEventListener('click', (e) => { e.stopPropagation(); triggerUnwrapSequence(e); });
+if (envContainer) envContainer.addEventListener('click', (e) => { e.stopPropagation(); triggerUnwrapSequence(e); });
+if (openingModal) openingModal.addEventListener('click', (e) => { triggerUnwrapSequence(e); });
+
+const cardEnteringBadge = document.getElementById('cardEnteringBadge');
+if (cardEnteringBadge) {
+  cardEnteringBadge.addEventListener('click', (e) => {
+    e.stopPropagation();
+    completeOpening();
+  });
+}
+
+// Accessibility: Pressing Enter, Space, or Escape opens the invitation
+window.addEventListener('keydown', (e) => {
+  if (openingModal && !openingModal.classList.contains('opened')) {
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
+      e.preventDefault();
+      completeOpening();
+    }
   }
 });
+
+if (musicBtn) {
+  musicBtn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    const musicIcon = document.getElementById('musicIcon');
+    if (bgMusic.paused || bgMusic.muted) {
+      bgMusic.muted = false;
+      await startContinuousMusic();
+      musicBtn.classList.add('playing');
+      if (musicIcon) musicIcon.textContent = '🎵';
+    } else {
+      bgMusic.muted = true;
+      bgMusic.pause();
+      musicBtn.classList.remove('playing');
+      if (musicIcon) musicIcon.textContent = '🔇';
+    }
+  });
+}
 
 function autoResumeAudio() {
   if (openingModal.classList.contains('opened') && bgMusic.paused) {
@@ -192,12 +361,14 @@ setInterval(updateCountdown, 1000);
 /* -------------------------------------------------------------
    SCROLL REVEAL OBSERVER & BOTTOM NAV HIGHLIGHTING
    ------------------------------------------------------------- */
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add('visible');
-  });
-}, { threshold: 0.12 });
-document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+if (typeof IntersectionObserver !== 'undefined') {
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+}
 
 const navItems = document.querySelectorAll('.bottom-nav-item');
 const navSections = document.querySelectorAll('section[id], header[id]');
@@ -257,18 +428,18 @@ function initScratch() {
   const dpr = window.devicePixelRatio || 1;
   scratchCanvas.width = rect.width * dpr;
   scratchCanvas.height = rect.height * dpr;
-  sCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (sCtx.setTransform) sCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   const grad = sCtx.createLinearGradient(0, 0, rect.width, rect.height);
-  grad.addColorStop(0, '#bf953f');
-  grad.addColorStop(0.3, '#fcf6ba');
-  grad.addColorStop(0.6, '#b38728');
-  grad.addColorStop(1, '#aa771c');
+  grad.addColorStop(0, '#C59B27');
+  grad.addColorStop(0.35, '#E5C170');
+  grad.addColorStop(0.65, '#B8860B');
+  grad.addColorStop(1, '#996515');
 
   sCtx.fillStyle = grad;
   sCtx.fillRect(0, 0, rect.width, rect.height);
 
-  sCtx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+  sCtx.fillStyle = 'rgba(255, 255, 255, 0.25)';
   for (let x = -rect.height; x < rect.width + rect.height; x += 18) {
     sCtx.beginPath();
     sCtx.moveTo(x, 0);
@@ -319,9 +490,12 @@ window.addEventListener('resize', initScratch);
 /* -------------------------------------------------------------
    ENGRAVED CLASSIC RINGS & SCRATCH REVEAL POP CRACKLE CELEBRATION
    ------------------------------------------------------------- */
+const ringsWrapper = document.getElementById('ringsWrapper');
 const ringLeft = document.getElementById('ringLeft');
 const ringRight = document.getElementById('ringRight');
+const ringInterlockWeave = document.getElementById('ringInterlockWeave');
 const lockedBadge = document.getElementById('lockedBadge');
+const lockedBadgeText = document.getElementById('lockedBadgeText');
 
 const colCanvas = document.getElementById('collisionCanvas');
 const colCtx = colCanvas.getContext('2d');
@@ -334,9 +508,9 @@ function resizeColCanvas() {
 resizeColCanvas();
 window.addEventListener('resize', resizeColCanvas);
 
-// High-Energy "Pop Cracking" Fireworks & Confetti Celebration
+// High-Energy "Pop Cracking" Ribbon Cutting & Falling Pop Paper Celebration
 function triggerPopCrackleBurst(cx, cy) {
-  const colors = ['#bf953f', '#fcf6ba', '#b38728', '#ffffff', '#ff6b81', '#f5d688', '#ffd700'];
+  const popPaperColors = ['#C59B27', '#B8860B', '#D4AF37', '#4A0E17', '#800E26', '#FAF2E6', '#E5C170', '#9E1B32'];
 
   // Popping Shockwave Ring
   colParticles.push({
@@ -344,37 +518,37 @@ function triggerPopCrackleBurst(cx, cy) {
     x: cx,
     y: cy,
     radius: 10,
-    maxRadius: 180,
-    alpha: 0.9,
-    color: '#fcf6ba',
-    lineWidth: 5
+    maxRadius: 220,
+    alpha: 0.95,
+    color: '#ffd700',
+    lineWidth: 6
   });
 
-  // 1. Confetti Ribbon Poppers
-  for (let i = 0; i < 90; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 14 + 4;
+  // 1. Confetti & Falling Pop Papers Bursting Upward then Fluttering Down
+  for (let i = 0; i < 110; i++) {
+    const angle = (Math.random() * 0.85 + 0.075) * -Math.PI; // Upward arc blast
+    const speed = Math.random() * 16 + 4;
     colParticles.push({
       type: 'confetti',
-      x: cx,
+      x: cx + (Math.random() * 50 - 25),
       y: cy,
       vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 2,
-      w: Math.random() * 8 + 4,
-      h: Math.random() * 14 + 6,
-      color: colors[Math.floor(Math.random() * colors.length)],
+      vy: Math.sin(angle) * speed - 4,
+      w: Math.random() * 10 + 4,
+      h: Math.random() * 16 + 8,
+      color: popPaperColors[Math.floor(Math.random() * popPaperColors.length)],
       alpha: 1,
-      decay: Math.random() * 0.015 + 0.008,
+      decay: Math.random() * 0.012 + 0.005, // Slower decay so paper drops flutter and fall across page
       rotation: Math.random() * Math.PI * 2,
-      rotSpeed: (Math.random() - 0.5) * 0.2,
-      gravity: 0.15
+      rotSpeed: (Math.random() - 0.5) * 0.28,
+      gravity: 0.18
     });
   }
 
-  // 2. High Velocity Golden Star Particles
-  for (let i = 0; i < 80; i++) {
+  // 2. High Velocity Golden & Silver Sparkle Particles
+  for (let i = 0; i < 85; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 12 + 2;
+    const speed = Math.random() * 14 + 3;
     colParticles.push({
       type: 'star',
       x: cx,
@@ -382,9 +556,9 @@ function triggerPopCrackleBurst(cx, cy) {
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
       size: Math.random() * 6 + 3,
-      color: Math.random() > 0.3 ? '#f9e4b7' : '#ffffff',
+      color: Math.random() > 0.3 ? '#ffd700' : '#ffffff',
       alpha: 1,
-      decay: Math.random() * 0.025 + 0.01
+      decay: Math.random() * 0.02 + 0.008
     });
   }
 
@@ -497,95 +671,665 @@ function animateCollisionParticles() {
 }
 animateCollisionParticles();
 
-let hasCollided = false;
+let scratchHasLocked = false;
+let ringAnimLoopId = null;
+let isScrolling = false;
+let scrollTimeout = null;
+let lastScrollY = window.scrollY;
+let scrollVelocity = 0;
+let smoothVelocity = 0;
+let lastScrollTime = performance.now();
 
-function handleScrollRings() {
-  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+/* -------------------------------------------------------------
+   SCROLL-DRIVEN 3D PERSPECTIVE TUMBLING & SACRED INTERLOCK
+   - Freely floating on away-sides when above the scratch card
+   - Glides and locks below the scratch card in its dedicated slot (matching Image 2)
+   - Stably remains locked below the scratch card when scrolling down (never vanishes)
+   - Smoothly unlocks and returns to sides when scrolling back up
+   - Strictly stationary when not actively scrolling
+   ------------------------------------------------------------- */
+function updateRingsPhysics() {
   const scrollPos = window.scrollY;
-  const progress = docHeight > 0 ? Math.max(0, Math.min(1, scrollPos / docHeight)) : 0;
-
   const screenW = window.innerWidth;
   const screenH = window.innerHeight;
-  const ringW = screenW >= 768 ? 125 : 95;
-  const sideMargin = screenW >= 768 ? screenW * 0.07 : screenW * 0.04;
+  const ringW = screenW >= 1200 ? 128 : (screenW >= 768 ? 110 : 84);
 
-  const startXLeft = sideMargin;
-  const startXRight = screenW - sideMargin - ringW;
+  // Outer away-side margins (placed far to the sides away from text and photos)
+  let sideMarginLeft = 8;
+  if (screenW >= 1280) {
+    const gutter = (screenW - 960) / 2;
+    sideMarginLeft = Math.max(24, Math.min(110, (gutter - ringW) / 2));
+  } else if (screenW >= 768) {
+    sideMarginLeft = 16;
+  } else {
+    sideMarginLeft = 8;
+  }
+  const sideMarginRight = screenW - sideMarginLeft - ringW;
 
-  const targetXLeft = (screenW / 2) - ringW + 20;
-  const targetXRight = (screenW / 2) - 20;
+  // Floating viewport resting Y position: stationed at eye-level on away-sides right from landing
+  const floatingScreenY = screenH * 0.42;
 
-  const deltaLeft = targetXLeft - startXLeft;
-  const deltaRight = targetXRight - startXRight;
-
-  const ringStage = document.getElementById('ringSpotlightStage');
-  let targetOffsetY = 0;
-  if (ringStage) {
-    const stageRect = ringStage.getBoundingClientRect();
-    const initialRingY = screenH * 0.28;
-    const stageCenterY = stageRect.top + (stageRect.height / 2);
-    targetOffsetY = stageCenterY - initialRingY;
+  // Dedicated Rings Lock Slot below the Scratch Card
+  const slotEl = document.getElementById('ringsLockSlot');
+  let slotRect = null;
+  if (slotEl) {
+    slotRect = slotEl.getBoundingClientRect();
   }
 
-  if (progress < 0.86) {
-    hasCollided = false;
-    lockedBadge.classList.remove('active');
+  let lockFactor = 0;
+  let ringScreenY = floatingScreenY;
+  let targetCenterX = screenW / 2;
 
-    const travelP = progress / 0.86;
-    const currentDxLeft = travelP * deltaLeft;
-    const currentDxRight = travelP * deltaRight;
+  if (slotRect) {
+    const slotCenterY = slotRect.top + slotRect.height / 2;
+    targetCenterX = slotRect.left + slotRect.width / 2;
+    const targetSlotY = slotCenterY - ringW / 2;
 
-    const floatYLeft = Math.sin(progress * Math.PI * 5) * 14;
-    const floatYRight = Math.cos(progress * Math.PI * 5) * 14;
+    // Trigger lock as the slot approaches the center of viewport
+    const lockTriggerY = screenH * 0.52;
+    const approachDistance = 280;
+    const diff = slotCenterY - lockTriggerY;
 
-    const rotL = progress * 360;
-    const rotR = -progress * 360;
-
-    ringLeft.style.transform = `translate3d(${currentDxLeft}px, ${floatYLeft}px, 0) rotate(${rotL}deg)`;
-    ringRight.style.transform = `translate3d(${currentDxRight}px, ${floatYRight}px, 0) rotate(${rotR}deg)`;
-
-  } else {
-    const lockProgress = Math.min(1, (progress - 0.86) / 0.14);
-    const easeLock = lockProgress * lockProgress * (3 - 2 * lockProgress);
-
-    const currentDxLeft = deltaLeft;
-    const currentDxRight = deltaRight;
-
-    const floatYLeft = Math.sin(0.86 * Math.PI * 5) * 14;
-    const floatYRight = Math.cos(0.86 * Math.PI * 5) * 14;
-
-    const currentDyLeft = floatYLeft * (1 - easeLock) + targetOffsetY * easeLock;
-    const currentDyRight = floatYRight * (1 - easeLock) + targetOffsetY * easeLock;
-
-    const rotL = 360 + easeLock * 20;
-    const rotR = -360 - easeLock * 20;
-
-    ringLeft.style.transform = `translate3d(${currentDxLeft}px, ${currentDyLeft}px, 0) rotate(${rotL}deg)`;
-    ringRight.style.transform = `translate3d(${currentDxRight}px, ${currentDyRight}px, 0) rotate(${rotR}deg)`;
-
-    if (progress >= 0.93) {
-      if (!hasCollided) {
-        hasCollided = true;
-        const ringStageRect = ringStage.getBoundingClientRect();
-        triggerSparkleBurst(screenW / 2, ringStageRect.top + ringStageRect.height / 2);
-        if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
-      }
-      lockedBadge.classList.add('active');
+    if (diff <= 0) {
+      // Scrolled to or past the slot: FULLY LOCKED & STABLE!
+      // Rings remain locked and anchored in the slot below the scratch card, scrolling naturally with the page
+      lockFactor = 1.0;
+      ringScreenY = targetSlotY;
+    } else if (diff < approachDistance) {
+      // Smoothly gliding into the lock below the scratch card
+      const t = 1 - (diff / approachDistance);
+      lockFactor = t * t * (3 - 2 * t);
+      ringScreenY = floatingScreenY + (targetSlotY - floatingScreenY) * lockFactor;
     } else {
-      hasCollided = false;
-      lockedBadge.classList.remove('active');
+      // Above the lock zone: freely floating on sides
+      lockFactor = 0;
+      ringScreenY = floatingScreenY;
     }
+  }
+
+  // Interlocked target positions in the center slot:
+  // Offset tuned to match the ~44% intertwine ratio of Image 2
+  const interlockOffset = ringW * 0.22;
+  const targetXLeft = targetCenterX - ringW / 2 - interlockOffset;
+  const targetXRight = targetCenterX - ringW / 2 + interlockOffset;
+
+  // Exact X positions (interpolating between away sides and center lock)
+  const currentXLeft = sideMarginLeft + (targetXLeft - sideMarginLeft) * lockFactor;
+  const currentXRight = sideMarginRight + (targetXRight - sideMarginRight) * lockFactor;
+
+  // Velocity damping when user is not actively scrolling
+  if (!isScrolling) {
+    scrollVelocity *= 0.76;
+  }
+  smoothVelocity += (scrollVelocity - smoothVelocity) * 0.22;
+  if (Math.abs(smoothVelocity) < 0.015) {
+    smoothVelocity = 0;
+  }
+
+  // DYNAMIC MOTION ONLY WHILE SCROLLING:
+  // When stable (stationary), smoothVelocity = 0, so wave offsets & dynamic tilts are 0!
+  const waveDamp = (1 - lockFactor * 0.85);
+  const velFactor = smoothVelocity / 18; // normalized factor
+
+  // Wave buoyancy & sway: zero when stationary, active during scrolling
+  const waveY_L = (Math.sin(scrollPos * 0.018) * 14 * velFactor) * waveDamp;
+  const waveY_R = (Math.sin(scrollPos * 0.018 + 2.5) * 14 * velFactor) * waveDamp;
+  const waveX_L = (Math.cos(scrollPos * 0.014) * 8 * velFactor) * waveDamp;
+  const waveX_R = (-Math.cos(scrollPos * 0.014) * 8 * velFactor) * waveDamp;
+
+  // 3D Perspective Tilts:
+  // Stable resting angles:
+  // Left: rotateX(8deg) rotateY(18deg) rotateZ(-6deg)
+  // Right: rotateX(8deg) rotateY(-18deg) rotateZ(6deg)
+  // Locked angles: lean in and interlace facing each other
+  const scrollTiltX = smoothVelocity * 0.55;
+  const scrollTiltY = Math.sin(scrollPos * 0.01) * 22 * velFactor;
+  const scrollTiltZ = smoothVelocity * 0.25;
+
+  const tiltX_L = (8 + scrollTiltX) * waveDamp;
+  const tiltX_R = (8 + scrollTiltX) * waveDamp;
+
+  const tiltY_L = (18 + scrollTiltY) * (1 - lockFactor) + (lockFactor * 22);
+  const tiltY_R = (-18 - scrollTiltY) * (1 - lockFactor) - (lockFactor * 22);
+
+  const tiltZ_L = (-6 + scrollTiltZ) * (1 - lockFactor) - (lockFactor * 6);
+  const tiltZ_R = (6 - scrollTiltZ) * (1 - lockFactor) + (lockFactor * 6);
+
+  if (ringLeft) {
+    ringLeft.style.transform = `translate3d(${currentXLeft + waveX_L}px, ${ringScreenY + waveY_L}px, 0) perspective(1000px) rotateX(${tiltX_L}deg) rotateY(${tiltY_L}deg) rotateZ(${tiltZ_L}deg)`;
+  }
+  if (ringRight) {
+    ringRight.style.transform = `translate3d(${currentXRight + waveX_R}px, ${ringScreenY + waveY_R}px, 0) perspective(1000px) rotateX(${tiltX_R}deg) rotateY(${tiltY_R}deg) rotateZ(${tiltZ_R}deg)`;
+  }
+
+  // Interlocked 3D weave: men's lower band passing in front of women's lower band
+  if (ringInterlockWeave) {
+    ringInterlockWeave.style.transform = ringLeft ? ringLeft.style.transform : '';
+    ringInterlockWeave.style.opacity = Math.max(0, (lockFactor - 0.65) / 0.35);
+  }
+
+
+
+  // Union Celebration Badge & Multi-Stage Confetti Pop
+  if (lockFactor >= 0.95) {
+    if (!scratchHasLocked) {
+      scratchHasLocked = true;
+      triggerMultiStagePop(targetCenterX, ringScreenY + ringW / 2);
+    }
+    if (lockedBadge) {
+      if (lockedBadgeText) lockedBadgeText.textContent = "✦ VINEETH & SOFIYA DAS • TWO BECOME ONE ✦";
+      lockedBadge.style.top = (ringScreenY + ringW + 16) + 'px';
+      lockedBadge.style.left = targetCenterX + 'px';
+      lockedBadge.classList.add('active');
+    }
+  } else if (lockFactor < 0.6) {
+    scratchHasLocked = false;
+    if (lockedBadge) lockedBadge.classList.remove('active');
+  }
+
+  // Continue animation if actively scrolling or velocity has not settled to 0
+  if (isScrolling || Math.abs(smoothVelocity) > 0.02) {
+    ringAnimLoopId = requestAnimationFrame(updateRingsPhysics);
+  } else {
+    // When stable, stop the animation loop completely so the rings rest still!
+    ringAnimLoopId = null;
   }
 }
 
-window.addEventListener('scroll', handleScrollRings, { passive: true });
-window.addEventListener('resize', handleScrollRings);
-handleScrollRings();
+function handleRingScroll() {
+  const now = performance.now();
+  const dt = Math.max(1, now - lastScrollTime);
+  const currentScrollY = window.scrollY;
+  const rawVelocity = ((currentScrollY - lastScrollY) / dt) * 16;
+
+  scrollVelocity = Math.max(-28, Math.min(28, rawVelocity));
+  lastScrollY = currentScrollY;
+  lastScrollTime = now;
+  isScrolling = true;
+
+  if (scrollTimeout) clearTimeout(scrollTimeout);
+  scrollTimeout = setTimeout(() => {
+    isScrolling = false;
+  }, 100);
+
+  if (!ringAnimLoopId) {
+    ringAnimLoopId = requestAnimationFrame(updateRingsPhysics);
+  }
+}
+
+window.addEventListener('scroll', handleRingScroll, { passive: true });
+window.addEventListener('resize', () => {
+  if (!ringAnimLoopId) ringAnimLoopId = requestAnimationFrame(updateRingsPhysics);
+});
+
+// Render initial stable position once on page load
+updateRingsPhysics();
 
 /* -------------------------------------------------------------
-   CALENDAR INTEGRATION
+   INTERACTIVE 360° LUXURY RING SHOWCASE LIGHTBOX
+   ------------------------------------------------------------- */
+const ringModal = document.getElementById('ringModal');
+const ringModalBackdrop = document.getElementById('ringModalBackdrop');
+const ringModalClose = document.getElementById('ringModalClose');
+const ringModalTitle = document.getElementById('ringModalTitle');
+const ringModalSubtitle = document.getElementById('ringModalSubtitle');
+const turntableImg = document.getElementById('turntableImg');
+const turntableStage = document.getElementById('turntableStage');
+const turntableAutoBtn = document.getElementById('turntableAutoBtn');
+const turntableResetBtn = document.getElementById('turntableResetBtn');
+const autoBtnIcon = document.getElementById('autoBtnIcon');
+const ringSpecsGrid = document.getElementById('ringSpecsGrid');
+
+let currentModalRing = 'men';
+let turntableAngle = 0;
+let isDraggingTurntable = false;
+let startDragX = 0;
+let startAngle = 0;
+let isAutoSpinning = true;
+let autoSpinTimer = null;
+
+const TOTAL_MEN_FRAMES = 24;
+const menFrames = [];
+for (let i = 1; i <= TOTAL_MEN_FRAMES; i++) {
+  const pad = String(i).padStart(2, '0');
+  menFrames.push(`assets/turntable_men_clean/frame_${pad}.png`);
+}
+
+const RING_DATA = {
+  men: {
+    title: "Vineeth's Quantum Glide Diamond Ring",
+    subtitle: "Two-Tone Solid Gold & Diamond Band (Jewelbox India)",
+    baseImg: "assets/ring-left-3d.png?v=5",
+    hasTurntableFrames: true,
+    specs: [
+      { label: "Precious Metal", val: "14K / 18K Solid Two-Tone Yellow & White Gold" },
+      { label: "Diamonds", val: "3 Natural Round Brilliant Diamonds (SI-GH)" },
+      { label: "Setting", val: "Precision Flush Architectural Channel" },
+      { label: "Heritage", val: "Quantum Glide Collection · Jewelbox India" }
+    ]
+  },
+  women: {
+    title: "Sofiya Das's Solitaire Diamond Ring",
+    subtitle: "Lab-Grown Solitaire with Cathedral Channel Pillars (Dholakiya Gems)",
+    baseImg: "assets/ring-right-3d.png?v=6",
+    hasTurntableFrames: false,
+    specs: [
+      { label: "Precious Metal", val: "Solid 14K / 18K Rose Gold (Dholakiya Gems)" },
+      { label: "Center Stone", val: "1 to 4 Carat Round Brilliant Ideal Cut" },
+      { label: "Clarity & Color", val: "D Colorless · VVS1 Ultra-High Clarity" },
+      { label: "Setting Style", val: "Modern Elevated Cathedral Channel Pillars" },
+      { label: "Collection", val: "Dholakiya Gems Solitaire Collection" }
+    ]
+  }
+};
+
+function renderTurntableAngle(deg) {
+  turntableAngle = (deg % 360 + 360) % 360;
+
+  if (currentModalRing === 'men') {
+    // Exact 24-frame 360 turntable
+    const frameIndex = Math.floor((turntableAngle / 360) * TOTAL_MEN_FRAMES);
+    const safeIndex = Math.min(TOTAL_MEN_FRAMES - 1, Math.max(0, frameIndex));
+    turntableImg.src = menFrames[safeIndex];
+    turntableImg.style.transform = `perspective(800px) rotateY(${((turntableAngle % 15) - 7.5)}deg)`;
+  } else {
+    // 3D perspective rotation with realistic foreshortening
+    const tiltPitch = Math.sin(turntableAngle * (Math.PI / 180) * 2) * 10;
+    turntableImg.src = RING_DATA.women.baseImg;
+    turntableImg.style.transform = `perspective(900px) rotateY(${turntableAngle}deg) rotateX(${tiltPitch}deg)`;
+  }
+}
+
+function startAutoSpin() {
+  if (autoSpinTimer) clearInterval(autoSpinTimer);
+  isAutoSpinning = true;
+  if (turntableAutoBtn) turntableAutoBtn.classList.add('active');
+  if (autoBtnIcon) autoBtnIcon.textContent = '⏸';
+
+  autoSpinTimer = setInterval(() => {
+    turntableAngle = (turntableAngle + 1.2) % 360;
+    renderTurntableAngle(turntableAngle);
+  }, 32);
+}
+
+function stopAutoSpin() {
+  if (autoSpinTimer) {
+    clearInterval(autoSpinTimer);
+    autoSpinTimer = null;
+  }
+  isAutoSpinning = false;
+  if (turntableAutoBtn) turntableAutoBtn.classList.remove('active');
+  if (autoBtnIcon) autoBtnIcon.textContent = '▶';
+}
+
+function openRingModal(type) {
+  currentModalRing = type;
+  const data = RING_DATA[type] || RING_DATA.men;
+
+  if (ringModalTitle) ringModalTitle.textContent = data.title;
+  if (ringModalSubtitle) ringModalSubtitle.textContent = data.subtitle;
+
+  if (ringSpecsGrid) {
+    ringSpecsGrid.innerHTML = data.specs.map(s => `
+      <div class="ring-spec-card">
+        <div class="spec-label">${s.label}</div>
+        <div class="spec-val">${s.val}</div>
+      </div>
+    `).join('');
+  }
+
+  turntableAngle = 0;
+  renderTurntableAngle(0);
+  if (ringModal) ringModal.classList.add('active');
+  startAutoSpin();
+}
+
+function closeRingModal() {
+  if (ringModal) ringModal.classList.remove('active');
+  stopAutoSpin();
+}
+
+if (ringLeft) {
+  ringLeft.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openRingModal('men');
+  });
+}
+
+if (ringRight) {
+  ringRight.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openRingModal('women');
+  });
+}
+
+if (ringModalClose) ringModalClose.addEventListener('click', closeRingModal);
+if (ringModalBackdrop) ringModalBackdrop.addEventListener('click', closeRingModal);
+
+if (turntableAutoBtn) {
+  turntableAutoBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (isAutoSpinning) {
+      stopAutoSpin();
+    } else {
+      startAutoSpin();
+    }
+  });
+}
+
+if (turntableResetBtn) {
+  turntableResetBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    turntableAngle = 0;
+    renderTurntableAngle(0);
+  });
+}
+
+// Drag & Swipe rotation on 360 stage
+if (turntableStage) {
+  function onPointerDown(clientX) {
+    isDraggingTurntable = true;
+    startDragX = clientX;
+    startAngle = turntableAngle;
+    stopAutoSpin();
+  }
+
+  function onPointerMove(clientX) {
+    if (!isDraggingTurntable) return;
+    const deltaX = clientX - startDragX;
+    // 1px drag = 0.9 degrees of rotation
+    const newAngle = startAngle + deltaX * 0.9;
+    renderTurntableAngle(newAngle);
+  }
+
+  function onPointerUp() {
+    isDraggingTurntable = false;
+  }
+
+  turntableStage.addEventListener('mousedown', (e) => { onPointerDown(e.clientX); });
+  window.addEventListener('mousemove', (e) => { onPointerMove(e.clientX); });
+  window.addEventListener('mouseup', onPointerUp);
+
+  turntableStage.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches[0]) onPointerDown(e.touches[0].clientX);
+  }, { passive: true });
+  window.addEventListener('touchmove', (e) => {
+    if (e.touches && e.touches[0]) onPointerMove(e.touches[0].clientX);
+  }, { passive: true });
+  window.addEventListener('touchend', onPointerUp);
+}
+
+/* -------------------------------------------------------------
+   CALENDAR & QUICK SHARE INTEGRATION
    ------------------------------------------------------------- */
 document.getElementById('addToCalBtn').addEventListener('click', () => {
-  const calUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text=Vineeth+%26+Sofiya+Engagement+Ceremony&dates=20261113T063000Z/20261113T103000Z&details=Engagement+Ring+Exchange+%26+Celebration&location=Vettukad+Auditorium%2C+Trivandrum";
+  const calUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text=Vineeth+%26+Sofiya+Das+Engagement+Ceremony&dates=20261113T063000Z/20261113T103000Z&details=Engagement+Ring+Exchange+%26+Celebration&location=Little+Flower+Parish+Hall%2C+Kazhakkoottam%2C+Trivandrum";
   window.open(calUrl, '_blank');
 });
+
+// Quick Share button (Direct WhatsApp + Clipboard fallback - 100% safe across file:// and web)
+const shareBtn = document.getElementById('shareBtn');
+const shareToast = document.getElementById('shareToast');
+
+function triggerShareToast(message) {
+  if (!shareToast) return;
+  shareToast.textContent = message;
+  shareToast.classList.add('show');
+  setTimeout(() => {
+    shareToast.classList.remove('show');
+  }, 3200);
+}
+
+if (shareBtn) {
+  shareBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+
+    // Check if running on web (http/https) or local file
+    const isWeb = window.location.protocol.startsWith('http');
+    const invitationLink = isWeb ? window.location.href : "";
+
+    const shareMessage = 
+      "💍 *Engagement Ceremony Invitation* 💍\n\n" +
+      "*Vineeth Rajendran & Sofiya Das*\n\n" +
+      "📅 *Date:* Friday, 13 November 2026\n" +
+      "⏰ *Time:* Starts at 12:00 PM\n" +
+      "⛪ *Venue:* Little Flower Parish Hall, Trivandrum\n" +
+      "📍 *Location Map:* https://www.google.com/maps/place/Little+Flower,+Saint+Therese+of+Lisieux+Roman+Catholic+Latin+Church/@8.5427005,76.8926937,17z/\n\n" +
+      (invitationLink ? "✨ *View Wedding Invitation:* " + invitationLink : "With warm blessings & prayers!");
+
+    // Safely copy invitation text to clipboard
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareMessage).catch(() => {});
+      }
+    } catch (clipErr) {}
+
+    // Show toast notification
+    triggerShareToast("💍 Opening WhatsApp with invitation...");
+
+    // Direct WhatsApp share URL (Works on both mobile WhatsApp app & desktop WhatsApp Web)
+    const waUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(shareMessage);
+
+    // Open WhatsApp in a new tab/window
+    window.open(waUrl, '_blank');
+  });
+}
+
+/* -------------------------------------------------------------
+   OUR ENGAGEMENT STORY: 3D COVERFLOW IMAGE SLIDER
+   - Center slide in ultra-crisp focus with glowing gold border
+   - Previous and next images are blurred & faded (depth of field)
+   - Stylish previous / next glassmorphic arrows at ends
+   - 5-Second auto-play timeout with animated timer bar
+   - Moves and parallax-drifts dynamically while scrolling
+   - Mouse wheel and touch/swipe navigation supported
+   ------------------------------------------------------------- */
+const storySliderContainer = document.getElementById('storySliderContainer');
+const storySliderTrack = document.getElementById('storySliderTrack');
+const storySlides = document.querySelectorAll('.story-slide');
+const sliderPrevBtn = document.getElementById('sliderPrevBtn');
+const sliderNextBtn = document.getElementById('sliderNextBtn');
+const sliderDots = document.querySelectorAll('.slider-dot');
+const sliderTimerFill = document.getElementById('sliderTimerFill');
+const gallerySection = document.getElementById('gallerySection');
+
+let currentSlideIdx = 0;
+const totalSlides = storySlides.length;
+let autoPlayInterval = null;
+let isSliderHovered = false;
+const SLIDE_DURATION = 5000;
+
+function updateStorySlider(newIndex) {
+  currentSlideIdx = (newIndex + totalSlides) % totalSlides;
+
+  storySlides.forEach((slide, i) => {
+    slide.classList.remove('active', 'prev', 'next', 'hidden-left', 'hidden-right');
+
+    let diff = i - currentSlideIdx;
+    if (diff > Math.floor(totalSlides / 2)) diff -= totalSlides;
+    if (diff < -Math.floor(totalSlides / 2)) diff += totalSlides;
+
+    if (diff === 0) {
+      slide.classList.add('active');
+    } else if (diff === -1) {
+      slide.classList.add('prev');
+    } else if (diff === 1) {
+      slide.classList.add('next');
+    } else if (diff < -1) {
+      slide.classList.add('hidden-left');
+    } else {
+      slide.classList.add('hidden-right');
+    }
+  });
+
+  // Update dots
+  sliderDots.forEach((dot, idx) => {
+    const isActive = idx === currentSlideIdx;
+    dot.classList.toggle('active', isActive);
+    dot.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
+
+  restartSliderTimer();
+}
+
+function nextSlide() {
+  updateStorySlider(currentSlideIdx + 1);
+}
+
+function prevSlide() {
+  updateStorySlider(currentSlideIdx - 1);
+}
+
+// 5-Second Timer Bar & Auto-Advance
+function restartSliderTimer() {
+  if (autoPlayInterval) clearInterval(autoPlayInterval);
+
+  if (sliderTimerFill) {
+    sliderTimerFill.style.transition = 'none';
+    sliderTimerFill.style.width = '0%';
+    void sliderTimerFill.offsetWidth; // Force DOM reflow
+    if (!isSliderHovered) {
+      sliderTimerFill.style.transition = `width ${SLIDE_DURATION}ms linear`;
+      sliderTimerFill.style.width = '100%';
+    }
+  }
+
+  if (!isSliderHovered) {
+    autoPlayInterval = setInterval(() => {
+      nextSlide();
+    }, SLIDE_DURATION);
+  }
+}
+
+// Controls: Arrows
+if (sliderPrevBtn) {
+  sliderPrevBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    prevSlide();
+  });
+}
+
+if (sliderNextBtn) {
+  sliderNextBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    nextSlide();
+  });
+}
+
+// Controls: Click on slide
+storySlides.forEach((slide) => {
+  slide.addEventListener('click', () => {
+    const idx = parseInt(slide.getAttribute('data-index'), 10);
+    if (!isNaN(idx) && idx !== currentSlideIdx) {
+      updateStorySlider(idx);
+    }
+  });
+});
+
+// Controls: Pagination Dots
+sliderDots.forEach((dot) => {
+  dot.addEventListener('click', () => {
+    const idx = parseInt(dot.getAttribute('data-index'), 10);
+    if (!isNaN(idx)) {
+      updateStorySlider(idx);
+    }
+  });
+});
+
+// Hover pause
+if (storySliderContainer) {
+  storySliderContainer.addEventListener('mouseenter', () => {
+    isSliderHovered = true;
+    if (autoPlayInterval) clearInterval(autoPlayInterval);
+    if (sliderTimerFill) {
+      const computedW = window.getComputedStyle(sliderTimerFill).width;
+      sliderTimerFill.style.transition = 'none';
+      sliderTimerFill.style.width = computedW;
+    }
+  });
+
+  storySliderContainer.addEventListener('mouseleave', () => {
+    isSliderHovered = false;
+    restartSliderTimer();
+  });
+
+  // Mouse wheel slide changing when hovering container
+  let wheelThrottle = false;
+  storySliderContainer.addEventListener('wheel', (e) => {
+    if (Math.abs(e.deltaY) > 35 || Math.abs(e.deltaX) > 35) {
+      if (!wheelThrottle) {
+        wheelThrottle = true;
+        if (e.deltaY > 0 || e.deltaX > 0) {
+          nextSlide();
+        } else {
+          prevSlide();
+        }
+        setTimeout(() => { wheelThrottle = false; }, 420);
+      }
+    }
+  }, { passive: true });
+
+  // Touch / Drag Gestures
+  let touchStartX = 0;
+  let touchEndX = 0;
+  let isDragging = false;
+
+  storySliderContainer.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches[0]) {
+      touchStartX = e.touches[0].clientX;
+      isSliderHovered = true;
+    }
+  }, { passive: true });
+
+  storySliderContainer.addEventListener('touchend', (e) => {
+    if (e.changedTouches && e.changedTouches[0]) {
+      touchEndX = e.changedTouches[0].clientX;
+      const diff = touchEndX - touchStartX;
+      if (Math.abs(diff) > 40) {
+        if (diff > 0) prevSlide();
+        else nextSlide();
+      }
+    }
+    isSliderHovered = false;
+    restartSliderTimer();
+  }, { passive: true });
+
+  storySliderContainer.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    touchStartX = e.clientX;
+  });
+
+  window.addEventListener('mouseup', (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    touchEndX = e.clientX;
+    const diff = touchEndX - touchStartX;
+    if (Math.abs(diff) > 45) {
+      if (diff > 0) prevSlide();
+      else nextSlide();
+    }
+  });
+}
+
+// SCROLL-DRIVEN MOVEMENT:
+// Parallax drift & perspective tilt as the user scrolls through the gallery
+function handleSliderScrollParallax() {
+  if (!gallerySection || !storySliderTrack) return;
+  const rect = gallerySection.getBoundingClientRect();
+  const winH = window.innerHeight;
+
+  // Check if section is visible in viewport
+  if (rect.top < winH && rect.bottom > 0) {
+    const progress = (winH - rect.top) / (winH + rect.height);
+    // Smooth horizontal parallax drift as page scrolls
+    const driftX = (progress - 0.5) * -70;
+    const tiltDeg = (progress - 0.5) * -4;
+    storySliderTrack.style.transform = `translateX(${driftX}px) rotateZ(${tiltDeg}deg)`;
+  }
+}
+
+window.addEventListener('scroll', handleSliderScrollParallax, { passive: true });
+
+// Initialize slider state immediately
+updateStorySlider(0);
+

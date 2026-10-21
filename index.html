@@ -4,14 +4,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#070b12" />
+  <meta name="theme-color" content="#FAF2E6" />
   <meta name="description"
-    content="Vineeth Rajendran & Sofiya S — Engagement Ceremony Invitation • November 13, 2026" />
-  <meta property="og:title" content="Vineeth Rajendran & Sofiya S — Engagement Invitation" />
-  <meta property="og:description" content="Join us as we exchange rings on November 13, 2026 at Vettukad Auditorium." />
+    content="Vineeth Rajendran & Sofiya Das — Engagement Ceremony Invitation • November 13, 2026" />
+  <meta property="og:title" content="Vineeth Rajendran & Sofiya Das — Engagement Invitation" />
+  <meta property="og:description" content="Join us as we exchange rings on November 13, 2026 at Little Flower Parish Hall, Trivandrum." />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="assets/couple-1.jpg" />
-  <title>Vineeth & Sofiya — Engagement Invitation & Ring Ceremony</title>
+  <title>Vineeth & Sofiya Das — Engagement Invitation & Ring Ceremony</title>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,7 +21,7 @@
     rel="stylesheet">
 
   <!-- External Stylesheet -->
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=115" />
 </head>
 
 <body class="locked">
@@ -32,163 +32,201 @@
   <canvas id="collisionCanvas"></canvas>
   <div class="grain"></div>
 
-  <!-- Opening Envelope Cover Modal -->
+  <!-- 3D ROYAL ENVELOPE OPENING LANDING MODAL -->
   <div class="opening" id="openingModal">
-    <div class="cover-card">
+    <div class="envelope-wrapper">
+      <div class="envelope-box" id="envContainer">
+        
+        <!-- INNER SILK LINING / ENVELOPE INTERIOR -->
+        <div class="env-interior"></div>
 
-      <!-- Royal Gold Filigree Monogram Crest -->
-      <div class="cover-monogram-emblem">
-        <svg viewBox="0 0 140 140" width="85" height="85">
-          <defs>
-            <linearGradient id="goldEmblemGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#fff4c2" />
-              <stop offset="30%" stop-color="#e2b765" />
-              <stop offset="70%" stop-color="#b8862d" />
-              <stop offset="100%" stop-color="#f5d688" />
-            </linearGradient>
-          </defs>
-          <circle cx="70" cy="70" r="64" fill="none" stroke="url(#goldEmblemGrad)" stroke-width="1.5"
-            stroke-dasharray="4,2" />
-          <circle cx="70" cy="70" r="58" fill="none" stroke="url(#goldEmblemGrad)" stroke-width="1" />
-          <!-- Calligraphy V & S -->
-          <path d="M 48 50 L 60 84 L 72 50 M 66 56 C 82 50 88 66 74 74 C 60 82 80 96 86 82" fill="none"
-            stroke="url(#goldEmblemGrad)" stroke-width="2.5" stroke-linecap="round" />
-          <polygon points="70,26 72,32 78,34 72,36 70,42 68,36 62,34 68,32" fill="#f9e4b7" />
-        </svg>
-      </div>
+        <!-- INVITATION LETTER CARD INSIDE -->
+        <div class="letter-card" id="letterCard" role="button" tabindex="0" title="Click to enter invitation immediately">
+          <div class="card-inner-border"></div>
+          <div class="card-corner-filigree top-left">✦</div>
+          <div class="card-corner-filigree top-right">✦</div>
 
-      <div class="cover-eyebrow">Engagement Invitation</div>
-      <h1 class="cover-title gold-text">Vineeth & Sofiya</h1>
-      <div class="ornament-line"></div>
-      <div class="cover-date">13 · 11 · 2026</div>
+          <!-- COUPLE PORTRAIT THUMBNAIL SECTION -->
+          <div class="card-couple-thumb-frame">
+            <div class="card-photo-ring">
+              <img src="assets/couple-1.jpg?v=3" alt="Vineeth & Sofiya Das Portrait" class="card-photo-img" />
+            </div>
+          </div>
 
-      <!-- Interactive Opening Ring Lock Trigger -->
-      <div class="ring-unlock-wrapper" id="openInviteBtn" role="button"
-        aria-label="Tap engagement ring to unwrap invitation">
-        <div class="ring-unlock-btn">
-          <svg viewBox="0 0 100 100" width="45" height="45">
-            <ellipse cx="40" cy="50" rx="26" ry="26" fill="none" stroke="url(#goldEmblemGrad)" stroke-width="6" />
-            <ellipse cx="60" cy="50" rx="26" ry="26" fill="none" stroke="url(#goldEmblemGrad)" stroke-width="6" />
-            <polygon points="50,30 52,36 58,38 52,40 50,46 48,40 42,38 48,36" fill="#ffffff" />
-          </svg>
+          <div class="cover-monogram-emblem">
+            <svg viewBox="0 0 160 160" width="52" height="52">
+              <defs>
+                <linearGradient id="roseGoldCrest" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#FAF2E6" />
+                  <stop offset="30%" stop-color="#E5C170" />
+                  <stop offset="70%" stop-color="#B8860B" />
+                  <stop offset="100%" stop-color="#4A0E17" />
+                </linearGradient>
+                <radialGradient id="diyaGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#ffd54f" stop-opacity="1" />
+                  <stop offset="100%" stop-color="#ff9800" stop-opacity="0" />
+                </radialGradient>
+              </defs>
+              <circle cx="80" cy="80" r="74" fill="none" stroke="url(#roseGoldCrest)" stroke-width="1.5" stroke-dasharray="6,3" />
+              <circle cx="80" cy="80" r="68" fill="none" stroke="url(#roseGoldCrest)" stroke-width="1" />
+              <!-- Nilavilakku Diya -->
+              <g transform="translate(25, 45) scale(0.65)" class="diya-flame-anim">
+                <ellipse cx="25" cy="40" rx="18" ry="6" fill="url(#roseGoldCrest)" />
+                <path d="M 12 40 C 15 55 35 55 38 40 Z" fill="url(#roseGoldCrest)" />
+                <path d="M 25 10 C 18 25 22 34 25 34 C 28 34 32 25 25 10 Z" fill="#ffb74d" />
+                <circle cx="25" cy="22" r="6" fill="url(#diyaGlow)" />
+              </g>
+              <!-- Grace Cross & Dove -->
+              <g transform="translate(100, 45) scale(0.65)" class="dove-cross-anim">
+                <path d="M 25 10 L 25 45 M 15 22 L 35 22" fill="none" stroke="url(#roseGoldCrest)" stroke-width="3" stroke-linecap="round" />
+                <path d="M 10 18 C 18 8 32 8 40 18 C 30 22 20 22 10 18 Z" fill="url(#roseGoldCrest)" opacity="0.85" />
+              </g>
+              <!-- Monogram V & S -->
+              <path d="M 56 60 L 70 98 L 84 60 M 76 66 C 94 60 102 78 86 88 C 70 98 94 112 102 96" fill="none" stroke="url(#roseGoldCrest)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+
+          <div class="cover-eyebrow">🪔 SACRED INTERFAITH UNION 🕊️</div>
+          <h1 class="cover-title gold-text">Vineeth & Sofiya Das</h1>
+          <p class="cover-interfaith-tag">Two Faiths · Two Heritage Traditions · One Golden Family</p>
+          <div class="cover-date-badge">13 NOVEMBER 2026 · TRIVANDRUM</div>
+
+          <!-- 5-SECOND PROGRESS BADGE & TAP TO ENTER NOW -->
+          <div class="card-entering-badge" id="cardEnteringBadge">
+            <span class="entering-text">✦ ENTERING IN <b id="countdownSec">5</b>s (TAP TO ENTER) ✦</span>
+            <div class="entering-progress-bar"><div class="entering-progress-fill" id="progressFill"></div></div>
+          </div>
         </div>
-        <div class="ring-unlock-hint">✦ TAP RING TO UNWRAP ✦</div>
+
+        <!-- ENVELOPE FRONT POCKET & SIDE FLAPS -->
+        <div class="env-front-fold"></div>
+
+        <!-- 3D TOP FLAP THAT OPENS -->
+        <div class="env-top-flap" id="envTopFlap">
+          <div class="flap-border-gold"></div>
+        </div>
+
+        <!-- SLEEK THIN LUXURY RIBBON AROUND ENVELOPE WITH CENTER WAX COIN NODE -->
+        <div class="envelope-ribbon-bar" id="envelopeRibbon">
+          <div class="ribbon-band ribbon-left" id="ribbonLeft">
+            <div class="ribbon-cut-edge"></div>
+          </div>
+          <div class="ribbon-band ribbon-right" id="ribbonRight">
+            <div class="ribbon-cut-edge"></div>
+          </div>
+        </div>
+
+        <!-- GOLDEN WAX SEAL BUTTON & ACTION BADGE -->
+        <div class="wax-seal-wrapper" id="openInviteBtn" role="button" tabindex="0" aria-label="Tap Wax Seal to open invitation">
+          <div class="wax-seal-btn" id="waxSeal">
+            <svg viewBox="0 0 100 100" width="56" height="56">
+              <defs>
+                <linearGradient id="waxGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#fff2b2" />
+                  <stop offset="35%" stop-color="#e6b800" />
+                  <stop offset="75%" stop-color="#b38600" />
+                  <stop offset="100%" stop-color="#735300" />
+                </linearGradient>
+              </defs>
+              <circle cx="50" cy="50" r="46" fill="url(#waxGoldGrad)" stroke="#ffffff" stroke-width="2.5" />
+              <circle cx="50" cy="50" r="39" fill="none" stroke="#fff5cc" stroke-width="1.5" stroke-dasharray="5,2" />
+              <ellipse cx="43" cy="48" rx="14" ry="14" fill="none" stroke="#ffffff" stroke-width="2.5" />
+              <ellipse cx="57" cy="48" rx="14" ry="14" fill="none" stroke="#ffffff" stroke-width="2.5" />
+              <polygon points="50,34 52,38 56,40 52,42 50,46 48,42 44,40 48,38" fill="#ffffff" />
+            </svg>
+            <div class="seal-glow-ring"></div>
+          </div>
+          <div class="seal-action-hint">✦ TAP WAX SEAL TO OPEN INVITATION ✦</div>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <!-- Music Player Toggle -->
-  <button class="music-toggle" id="musicBtn" aria-label="Toggle romantic music">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M9 18V5l12-2v13"></path>
-      <circle cx="6" cy="18" r="3"></circle>
-      <circle cx="18" cy="16" r="3"></circle>
-    </svg>
-  </button>
+  <!-- FLOATING QUICK ACTION BUTTONS (SHARE & MUSIC TOGGLE) -->
+  <div class="floating-actions-container" id="floatingActions">
+    <div class="share-toast" id="shareToast">💍 Opening WhatsApp...</div>
+    <button class="action-btn share-toggle" id="shareBtn" aria-label="Share Wedding Invitation" title="Share Invitation on WhatsApp">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92c0-1.61-1.31-2.92-2.92-2.92z"/>
+      </svg>
+    </button>
+    <button class="action-btn music-toggle" id="musicBtn" aria-label="Toggle romantic music" title="Click to mute or play background music">
+      <span class="music-icon" id="musicIcon">🎵</span>
+    </button>
+  </div>
   <audio id="bgMusic" loop preload="auto">
     <source src="assets/engagement.mp3" type="audio/mpeg">
-    <source src="assets/wedding-music.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- FLOATING GLASSMORPHIC BOTTOM NAVIGATION BAR -->
-  <nav class="bottom-nav-bar" id="bottomNavBar" aria-label="Invitation Navigation">
-    <a href="#heroSection" class="bottom-nav-item active"><span class="nav-icon">🏠</span>Home</a>
-    <a href="#harmonySection" class="bottom-nav-item"><span class="nav-icon">🕊️</span>Faiths</a>
-    <a href="#gallerySection" class="bottom-nav-item"><span class="nav-icon">📸</span>Story</a>
-    <a href="#venueSection" class="bottom-nav-item"><span class="nav-icon">📍</span>Venue</a>
-    <a href="#closingSection" class="bottom-nav-item"><span class="nav-icon">💍</span>Rings</a>
-  </nav>
+  <!-- -------------------------------------------------------------
+       PHOTOREALISTIC 3D ENGAGEMENT RINGS (VINEETH & SOFIYA)
+       ------------------------------------------------------------- -->
+  <div class="rings-wrapper" id="ringsWrapper" aria-hidden="true">
+    <!-- Left Ring: Vineeth's Quantum Glide Diamond Ring for Men -->
+    <div class="classic-ring ring-left" id="ringLeft" role="button" tabindex="0" title="Click to view Vineeth's Ring in 360°">
+      <div class="ring-img-container">
+        <img src="assets/ring-left-3d.png?v=6" alt="Vineeth's Quantum Glide Diamond Ring (3D)" class="ring-photo-3d" id="ringLeftImg" />
+        <div class="ring-sparkle-fx"></div>
+      </div>
+    </div>
+
+    <!-- Right Ring: Sofiya Das's Lab Grown Diamond Solitaire Ring -->
+    <div class="classic-ring ring-right" id="ringRight" role="button" tabindex="0" title="Click to view Sofiya Das's Ring in 360°">
+      <div class="ring-img-container">
+        <img src="assets/ring-right-3d.png?v=6" alt="Sofiya Das's Solitaire Diamond Ring (3D)" class="ring-photo-3d" id="ringRightImg" />
+        <div class="ring-sparkle-fx"></div>
+      </div>
+    </div>
+
+    <!-- Interlocked 3D Weave: Men's lower band passing in front of Women's lower band -->
+    <div class="classic-ring ring-interlock-weave" id="ringInterlockWeave" aria-hidden="true">
+      <div class="ring-img-container">
+        <img src="assets/ring-left-3d.png?v=6" alt="" class="ring-photo-3d" />
+      </div>
+    </div>
+
+    <!-- Locked Position Badge (Active only when coincided & locked) -->
+    <div class="locked-badge" id="lockedBadge">
+      <span id="lockedBadgeText">✦ VINEETH & SOFIYA DAS • TWO BECOME ONE ✦</span>
+    </div>
+  </div>
 
   <!-- -------------------------------------------------------------
-       CLASSIC ROUND GOLD RINGS WITH TRANSPARENT HOLE (VINEETH & SOFIYA)
+       INTERACTIVE 360° LUXURY RING SHOWCASE LIGHTBOX MODAL
        ------------------------------------------------------------- -->
-  <div class="rings-wrapper" aria-hidden="true">
-    <!-- Left Ring: Vineeth -->
-    <div class="classic-ring ring-left" id="ringLeft">
-      <svg viewBox="0 0 180 180" width="100%" height="100%">
-        <defs>
-          <linearGradient id="goldRingLeft" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#fff4c2" />
-            <stop offset="25%" stop-color="#e2b765" />
-            <stop offset="50%" stop-color="#8a5b14" />
-            <stop offset="75%" stop-color="#f5d688" />
-            <stop offset="100%" stop-color="#ab771c" />
-          </linearGradient>
-          <filter id="glowL" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-        </defs>
+  <div class="ring-modal" id="ringModal" role="dialog" aria-modal="true" aria-label="360 Ring Showcase">
+    <div class="ring-modal-backdrop" id="ringModalBackdrop"></div>
+    <div class="ring-modal-content">
+      <button class="ring-modal-close" id="ringModalClose" aria-label="Close 360 viewer">&times;</button>
+      <div class="ring-modal-header">
+        <span class="ring-modal-kicker">✦ SACRED ENGAGEMENT RING · 360° SHOWCASE ✦</span>
+        <h3 class="ring-modal-title" id="ringModalTitle">Vineeth's Quantum Glide Diamond Ring</h3>
+        <p class="ring-modal-subtitle" id="ringModalSubtitle">Two-Tone Solid Gold & Diamond Band</p>
+      </div>
 
-        <!-- Shadow -->
-        <circle cx="90" cy="90" r="70" fill="none" stroke="rgba(0,0,0,0.6)" stroke-width="18" filter="blur(8px)" />
+      <div class="ring-turntable-stage" id="turntableStage">
+        <div class="turntable-canvas-wrapper" id="turntableWrapper">
+          <img id="turntableImg" src="assets/ring-left-3d.png?v=5" alt="360 Ring View" class="turntable-img" draggable="false" />
+          <div class="turntable-sparkle-fx"></div>
+        </div>
+        <div class="turntable-hint">
+          <span class="hint-icon">↔</span> Drag or swipe horizontally to spin 360°
+        </div>
+      </div>
 
-        <!-- Classic Smooth Round Ring Band -->
-        <circle cx="90" cy="90" r="68" fill="none" stroke="url(#goldRingLeft)" stroke-width="20" filter="url(#glowL)" />
-        <circle cx="90" cy="90" r="77" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2" />
-        <circle cx="90" cy="90" r="59" fill="none" stroke="rgba(255,235,170,0.6)" stroke-width="2" />
+      <div class="turntable-controls">
+        <button class="turntable-btn active" id="turntableAutoBtn">
+          <span id="autoBtnIcon">⏸</span> Auto Spin 360°
+        </button>
+        <button class="turntable-btn" id="turntableResetBtn">
+          ↺ Reset Angle
+        </button>
+      </div>
 
-        <!-- 100% TRANSPARENT INTERIOR HOLE (NO BLACK BACKGROUND) -->
-        <circle cx="90" cy="90" r="57" fill="none" />
-
-        <!-- Engraved Name: VINEETH -->
-        <path id="arcLeft" d="M 32,90 A 58,58 0 1,1 148,90" fill="none" />
-        <text font-family="'Montserrat', sans-serif" font-weight="800" font-size="15" fill="#ffffff"
-          letter-spacing="3.5" text-anchor="middle">
-          <textPath href="#arcLeft" startOffset="50%">VINEETH</textPath>
-        </text>
-
-        <!-- Metallic Sparkle Glint -->
-        <circle cx="48" cy="48" r="3" fill="#ffffff" />
-        <polygon points="48,38 50,45 57,47 50,49 48,56 46,49 39,47 46,45" fill="#ffffff" />
-      </svg>
-    </div>
-
-    <!-- Right Ring: Sofiya -->
-    <div class="classic-ring ring-right" id="ringRight">
-      <svg viewBox="0 0 180 180" width="100%" height="100%">
-        <defs>
-          <linearGradient id="goldRingRight" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stop-color="#fff8d6" />
-            <stop offset="25%" stop-color="#f5ce82" />
-            <stop offset="50%" stop-color="#996719" />
-            <stop offset="75%" stop-color="#fde4a3" />
-            <stop offset="100%" stop-color="#b8862d" />
-          </linearGradient>
-          <filter id="glowR" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-        </defs>
-
-        <!-- Shadow -->
-        <circle cx="90" cy="90" r="70" fill="none" stroke="rgba(0,0,0,0.6)" stroke-width="18" filter="blur(8px)" />
-
-        <!-- Classic Smooth Round Ring Band -->
-        <circle cx="90" cy="90" r="68" fill="none" stroke="url(#goldRingRight)" stroke-width="20"
-          filter="url(#glowR)" />
-        <circle cx="90" cy="90" r="77" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2" />
-        <circle cx="90" cy="90" r="59" fill="none" stroke="rgba(255,235,170,0.6)" stroke-width="2" />
-
-        <!-- 100% TRANSPARENT INTERIOR HOLE (NO BLACK BACKGROUND) -->
-        <circle cx="90" cy="90" r="57" fill="none" />
-
-        <!-- Engraved Name: SOFIYA -->
-        <path id="arcRight" d="M 32,90 A 58,58 0 1,1 148,90" fill="none" />
-        <text font-family="'Montserrat', sans-serif" font-weight="800" font-size="15" fill="#ffffff"
-          letter-spacing="3.5" text-anchor="middle">
-          <textPath href="#arcRight" startOffset="50%">SOFIYA</textPath>
-        </text>
-
-        <!-- Metallic Sparkle Glint -->
-        <circle cx="132" cy="48" r="3" fill="#ffffff" />
-        <polygon points="132,38 134,45 141,47 134,49 132,56 130,49 123,47 130,45" fill="#ffffff" />
-      </svg>
-    </div>
-
-    <!-- Locked Position Badge -->
-    <div class="locked-badge" id="lockedBadge">
-      <span>✦ VINEETH & SOFIYA • FOREVER ENGAGED ✦</span>
+      <div class="ring-specs-grid" id="ringSpecsGrid">
+        <!-- Dynamically populated based on ring -->
+      </div>
     </div>
   </div>
 
@@ -197,7 +235,7 @@
     <section class="hero" id="hero">
       <div class="container reveal">
         <div class="kicker">SAVE THE DATE FOR THE ENGAGEMENT OF</div>
-        <h1 class="hero-names">Vineeth <span class="hero-amp">&</span> Sofiya</h1>
+        <h1 class="hero-names">Vineeth <span class="hero-amp">&</span> Sofiya Das</h1>
         <div class="ornament-line"></div>
         <p class="hero-sub">Where two beautiful traditions meet. Together with their families, they joyfully announce
           their Engagement Ceremony and invite you to celebrate this golden union.</p>
@@ -215,7 +253,7 @@
           <div class="kicker">THE ENGAGEMENT CEREMONY</div>
           <div class="quote-text">“Two faiths, two traditions, united by divine love into one golden family.”</div>
           <p class="body-text">With the abundant blessings of our parents, elders, and the Almighty, we cordially invite
-            you to grace the Ring Ceremony of <b>Vineeth Rajendran & Sofiya S</b>. Your presence, love, and warm wishes
+            you to grace the Ring Ceremony of <b>Vineeth Rajendran & Sofiya Das</b>. Your presence, love, and warm wishes
             will make our interfaith celebration truly memorable.</p>
         </div>
       </div>
@@ -227,7 +265,7 @@
         <div class="kicker">TWO TRADITIONS · ONE DIVINE HARMONY</div>
         <h2 class="section-title gold-text">A Union of Faith & Culture</h2>
         <p style="color: var(--text-muted); max-width: 640px; margin: -10px auto 30px; line-height: 1.8;">
-          Celebrating the sacred blend of Vineeth's Hindu heritage and Sofiya's Christian faith — coming together in
+          Celebrating the sacred blend of Vineeth's Hindu heritage and Sofiya Das's Christian faith — coming together in
           harmony, mutual respect, and eternal love.
         </p>
 
@@ -249,7 +287,7 @@
           <div class="harmony-card">
             <div class="harmony-icon">🕊️</div>
             <h3>Grace & Faith</h3>
-            <div class="harmony-subtitle">Sofiya's Heritage (Christian)</div>
+            <div class="harmony-subtitle">Sofiya Das's Heritage (Christian)</div>
             <div class="harmony-quote">“Love is patient, love is kind... It always protects, always trusts, always
               hopes.” (1 Cor 13)</div>
             <p class="harmony-desc">
@@ -269,10 +307,15 @@
         <div class="scratch-wrapper" id="scratchWrapper">
           <div class="scratch-content">
             <div class="scratch-date">13 NOVEMBER 2026</div>
-            <div class="scratch-venue">Friday · 12:00 PM<br>Vettukad Auditorium, Trivandrum</div>
+            <div class="scratch-venue">Friday · 12:00 PM<br>Little Flower Parish Hall, Trivandrum</div>
           </div>
           <canvas id="scratchCanvas"></canvas>
           <div class="scratch-instruction" id="scratchInstruction">✦ SCRATCH HERE ✦</div>
+        </div>
+
+        <!-- Dedicated Sacred Rings Interlock Haven below scratch card -->
+        <div class="rings-lock-bay" id="ringsLockBay" aria-label="Sacred Engagement Rings Interlock Haven">
+          <div class="rings-lock-slot" id="ringsLockSlot"></div>
         </div>
       </div>
     </section>
@@ -295,24 +338,107 @@
       </div>
     </section>
 
-    <!-- 6. GALLERY SECTION (TRIPLE PORTRAIT GRID: ETHNIC, CHRISTIAN & RINGS) -->
-    <section id="gallerySection">
+    <!-- 6. A JOURNEY TOWARD FOREVER & LUXURY 3D IMAGE SLIDER SECTION -->
+    <section id="gallerySection" class="gallery-slider-section">
       <div class="container reveal">
-        <div class="kicker">MEMORIES & MOMENTS</div>
-        <h2 class="section-title gold-text">Our Engagement Story</h2>
-        <div class="gallery-grid-triple">
-          <div class="photo-frame">
-            <img src="assets/couple-1.jpg" alt="Vineeth & Sofiya Traditional Ethnic Portrait">
-            <div class="photo-caption">✨ Traditional Silk Attire</div>
+        <div class="kicker">MOMENTS OF LOVE & TOGETHERNESS</div>
+        <h2 class="section-title gold-text">A Journey Toward Forever</h2>
+        <p style="color: var(--text-dark); max-width: 640px; margin: -10px auto 35px; line-height: 1.8; opacity: 0.9;">
+          As we countdown to exchanging our sacred rings and uniting our paths, here are cherished glimpses of our beautiful journey together.
+        </p>
+
+        <!-- 3D PERSPECTIVE COVERFLOW SLIDER -->
+        <div class="story-slider-container" id="storySliderContainer" role="region" aria-label="A Journey Toward Forever Carousel">
+          <!-- Previous Button -->
+          <button class="slider-arrow slider-prev" id="sliderPrevBtn" aria-label="Previous Photo" title="Previous Photo">
+            <svg viewBox="0 0 24 24" width="22" height="22">
+              <path d="M 15 19 L 8 12 L 15 5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+          <!-- Slider Track -->
+          <div class="story-slider-track" id="storySliderTrack">
+            <!-- Slide 1 -->
+            <div class="story-slide" data-index="0" role="group" aria-label="Slide 1 of 5">
+              <div class="story-slide-frame">
+                <img src="assets/story-1.jpg" alt="Vineeth & Sofiya Das — Pure Togetherness" loading="lazy" />
+                <div class="story-slide-overlay">
+                  <span class="slide-tag">CHAPTER 01</span>
+                  <h3 class="slide-caption-title">Pure Togetherness</h3>
+                  <p class="slide-caption-desc">Two souls bound by destiny, stepping into forever with joy.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="story-slide" data-index="1" role="group" aria-label="Slide 2 of 5">
+              <div class="story-slide-frame">
+                <img src="assets/story-2.jpg" alt="Vineeth & Sofiya Das — Radiant Joy" loading="lazy" />
+                <div class="story-slide-overlay">
+                  <span class="slide-tag">CHAPTER 02</span>
+                  <h3 class="slide-caption-title">Radiant Joy</h3>
+                  <p class="slide-caption-desc">Laughter that lights up every quiet room we enter.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="story-slide" data-index="2" role="group" aria-label="Slide 3 of 5">
+              <div class="story-slide-frame">
+                <img src="assets/story-3.jpg" alt="Vineeth & Sofiya Das — Hand in Hand" loading="lazy" />
+                <div class="story-slide-overlay">
+                  <span class="slide-tag">CHAPTER 03</span>
+                  <h3 class="slide-caption-title">Hand in Hand</h3>
+                  <p class="slide-caption-desc">United in respect, guided by eternal faith and mutual love.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 4 -->
+            <div class="story-slide" data-index="3" role="group" aria-label="Slide 4 of 5">
+              <div class="story-slide-frame">
+                <img src="assets/story-4.jpg" alt="Vineeth & Sofiya Das — Golden Moments" loading="lazy" />
+                <div class="story-slide-overlay">
+                  <span class="slide-tag">CHAPTER 04</span>
+                  <h3 class="slide-caption-title">Golden Moments</h3>
+                  <p class="slide-caption-desc">Cherished smiles that tell a timeless story of affection.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 5 -->
+            <div class="story-slide" data-index="4" role="group" aria-label="Slide 5 of 5">
+              <div class="story-slide-frame">
+                <img src="assets/story-5.jpg" alt="Vineeth & Sofiya Das — A Golden Promise" loading="lazy" />
+                <div class="story-slide-overlay">
+                  <span class="slide-tag">CHAPTER 05</span>
+                  <h3 class="slide-caption-title">A Golden Promise</h3>
+                  <p class="slide-caption-desc">A lifetime of love, prayers, and harmonious blessings.</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="photo-frame">
-            <img src="assets/couple-christian.jpg" alt="Vineeth & Sofiya Christian Gown & Suit Portrait">
-            <div class="photo-caption">⛪ Christian Gown & Suit</div>
-          </div>
-          <div class="photo-frame">
-            <img src="assets/ring-exchange.jpg" alt="Classic Ring Exchange Moment">
-            <div class="photo-caption">💍 Sacred Ring Exchange</div>
-          </div>
+
+          <!-- Next Button -->
+          <button class="slider-arrow slider-next" id="sliderNextBtn" aria-label="Next Photo" title="Next Photo">
+            <svg viewBox="0 0 24 24" width="22" height="22">
+              <path d="M 9 5 L 16 12 L 9 19" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Slider Navigation Indicators / Pagination Dots -->
+        <div class="story-slider-dots" id="storySliderDots" role="tablist" aria-label="Choose Slide">
+          <button class="slider-dot active" data-index="0" role="tab" aria-selected="true" aria-label="Slide 1"></button>
+          <button class="slider-dot" data-index="1" role="tab" aria-selected="false" aria-label="Slide 2"></button>
+          <button class="slider-dot" data-index="2" role="tab" aria-selected="false" aria-label="Slide 3"></button>
+          <button class="slider-dot" data-index="3" role="tab" aria-selected="false" aria-label="Slide 4"></button>
+          <button class="slider-dot" data-index="4" role="tab" aria-selected="false" aria-label="Slide 5"></button>
+        </div>
+
+        <!-- 5-Second Auto-Play Timer Progress Bar -->
+        <div class="slider-timer-bar" title="Auto-advance progress (5s)">
+          <div class="slider-timer-fill" id="sliderTimerFill"></div>
         </div>
       </div>
     </section>
@@ -339,29 +465,28 @@
       </div>
     </section>
 
-    <!-- 8. HIGH PREMIER EVENT & VENUE DETAILS SECTION (DUAL CHURCH & AUDITORIUM VENUES) -->
+    <!-- 8. HIGH PREMIER EVENT & VENUE DETAILS SECTION (DUAL CHURCH & PARISH HALL VENUES) -->
     <section id="venueSection">
       <div class="container reveal">
         <div class="kicker">PREMIER EVENT & LOCATION</div>
         <h2 class="section-title gold-text">The Celebration Details</h2>
 
         <div class="venue-card-lux">
-          <!-- Dual Venue Frames (Church + Auditorium) -->
+          <!-- Dual Venue Frames (Church + Parish Hall) -->
           <div class="venue-dual-grid">
-            <div class="venue-hero-frame">
-              <img src="assets/church.jpg" alt="Church Blessing Sanctum Decor">
-              <div class="venue-hero-caption">⛪ Church Blessing Sanctuary</div>
+            <div class="venue-hero-frame church-frame">
+              <img src="assets/church.jpg" alt="Little Flower Church Sanctuary" style="object-position: center 20%;">
+              <div class="venue-hero-caption">⛪ Little Flower Church Sanctuary</div>
             </div>
-            <div class="venue-hero-frame">
-              <img src="assets/venue.jpg" alt="Vettukad Auditorium Celebration Hall">
-              <div class="venue-hero-caption">✨ Vettukad Auditorium Hall</div>
+            <div class="venue-hero-frame hall-frame">
+              <img src="assets/venue.jpg" alt="Little Flower Parish Hall" style="object-position: center 30%;">
+              <div class="venue-hero-caption">✨ Little Flower Parish Hall</div>
             </div>
           </div>
 
-          <h3 style="font: 400 clamp(32px, 6vw, 48px) var(--serif); color: var(--gold-light); margin-bottom: 8px;">
-            Vettukad Auditorium</h3>
-          <p style="color: var(--text-muted); font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase;">Beach
-            Road, Vettukad, Trivandrum, Kerala</p>
+          <h3 style="font: 400 clamp(30px, 5.5vw, 44px) var(--serif); color: var(--primary-contrast); margin-bottom: 8px;">
+            Little Flower Parish Hall</h3>
+          <p style="color: var(--text-muted); font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase;">Little Flower Church Road, Kazhakkoottam, Trivandrum, Kerala</p>
 
           <div class="venue-details-grid">
             <div class="venue-detail-item">
@@ -370,19 +495,14 @@
               <span>Friday Afternoon</span>
             </div>
             <div class="venue-detail-item">
-              <h4>⏰ Muhurtham & Time</h4>
-              <p>12:00 PM Sharp</p>
+              <h4>⏰ Time</h4>
+              <p>Starts at 12:00 PM</p>
               <span>Ring Exchange & Feast</span>
-            </div>
-            <div class="venue-detail-item">
-              <h4>✨ Dress Code</h4>
-              <p>Traditional Ethnic</p>
-              <span>Pastels & Gold Accents</span>
             </div>
           </div>
 
           <div class="btn-group">
-            <a href="https://share.google/mMGFLypsmjwbw9kCy" target="_blank" rel="noopener"
+            <a href="https://www.google.com/maps/place/Little+Flower,+Saint+Therese+of+Lisieux+Roman+Catholic+Latin+Church/@8.5427005,76.8926937,17z/data=!3m1!4b1!4m6!3m5!1s0x3b05bebfd57325af:0x61ac11a787baf502!8m2!3d8.5426952!4d76.8952686!16s%2Fg%2F1hhx9msxl?hl=en-US&entry=ttu&g_ep=EgoyMDI2MTAxOC4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noopener"
               class="lux-btn lux-btn-primary">
               📍 Get Location Directions
             </a>
@@ -394,14 +514,11 @@
       </div>
     </section>
 
-    <!-- 9. CLOSING & RING COLLISION LOCKED SECTION -->
+    <!-- 9. CLOSING SECTION -->
     <section class="closing-section" id="closingSection">
       <div class="container reveal">
         <div class="kicker">WITH ALL OUR HEARTS</div>
-        <h2 class="section-title gold-text">Vineeth & Sofiya</h2>
-
-        <!-- Dedicated Ring Spotlight Stage (No Text Overlap!) -->
-        <div class="ring-spotlight-stage" id="ringSpotlightStage"></div>
+        <h2 class="section-title gold-text">Vineeth & Sofiya Das</h2>
 
         <p style="color: var(--text-muted); max-width: 520px; margin: 20px auto 0; line-height: 1.8;">
           We look forward to celebrating our engagement with you.<br>
@@ -434,13 +551,13 @@
       <span class="nav-label">Venue</span>
     </a>
     <a href="#closingSection" class="bottom-nav-item">
-      <span class="nav-icon">💍</span>
-      <span class="nav-label">Rings</span>
+      <span class="nav-icon">✨</span>
+      <span class="nav-label">Wishes</span>
     </a>
   </nav>
 
   <!-- External JavaScript -->
-  <script src="script.js"></script>
+  <script src="script.js?v=122"></script>
 </body>
 
 </html>
