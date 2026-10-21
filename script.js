@@ -1,8 +1,8 @@
 // Configuration
 const CONFIG = {
   engagementDate: "2026-11-13T12:00:00+05:30",
-  venue: "Little Flower Parish Hall, Trivandrum",
-  mapUrl: "https://www.google.com/maps/place/Little+Flower,+Saint+Therese+of+Lisieux+Roman+Catholic+Latin+Church/@8.5427005,76.8926937,17z/data=!3m1!4b1!4m6!3m5!1s0x3b05bebfd57325af:0x61ac11a787baf502!8m2!3d8.5426952!4d76.8952686!16s%2Fg%2F1hhx9msxl?hl=en-US&entry=ttu&g_ep=EgoyMDI2MTAxOC4wIKXMDSoASAFQAw%3D%3D"
+  venue: "Little Flower Parish Hall, Sreekaryam - Kulathoor Rd, near CET, Sreekaryam, Thiruvananthapuram",
+  mapUrl: "https://www.google.com/maps/place/Little+Flower,+Saint+Therese+of+Lisieux+Roman+Catholic+Latin+Church/@8.5426952,76.8952686,17z/data=!3m1!4b1!4m6!3m5!1s0x3b05bebfd57325af:0x61ac11a787baf502!8m2!3d8.5426952!4d76.8952686!16s%2Fg%2F1hhx9msxl?hl=en-US&entry=ttu&g_ep=EgoyMDI2MTAxOC4wIKXMDSoASAFQAw%3D%3D"
 };
 
 // Fixed Client Theme Palette: Warm Ivory Parchment + Royal Maroon & Burnished Gold
@@ -711,7 +711,7 @@ function updateRingsPhysics() {
   const sideMarginRight = screenW - sideMarginLeft - ringW;
 
   // Floating viewport resting Y position: stationed at eye-level on away-sides right from landing
-  const floatingScreenY = isMobile ? Math.min(screenH * 0.24, 185) : screenH * 0.42;
+  const floatingScreenY = isMobile ? Math.min(screenH * 0.28, 225) : screenH * 0.42;
 
   // Dedicated Rings Lock Slot below the Scratch Card
   const slotEl = document.getElementById('ringsLockSlot');
@@ -821,7 +821,7 @@ function updateRingsPhysics() {
       triggerMultiStagePop(targetCenterX, ringScreenY + ringW / 2);
     }
     if (lockedBadge) {
-      if (lockedBadgeText) lockedBadgeText.textContent = "✦ VINEETH & SOFIYA DAS • TWO BECOME ONE ✦";
+      if (lockedBadgeText) lockedBadgeText.textContent = "✦ VINEETH & SOFIYA DAS A • TWO BECOME ONE ✦";
       lockedBadge.style.top = (ringScreenY + ringW + 16) + 'px';
       lockedBadge.style.left = targetCenterX + 'px';
       lockedBadge.classList.add('active');
@@ -870,204 +870,10 @@ window.addEventListener('resize', () => {
 updateRingsPhysics();
 
 /* -------------------------------------------------------------
-   INTERACTIVE 360° LUXURY RING SHOWCASE LIGHTBOX
-   ------------------------------------------------------------- */
-const ringModal = document.getElementById('ringModal');
-const ringModalBackdrop = document.getElementById('ringModalBackdrop');
-const ringModalClose = document.getElementById('ringModalClose');
-const ringModalTitle = document.getElementById('ringModalTitle');
-const ringModalSubtitle = document.getElementById('ringModalSubtitle');
-const turntableImg = document.getElementById('turntableImg');
-const turntableStage = document.getElementById('turntableStage');
-const turntableAutoBtn = document.getElementById('turntableAutoBtn');
-const turntableResetBtn = document.getElementById('turntableResetBtn');
-const autoBtnIcon = document.getElementById('autoBtnIcon');
-const ringSpecsGrid = document.getElementById('ringSpecsGrid');
-
-let currentModalRing = 'men';
-let turntableAngle = 0;
-let isDraggingTurntable = false;
-let startDragX = 0;
-let startAngle = 0;
-let isAutoSpinning = true;
-let autoSpinTimer = null;
-
-const TOTAL_MEN_FRAMES = 24;
-const menFrames = [];
-for (let i = 1; i <= TOTAL_MEN_FRAMES; i++) {
-  const pad = String(i).padStart(2, '0');
-  menFrames.push(`assets/turntable_men_clean/frame_${pad}.png`);
-}
-
-const RING_DATA = {
-  men: {
-    title: "Vineeth's Quantum Glide Diamond Ring",
-    subtitle: "Two-Tone Solid Gold & Diamond Band (Jewelbox India)",
-    baseImg: "assets/ring-left-3d.png?v=5",
-    hasTurntableFrames: true,
-    specs: [
-      { label: "Precious Metal", val: "14K / 18K Solid Two-Tone Yellow & White Gold" },
-      { label: "Diamonds", val: "3 Natural Round Brilliant Diamonds (SI-GH)" },
-      { label: "Setting", val: "Precision Flush Architectural Channel" },
-      { label: "Heritage", val: "Quantum Glide Collection · Jewelbox India" }
-    ]
-  },
-  women: {
-    title: "Sofiya Das's Solitaire Diamond Ring",
-    subtitle: "Lab-Grown Solitaire with Cathedral Channel Pillars (Dholakiya Gems)",
-    baseImg: "assets/ring-right-3d.png?v=6",
-    hasTurntableFrames: false,
-    specs: [
-      { label: "Precious Metal", val: "Solid 14K / 18K Rose Gold (Dholakiya Gems)" },
-      { label: "Center Stone", val: "1 to 4 Carat Round Brilliant Ideal Cut" },
-      { label: "Clarity & Color", val: "D Colorless · VVS1 Ultra-High Clarity" },
-      { label: "Setting Style", val: "Modern Elevated Cathedral Channel Pillars" },
-      { label: "Collection", val: "Dholakiya Gems Solitaire Collection" }
-    ]
-  }
-};
-
-function renderTurntableAngle(deg) {
-  turntableAngle = (deg % 360 + 360) % 360;
-
-  if (currentModalRing === 'men') {
-    // Exact 24-frame 360 turntable
-    const frameIndex = Math.floor((turntableAngle / 360) * TOTAL_MEN_FRAMES);
-    const safeIndex = Math.min(TOTAL_MEN_FRAMES - 1, Math.max(0, frameIndex));
-    turntableImg.src = menFrames[safeIndex];
-    turntableImg.style.transform = `perspective(800px) rotateY(${((turntableAngle % 15) - 7.5)}deg)`;
-  } else {
-    // 3D perspective rotation with realistic foreshortening
-    const tiltPitch = Math.sin(turntableAngle * (Math.PI / 180) * 2) * 10;
-    turntableImg.src = RING_DATA.women.baseImg;
-    turntableImg.style.transform = `perspective(900px) rotateY(${turntableAngle}deg) rotateX(${tiltPitch}deg)`;
-  }
-}
-
-function startAutoSpin() {
-  if (autoSpinTimer) clearInterval(autoSpinTimer);
-  isAutoSpinning = true;
-  if (turntableAutoBtn) turntableAutoBtn.classList.add('active');
-  if (autoBtnIcon) autoBtnIcon.textContent = '⏸';
-
-  autoSpinTimer = setInterval(() => {
-    turntableAngle = (turntableAngle + 1.2) % 360;
-    renderTurntableAngle(turntableAngle);
-  }, 32);
-}
-
-function stopAutoSpin() {
-  if (autoSpinTimer) {
-    clearInterval(autoSpinTimer);
-    autoSpinTimer = null;
-  }
-  isAutoSpinning = false;
-  if (turntableAutoBtn) turntableAutoBtn.classList.remove('active');
-  if (autoBtnIcon) autoBtnIcon.textContent = '▶';
-}
-
-function openRingModal(type) {
-  currentModalRing = type;
-  const data = RING_DATA[type] || RING_DATA.men;
-
-  if (ringModalTitle) ringModalTitle.textContent = data.title;
-  if (ringModalSubtitle) ringModalSubtitle.textContent = data.subtitle;
-
-  if (ringSpecsGrid) {
-    ringSpecsGrid.innerHTML = data.specs.map(s => `
-      <div class="ring-spec-card">
-        <div class="spec-label">${s.label}</div>
-        <div class="spec-val">${s.val}</div>
-      </div>
-    `).join('');
-  }
-
-  turntableAngle = 0;
-  renderTurntableAngle(0);
-  if (ringModal) ringModal.classList.add('active');
-  startAutoSpin();
-}
-
-function closeRingModal() {
-  if (ringModal) ringModal.classList.remove('active');
-  stopAutoSpin();
-}
-
-if (ringLeft) {
-  ringLeft.addEventListener('click', (e) => {
-    e.stopPropagation();
-    openRingModal('men');
-  });
-}
-
-if (ringRight) {
-  ringRight.addEventListener('click', (e) => {
-    e.stopPropagation();
-    openRingModal('women');
-  });
-}
-
-if (ringModalClose) ringModalClose.addEventListener('click', closeRingModal);
-if (ringModalBackdrop) ringModalBackdrop.addEventListener('click', closeRingModal);
-
-if (turntableAutoBtn) {
-  turntableAutoBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (isAutoSpinning) {
-      stopAutoSpin();
-    } else {
-      startAutoSpin();
-    }
-  });
-}
-
-if (turntableResetBtn) {
-  turntableResetBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    turntableAngle = 0;
-    renderTurntableAngle(0);
-  });
-}
-
-// Drag & Swipe rotation on 360 stage
-if (turntableStage) {
-  function onPointerDown(clientX) {
-    isDraggingTurntable = true;
-    startDragX = clientX;
-    startAngle = turntableAngle;
-    stopAutoSpin();
-  }
-
-  function onPointerMove(clientX) {
-    if (!isDraggingTurntable) return;
-    const deltaX = clientX - startDragX;
-    // 1px drag = 0.9 degrees of rotation
-    const newAngle = startAngle + deltaX * 0.9;
-    renderTurntableAngle(newAngle);
-  }
-
-  function onPointerUp() {
-    isDraggingTurntable = false;
-  }
-
-  turntableStage.addEventListener('mousedown', (e) => { onPointerDown(e.clientX); });
-  window.addEventListener('mousemove', (e) => { onPointerMove(e.clientX); });
-  window.addEventListener('mouseup', onPointerUp);
-
-  turntableStage.addEventListener('touchstart', (e) => {
-    if (e.touches && e.touches[0]) onPointerDown(e.touches[0].clientX);
-  }, { passive: true });
-  window.addEventListener('touchmove', (e) => {
-    if (e.touches && e.touches[0]) onPointerMove(e.touches[0].clientX);
-  }, { passive: true });
-  window.addEventListener('touchend', onPointerUp);
-}
-
-/* -------------------------------------------------------------
    CALENDAR & QUICK SHARE INTEGRATION
    ------------------------------------------------------------- */
 document.getElementById('addToCalBtn').addEventListener('click', () => {
-  const calUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text=Vineeth+%26+Sofiya+Das+Engagement+Ceremony&dates=20261113T063000Z/20261113T103000Z&details=Engagement+Ring+Exchange+%26+Celebration&location=Little+Flower+Parish+Hall%2C+Kazhakkoottam%2C+Trivandrum";
+  const calUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text=Vineeth+%26+Sofiya+Das+A+Engagement+Ceremony&dates=20261113T063000Z/20261113T103000Z&details=Engagement+Ring+Exchange+%26+Celebration&location=Little+Flower+Parish+Hall%2C+Sreekaryam+-+Kulathoor+Rd%2C+near+CET%2C+Sreekaryam%2C+Thiruvananthapuram";
   window.open(calUrl, '_blank');
 });
 
@@ -1099,7 +905,7 @@ function triggerShareToast(message) {
 function openShareModal(fullMessage, shareUrl) {
   if (!shareModal) return;
 
-  const displayUrl = shareUrl && shareUrl.startsWith('http') ? shareUrl : "https://vineeth-sofiya-engagement.com";
+  const displayUrl = shareUrl && shareUrl.startsWith('http') ? shareUrl : "https://vineeth-sofiya-engagement-invitation.vercel.app/";
 
   if (shareModalUrlPreview) {
     shareModalUrlPreview.textContent = displayUrl;
@@ -1117,7 +923,7 @@ function openShareModal(fullMessage, shareUrl) {
     shareModalSms.href = "sms:?body=" + encodeURIComponent(fullMessage);
   }
   if (shareModalEmail) {
-    shareModalEmail.href = "mailto:?subject=" + encodeURIComponent("💍 Vineeth & Sofiya Das — Engagement Ceremony Invitation") + "&body=" + encodeURIComponent(fullMessage);
+    shareModalEmail.href = "mailto:?subject=" + encodeURIComponent("💍 Vineeth & Sofiya Das A — Engagement Ceremony Invitation") + "&body=" + encodeURIComponent(fullMessage);
   }
 
   // System share (Only available on secure origins like https:// or localhost, strictly NEVER on file://)
@@ -1132,7 +938,7 @@ function openShareModal(fullMessage, shareUrl) {
         e.preventDefault();
         try {
           await navigator.share({
-            title: "Vineeth & Sofiya Das — Engagement Ceremony Invitation",
+            title: "Vineeth & Sofiya Das A — Engagement Ceremony Invitation",
             text: fullMessage,
             url: displayUrl
           });
@@ -1158,15 +964,15 @@ if (shareModalCopyBtn) {
   shareModalCopyBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     const isWeb = window.location.protocol.startsWith('http');
-    const invitationLink = isWeb ? window.location.href : "https://vineeth-sofiya-engagement.com";
+    const invitationLink = isWeb ? window.location.href : "https://vineeth-sofiya-engagement-invitation.vercel.app/";
     const fullMessage = 
       "💍 *Engagement Ceremony Invitation* 💍\n\n" +
-      "*Vineeth Rajendran & Sofiya Das*\n\n" +
+      "*Vineeth Rajendran & Sofiya Das A*\n\n" +
       "📅 *Date:* Friday, 13 November 2026\n" +
       "⏰ *Time:* Starts at 12:00 PM\n" +
-      "⛪ *Venue:* Little Flower Parish Hall, Kazhakkoottam, Trivandrum\n" +
-      "📍 *Location Map:* https://www.google.com/maps/place/Little+Flower,+Saint+Therese+of+Lisieux+Roman+Catholic+Latin+Church/@8.5427005,76.8926937,17z/\n\n" +
-      (isWeb ? "✨ *View Wedding Invitation:* " + window.location.href : "With warm blessings & prayers!");
+      "⛪ *Venue:* Little Flower Parish Hall, Sreekaryam - Kulathoor Rd, near CET, Sreekaryam, Thiruvananthapuram\n" +
+      "📍 *Location Map:* " + CONFIG.mapUrl + "\n\n" +
+      "✨ *View Wedding Invitation:* " + invitationLink;
 
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1194,15 +1000,15 @@ if (shareBtn) {
     e.stopPropagation();
 
     const isWeb = window.location.protocol.startsWith('http');
-    const invitationLink = isWeb ? window.location.href : "https://vineeth-sofiya-engagement.com";
+    const invitationLink = isWeb ? window.location.href : "https://vineeth-sofiya-engagement-invitation.vercel.app/";
     const shareText = 
       "💍 *Engagement Ceremony Invitation* 💍\n\n" +
-      "*Vineeth Rajendran & Sofiya Das*\n\n" +
+      "*Vineeth Rajendran & Sofiya Das A*\n\n" +
       "📅 *Date:* Friday, 13 November 2026\n" +
       "⏰ *Time:* Starts at 12:00 PM\n" +
-      "⛪ *Venue:* Little Flower Parish Hall, Kazhakkoottam, Trivandrum\n" +
-      "📍 *Location Map:* https://www.google.com/maps/place/Little+Flower,+Saint+Therese+of+Lisieux+Roman+Catholic+Latin+Church/@8.5427005,76.8926937,17z/\n\n" +
-      (isWeb ? "✨ *View Wedding Invitation:* " + window.location.href : "With warm blessings & prayers!");
+      "⛪ *Venue:* Little Flower Parish Hall, Sreekaryam - Kulathoor Rd, near CET, Sreekaryam, Thiruvananthapuram\n" +
+      "📍 *Location Map:* " + CONFIG.mapUrl + "\n\n" +
+      "✨ *View Wedding Invitation:* " + invitationLink;
 
     openShareModal(shareText, invitationLink);
   });
