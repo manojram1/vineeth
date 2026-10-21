@@ -1,8 +1,8 @@
 // Configuration
 const CONFIG = {
   engagementDate: "2026-11-13T12:00:00+05:30",
-  venue: "Vettukad Auditorium",
-  mapUrl: "https://share.google/mMGFLypsmjwbw9kCy"
+  venue: "Little Flower Parish Hall, Trivandrum",
+  mapUrl: "https://www.google.com/maps/place/Little+Flower,+Saint+Therese+of+Lisieux+Roman+Catholic+Latin+Church/@8.5427005,76.8926937,17z/data=!3m1!4b1!4m6!3m5!1s0x3b05bebfd57325af:0x61ac11a787baf502!8m2!3d8.5426952!4d76.8952686!16s%2Fg%2F1hhx9msxl?hl=en-US&entry=ttu&g_ep=EgoyMDI2MTAxOC4wIKXMDSoASAFQAw%3D%3D"
 };
 
 // Fixed Client Theme Palette: Warm Ivory Parchment + Royal Maroon & Burnished Gold
@@ -808,11 +808,7 @@ function updateRingsPhysics() {
     ringInterlockWeave.style.opacity = Math.max(0, (lockFactor - 0.65) / 0.35);
   }
 
-  // Individual name badges fade away during union, fade back in when separating
-  const bLeft = document.getElementById('badgeLeft');
-  const bRight = document.getElementById('badgeRight');
-  if (bLeft) bLeft.style.opacity = Math.max(0, 1 - lockFactor * 2.2);
-  if (bRight) bRight.style.opacity = Math.max(0, 1 - lockFactor * 2.2);
+
 
   // Union Celebration Badge & Multi-Stage Confetti Pop
   if (lockFactor >= 0.95) {
@@ -821,7 +817,7 @@ function updateRingsPhysics() {
       triggerMultiStagePop(targetCenterX, ringScreenY + ringW / 2);
     }
     if (lockedBadge) {
-      if (lockedBadgeText) lockedBadgeText.textContent = "✦ VINEETH & SOFIYA • TWO BECOME ONE ✦";
+      if (lockedBadgeText) lockedBadgeText.textContent = "✦ VINEETH & SOFIYA DAS • TWO BECOME ONE ✦";
       lockedBadge.style.top = (ringScreenY + ringW + 16) + 'px';
       lockedBadge.style.left = targetCenterX + 'px';
       lockedBadge.classList.add('active');
@@ -913,7 +909,7 @@ const RING_DATA = {
     ]
   },
   women: {
-    title: "Sofiya's Solitaire Diamond Ring",
+    title: "Sofiya Das's Solitaire Diamond Ring",
     subtitle: "Lab-Grown Solitaire with Cathedral Channel Pillars (Dholakiya Gems)",
     baseImg: "assets/ring-right-3d.png?v=6",
     hasTurntableFrames: false,
@@ -1064,9 +1060,276 @@ if (turntableStage) {
 }
 
 /* -------------------------------------------------------------
-   CALENDAR INTEGRATION
+   CALENDAR & QUICK SHARE INTEGRATION
    ------------------------------------------------------------- */
 document.getElementById('addToCalBtn').addEventListener('click', () => {
-  const calUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text=Vineeth+%26+Sofiya+Engagement+Ceremony&dates=20261113T063000Z/20261113T103000Z&details=Engagement+Ring+Exchange+%26+Celebration&location=Vettukad+Auditorium%2C+Trivandrum";
+  const calUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text=Vineeth+%26+Sofiya+Das+Engagement+Ceremony&dates=20261113T063000Z/20261113T103000Z&details=Engagement+Ring+Exchange+%26+Celebration&location=Little+Flower+Parish+Hall%2C+Kazhakkoottam%2C+Trivandrum";
   window.open(calUrl, '_blank');
 });
+
+// Quick Share button (Direct WhatsApp + Clipboard fallback - 100% safe across file:// and web)
+const shareBtn = document.getElementById('shareBtn');
+const shareToast = document.getElementById('shareToast');
+
+function triggerShareToast(message) {
+  if (!shareToast) return;
+  shareToast.textContent = message;
+  shareToast.classList.add('show');
+  setTimeout(() => {
+    shareToast.classList.remove('show');
+  }, 3200);
+}
+
+if (shareBtn) {
+  shareBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+
+    // Check if running on web (http/https) or local file
+    const isWeb = window.location.protocol.startsWith('http');
+    const invitationLink = isWeb ? window.location.href : "";
+
+    const shareMessage = 
+      "💍 *Engagement Ceremony Invitation* 💍\n\n" +
+      "*Vineeth Rajendran & Sofiya Das*\n\n" +
+      "📅 *Date:* Friday, 13 November 2026\n" +
+      "⏰ *Time:* Starts at 12:00 PM\n" +
+      "⛪ *Venue:* Little Flower Parish Hall, Trivandrum\n" +
+      "📍 *Location Map:* https://www.google.com/maps/place/Little+Flower,+Saint+Therese+of+Lisieux+Roman+Catholic+Latin+Church/@8.5427005,76.8926937,17z/\n\n" +
+      (invitationLink ? "✨ *View Wedding Invitation:* " + invitationLink : "With warm blessings & prayers!");
+
+    // Safely copy invitation text to clipboard
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareMessage).catch(() => {});
+      }
+    } catch (clipErr) {}
+
+    // Show toast notification
+    triggerShareToast("💍 Opening WhatsApp with invitation...");
+
+    // Direct WhatsApp share URL (Works on both mobile WhatsApp app & desktop WhatsApp Web)
+    const waUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(shareMessage);
+
+    // Open WhatsApp in a new tab/window
+    window.open(waUrl, '_blank');
+  });
+}
+
+/* -------------------------------------------------------------
+   OUR ENGAGEMENT STORY: 3D COVERFLOW IMAGE SLIDER
+   - Center slide in ultra-crisp focus with glowing gold border
+   - Previous and next images are blurred & faded (depth of field)
+   - Stylish previous / next glassmorphic arrows at ends
+   - 5-Second auto-play timeout with animated timer bar
+   - Moves and parallax-drifts dynamically while scrolling
+   - Mouse wheel and touch/swipe navigation supported
+   ------------------------------------------------------------- */
+const storySliderContainer = document.getElementById('storySliderContainer');
+const storySliderTrack = document.getElementById('storySliderTrack');
+const storySlides = document.querySelectorAll('.story-slide');
+const sliderPrevBtn = document.getElementById('sliderPrevBtn');
+const sliderNextBtn = document.getElementById('sliderNextBtn');
+const sliderDots = document.querySelectorAll('.slider-dot');
+const sliderTimerFill = document.getElementById('sliderTimerFill');
+const gallerySection = document.getElementById('gallerySection');
+
+let currentSlideIdx = 0;
+const totalSlides = storySlides.length;
+let autoPlayInterval = null;
+let isSliderHovered = false;
+const SLIDE_DURATION = 5000;
+
+function updateStorySlider(newIndex) {
+  currentSlideIdx = (newIndex + totalSlides) % totalSlides;
+
+  storySlides.forEach((slide, i) => {
+    slide.classList.remove('active', 'prev', 'next', 'hidden-left', 'hidden-right');
+
+    let diff = i - currentSlideIdx;
+    if (diff > Math.floor(totalSlides / 2)) diff -= totalSlides;
+    if (diff < -Math.floor(totalSlides / 2)) diff += totalSlides;
+
+    if (diff === 0) {
+      slide.classList.add('active');
+    } else if (diff === -1) {
+      slide.classList.add('prev');
+    } else if (diff === 1) {
+      slide.classList.add('next');
+    } else if (diff < -1) {
+      slide.classList.add('hidden-left');
+    } else {
+      slide.classList.add('hidden-right');
+    }
+  });
+
+  // Update dots
+  sliderDots.forEach((dot, idx) => {
+    const isActive = idx === currentSlideIdx;
+    dot.classList.toggle('active', isActive);
+    dot.setAttribute('aria-selected', isActive ? 'true' : 'false');
+  });
+
+  restartSliderTimer();
+}
+
+function nextSlide() {
+  updateStorySlider(currentSlideIdx + 1);
+}
+
+function prevSlide() {
+  updateStorySlider(currentSlideIdx - 1);
+}
+
+// 5-Second Timer Bar & Auto-Advance
+function restartSliderTimer() {
+  if (autoPlayInterval) clearInterval(autoPlayInterval);
+
+  if (sliderTimerFill) {
+    sliderTimerFill.style.transition = 'none';
+    sliderTimerFill.style.width = '0%';
+    void sliderTimerFill.offsetWidth; // Force DOM reflow
+    if (!isSliderHovered) {
+      sliderTimerFill.style.transition = `width ${SLIDE_DURATION}ms linear`;
+      sliderTimerFill.style.width = '100%';
+    }
+  }
+
+  if (!isSliderHovered) {
+    autoPlayInterval = setInterval(() => {
+      nextSlide();
+    }, SLIDE_DURATION);
+  }
+}
+
+// Controls: Arrows
+if (sliderPrevBtn) {
+  sliderPrevBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    prevSlide();
+  });
+}
+
+if (sliderNextBtn) {
+  sliderNextBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    nextSlide();
+  });
+}
+
+// Controls: Click on slide
+storySlides.forEach((slide) => {
+  slide.addEventListener('click', () => {
+    const idx = parseInt(slide.getAttribute('data-index'), 10);
+    if (!isNaN(idx) && idx !== currentSlideIdx) {
+      updateStorySlider(idx);
+    }
+  });
+});
+
+// Controls: Pagination Dots
+sliderDots.forEach((dot) => {
+  dot.addEventListener('click', () => {
+    const idx = parseInt(dot.getAttribute('data-index'), 10);
+    if (!isNaN(idx)) {
+      updateStorySlider(idx);
+    }
+  });
+});
+
+// Hover pause
+if (storySliderContainer) {
+  storySliderContainer.addEventListener('mouseenter', () => {
+    isSliderHovered = true;
+    if (autoPlayInterval) clearInterval(autoPlayInterval);
+    if (sliderTimerFill) {
+      const computedW = window.getComputedStyle(sliderTimerFill).width;
+      sliderTimerFill.style.transition = 'none';
+      sliderTimerFill.style.width = computedW;
+    }
+  });
+
+  storySliderContainer.addEventListener('mouseleave', () => {
+    isSliderHovered = false;
+    restartSliderTimer();
+  });
+
+  // Mouse wheel slide changing when hovering container
+  let wheelThrottle = false;
+  storySliderContainer.addEventListener('wheel', (e) => {
+    if (Math.abs(e.deltaY) > 35 || Math.abs(e.deltaX) > 35) {
+      if (!wheelThrottle) {
+        wheelThrottle = true;
+        if (e.deltaY > 0 || e.deltaX > 0) {
+          nextSlide();
+        } else {
+          prevSlide();
+        }
+        setTimeout(() => { wheelThrottle = false; }, 420);
+      }
+    }
+  }, { passive: true });
+
+  // Touch / Drag Gestures
+  let touchStartX = 0;
+  let touchEndX = 0;
+  let isDragging = false;
+
+  storySliderContainer.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches[0]) {
+      touchStartX = e.touches[0].clientX;
+      isSliderHovered = true;
+    }
+  }, { passive: true });
+
+  storySliderContainer.addEventListener('touchend', (e) => {
+    if (e.changedTouches && e.changedTouches[0]) {
+      touchEndX = e.changedTouches[0].clientX;
+      const diff = touchEndX - touchStartX;
+      if (Math.abs(diff) > 40) {
+        if (diff > 0) prevSlide();
+        else nextSlide();
+      }
+    }
+    isSliderHovered = false;
+    restartSliderTimer();
+  }, { passive: true });
+
+  storySliderContainer.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    touchStartX = e.clientX;
+  });
+
+  window.addEventListener('mouseup', (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    touchEndX = e.clientX;
+    const diff = touchEndX - touchStartX;
+    if (Math.abs(diff) > 45) {
+      if (diff > 0) prevSlide();
+      else nextSlide();
+    }
+  });
+}
+
+// SCROLL-DRIVEN MOVEMENT:
+// Parallax drift & perspective tilt as the user scrolls through the gallery
+function handleSliderScrollParallax() {
+  if (!gallerySection || !storySliderTrack) return;
+  const rect = gallerySection.getBoundingClientRect();
+  const winH = window.innerHeight;
+
+  // Check if section is visible in viewport
+  if (rect.top < winH && rect.bottom > 0) {
+    const progress = (winH - rect.top) / (winH + rect.height);
+    // Smooth horizontal parallax drift as page scrolls
+    const driftX = (progress - 0.5) * -70;
+    const tiltDeg = (progress - 0.5) * -4;
+    storySliderTrack.style.transform = `translateX(${driftX}px) rotateZ(${tiltDeg}deg)`;
+  }
+}
+
+window.addEventListener('scroll', handleSliderScrollParallax, { passive: true });
+
+// Initialize slider state immediately
+updateStorySlider(0);
+
