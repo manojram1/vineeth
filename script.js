@@ -5,42 +5,21 @@ const CONFIG = {
   mapUrl: "https://share.google/mMGFLypsmjwbw9kCy"
 };
 
-const THEME_PALETTES = {
-  'rose-gold': {
-    starColors: ['#e0829d', '#ffccd5', '#ffffff'],
-    roseColors: [
-      { fill: '#e62e5c', highlight: '#ff7597' },
-      { fill: '#d81b60', highlight: '#ff669a' },
-      { fill: '#c2185b', highlight: '#f48fb1' }
-    ]
-  },
-  'midnight': {
-    starColors: ['#e6c875', '#fff3c4', '#60a5fa'],
-    roseColors: [
-      { fill: '#d4af37', highlight: '#fff3c4' },
-      { fill: '#b8860b', highlight: '#f5e3ad' },
-      { fill: '#e6c875', highlight: '#ffffff' }
-    ]
-  },
-  'emerald': {
-    starColors: ['#e5c170', '#86efac', '#f7e4b2'],
-    roseColors: [
-      { fill: '#10b981', highlight: '#f7e4b2' },
-      { fill: '#059669', highlight: '#e5c170' },
-      { fill: '#d97706', highlight: '#fef3c7' }
-    ]
-  },
-  'burgundy': {
-    starColors: ['#f2a6b8', '#fcdbe3', '#ffd700'],
-    roseColors: [
-      { fill: '#9f1239', highlight: '#f2a6b8' },
-      { fill: '#881337', highlight: '#fcdbe3' },
-      { fill: '#be123c', highlight: '#ffe4e6' }
-    ]
-  }
+// Fixed Client Theme Palette: Warm Ivory Parchment + Royal Maroon & Burnished Gold
+const THEME_PALETTE = {
+  starColors: ['#C59B27', '#B8860B', '#E5C170', '#D4AF37'],
+  // Authentic Romantic Rose Petals (Crimson Red, Scarlet, Velvet Ruby, Carmine & Blush Rose)
+  roseColors: [
+    { fill: '#C8102E', highlight: '#FF4D6D', edge: '#85001C' }, // Crimson Rose
+    { fill: '#E6194B', highlight: '#FF6B8B', edge: '#9B0028' }, // Vibrant Scarlet Rose
+    { fill: '#B30B2D', highlight: '#F43F5E', edge: '#73051B' }, // Velvet Red Rose
+    { fill: '#D91C4A', highlight: '#FF7597', edge: '#8F0024' }, // Ruby Red Rose
+    { fill: '#9E0A28', highlight: '#E11D48', edge: '#600014' }, // Deep Romantic Rose
+    { fill: '#E0315E', highlight: '#FFA4BC', edge: '#9C0D36' }  // Fresh Rose Petal Pink
+  ]
 };
 
-let currentStarColors = THEME_PALETTES['rose-gold'].starColors;
+let currentStarColors = THEME_PALETTE.starColors;
 
 /* -------------------------------------------------------------
    BACKGROUND CANVAS: FLOATING GOLD PARTICLES & STARLIGHT
@@ -105,13 +84,7 @@ function resizePetalCanvas() {
 resizePetalCanvas();
 window.addEventListener('resize', resizePetalCanvas);
 
-const ROSE_COLORS = [
-  { fill: '#e62e5c', highlight: '#ff7597' }, // Classic Ruby Red Rose
-  { fill: '#d81b60', highlight: '#ff669a' }, // Deep Velvet Rose
-  { fill: '#c2185b', highlight: '#f48fb1' }, // Rich Crimson Rose
-  { fill: '#e91e63', highlight: '#ff80ab' }, // Bright Romantic Rose
-  { fill: '#f06292', highlight: '#ffb2c9' }  // Soft Blush Pink Rose
-];
+const ROSE_COLORS = THEME_PALETTE.roseColors;
 
 class FlowerPetal {
   constructor() {
@@ -120,22 +93,22 @@ class FlowerPetal {
   reset(initial = false) {
     this.x = Math.random() * petalCanvas.width;
     this.y = initial ? Math.random() * petalCanvas.height : -40;
-    this.size = Math.random() * 12 + 10;
-    this.speedY = Math.random() * 1.3 + 0.7;
-    this.speedX = Math.random() * 0.8 - 0.4;
-    this.swaySpeed = Math.random() * 0.035 + 0.012;
+    this.size = Math.random() * 11 + 11; // 11px to 22px realistic petal size
+    this.speedY = Math.random() * 1.25 + 0.75; // Graceful drifting downward
+    this.speedX = Math.random() * 0.6 - 0.3;
+    this.swaySpeed = Math.random() * 0.028 + 0.014;
     this.swayAngle = Math.random() * Math.PI * 2;
-    this.flipSpeed = Math.random() * 0.04 + 0.015;
+    this.flipSpeed = Math.random() * 0.035 + 0.016;
     this.flipAngle = Math.random() * Math.PI * 2;
     this.rotation = Math.random() * Math.PI * 2;
-    this.rotSpeed = (Math.random() - 0.5) * 0.03;
+    this.rotSpeed = (Math.random() - 0.5) * 0.025;
     this.colorScheme = ROSE_COLORS[Math.floor(Math.random() * ROSE_COLORS.length)];
-    this.opacity = Math.random() * 0.55 + 0.45;
+    this.opacity = Math.random() * 0.35 + 0.6; // High visibility and rich color saturation
   }
   update() {
     this.swayAngle += this.swaySpeed;
     this.flipAngle += this.flipSpeed;
-    this.x += Math.sin(this.swayAngle) * 1.1 + this.speedX;
+    this.x += Math.sin(this.swayAngle) * 1.25 + this.speedX;
     this.y += this.speedY;
     this.rotation += this.rotSpeed;
 
@@ -147,37 +120,63 @@ class FlowerPetal {
     pCtx.save();
     pCtx.translate(this.x, this.y);
     pCtx.rotate(this.rotation);
+
+    // 3D tumbling flip effect
     const flipScale = Math.sin(this.flipAngle);
     pCtx.scale(1, flipScale);
 
     pCtx.globalAlpha = this.opacity;
 
-    // Rose Petal Gradient
-    const grad = pCtx.createRadialGradient(0, 0, 2, 0, 0, this.size);
-    grad.addColorStop(0, this.colorScheme.highlight);
-    grad.addColorStop(0.7, this.colorScheme.fill);
-    grad.addColorStop(1, 'rgba(120, 10, 40, 0.9)');
+    // Organic Rose Petal Gradient Shading
+    const isBackside = flipScale < 0;
+    const grad = pCtx.createRadialGradient(-this.size * 0.2, -this.size * 0.25, 1, 0, 0, this.size);
+
+    if (!isBackside) {
+      grad.addColorStop(0, this.colorScheme.highlight);
+      grad.addColorStop(0.6, this.colorScheme.fill);
+      grad.addColorStop(1, this.colorScheme.edge);
+    } else {
+      // Petal underside is slightly softer velvety matte
+      grad.addColorStop(0, '#FFA8BC');
+      grad.addColorStop(0.6, this.colorScheme.highlight);
+      grad.addColorStop(1, this.colorScheme.fill);
+    }
 
     pCtx.fillStyle = grad;
+    pCtx.shadowColor = 'rgba(160, 15, 40, 0.22)';
+    pCtx.shadowBlur = 4;
+    pCtx.shadowOffsetY = 2;
+
+    // Authentic Rose Petal Curved Heart/Tear Contour
     pCtx.beginPath();
-    pCtx.moveTo(0, -this.size * 0.8);
-    pCtx.bezierCurveTo(this.size * 0.8, -this.size * 0.7, this.size * 0.9, this.size * 0.5, 0, this.size);
-    pCtx.bezierCurveTo(-this.size * 0.9, this.size * 0.5, -this.size * 0.8, -this.size * 0.7, 0, -this.size * 0.8);
+    pCtx.moveTo(0, -this.size * 0.85);
+    // Right lobe curve to tapered stem base
+    pCtx.bezierCurveTo(this.size * 0.85, -this.size * 0.78, this.size * 0.95, this.size * 0.38, 0, this.size);
+    // Left lobe curve back to top indentation
+    pCtx.bezierCurveTo(-this.size * 0.95, this.size * 0.38, -this.size * 0.85, -this.size * 0.78, 0, -this.size * 0.85);
     pCtx.fill();
 
-    // Delicate Rose Petal Vein Accent
-    pCtx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-    pCtx.lineWidth = 0.8;
+    // Delicate translucent petal highlight curve along upper rim
+    pCtx.shadowColor = 'transparent';
+    pCtx.strokeStyle = isBackside ? 'rgba(255, 255, 255, 0.45)' : 'rgba(255, 235, 240, 0.35)';
+    pCtx.lineWidth = 0.85;
     pCtx.beginPath();
-    pCtx.moveTo(0, -this.size * 0.5);
-    pCtx.quadraticCurveTo(0, 0, 0, this.size * 0.6);
+    pCtx.arc(0, -this.size * 0.42, this.size * 0.45, Math.PI * 0.85, Math.PI * 2.15);
+    pCtx.stroke();
+
+    // Subtle natural center vein
+    pCtx.strokeStyle = 'rgba(255, 220, 230, 0.22)';
+    pCtx.lineWidth = 0.7;
+    pCtx.beginPath();
+    pCtx.moveTo(0, -this.size * 0.55);
+    pCtx.quadraticCurveTo(this.size * 0.05, 0, 0, this.size * 0.7);
     pCtx.stroke();
 
     pCtx.restore();
   }
 }
 
-for (let i = 0; i < 55; i++) petals.push(new FlowerPetal());
+for (let i = 0; i < 58; i++) petals.push(new FlowerPetal());
 
 function animatePetals() {
   pCtx.clearRect(0, 0, petalCanvas.width, petalCanvas.height);
@@ -186,25 +185,7 @@ function animatePetals() {
 }
 animatePetals();
 
-/* -------------------------------------------------------------
-   DYNAMIC STYLE THEME SWITCHER & CANVAS PALETTE SYSTEM
-   ------------------------------------------------------------- */
-const themeBtns = document.querySelectorAll('.theme-btn');
-themeBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const selectedTheme = btn.getAttribute('data-theme-val');
-    document.body.setAttribute('data-theme', selectedTheme);
-    themeBtns.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
 
-    // Dynamically transform canvas particle palettes
-    const pal = THEME_PALETTES[selectedTheme] || THEME_PALETTES['rose-gold'];
-    currentStarColors = pal.starColors;
-    petals.forEach(p => {
-      p.colorScheme = pal.roseColors[Math.floor(Math.random() * pal.roseColors.length)];
-    });
-  });
-});
 
 /* -------------------------------------------------------------
    CONTINUOUS MUSIC PLAYBACK & 3D ENVELOPE UNWRAPPING SYSTEM
@@ -244,6 +225,7 @@ function completeOpening() {
   openingModal.classList.add('opened');
   document.body.classList.remove('locked');
   document.body.style.overflow = '';
+  updateRingsPhysics();
 }
 
 async function triggerUnwrapSequence(event) {
@@ -449,10 +431,10 @@ function initScratch() {
   if (sCtx.setTransform) sCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   const grad = sCtx.createLinearGradient(0, 0, rect.width, rect.height);
-  grad.addColorStop(0, '#e57d9b');
-  grad.addColorStop(0.35, '#ffc2d1');
-  grad.addColorStop(0.7, '#c84b72');
-  grad.addColorStop(1, '#a63255');
+  grad.addColorStop(0, '#C59B27');
+  grad.addColorStop(0.35, '#E5C170');
+  grad.addColorStop(0.65, '#B8860B');
+  grad.addColorStop(1, '#996515');
 
   sCtx.fillStyle = grad;
   sCtx.fillRect(0, 0, rect.width, rect.height);
@@ -528,7 +510,7 @@ window.addEventListener('resize', resizeColCanvas);
 
 // High-Energy "Pop Cracking" Ribbon Cutting & Falling Pop Paper Celebration
 function triggerPopCrackleBurst(cx, cy) {
-  const popPaperColors = ['#f48fb1', '#ffd700', '#ffffff', '#ff4081', '#60a5fa', '#a7f3d0', '#f8b4c4', '#ffe082', '#d96b8d'];
+  const popPaperColors = ['#C59B27', '#B8860B', '#D4AF37', '#4A0E17', '#800E26', '#FAF2E6', '#E5C170', '#9E1B32'];
 
   // Popping Shockwave Ring
   colParticles.push({
@@ -716,19 +698,16 @@ function updateRingsPhysics() {
   let sideMarginLeft = 8;
   if (screenW >= 1280) {
     const gutter = (screenW - 960) / 2;
-    sideMarginLeft = Math.max(16, Math.min(50, (gutter - ringW) / 2));
+    sideMarginLeft = Math.max(24, Math.min(110, (gutter - ringW) / 2));
   } else if (screenW >= 768) {
-    sideMarginLeft = 14;
+    sideMarginLeft = 16;
   } else {
-    sideMarginLeft = 6;
+    sideMarginLeft = 8;
   }
   const sideMarginRight = screenW - sideMarginLeft - ringW;
 
-  // Floating viewport resting Y position (when above the scratch card section)
-  const topEntranceProgress = Math.min(1, scrollPos / 260);
-  const fallEase = topEntranceProgress * (2 - topEntranceProgress);
-  const startY = -180;
-  const floatingScreenY = startY + (screenH * 0.44 - startY) * fallEase;
+  // Floating viewport resting Y position: stationed at eye-level on away-sides right from landing
+  const floatingScreenY = screenH * 0.42;
 
   // Dedicated Rings Lock Slot below the Scratch Card
   const slotEl = document.getElementById('ringsLockSlot');
