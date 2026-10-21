@@ -21,7 +21,7 @@
     rel="stylesheet">
 
   <!-- External Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=106" />
+  <link rel="stylesheet" href="style.css?v=108" />
 </head>
 
 <body class="locked" data-theme="rose-gold">
@@ -175,40 +175,76 @@
     <source src="assets/engagement.mp3" type="audio/mpeg">
   </audio>
 
-  <!-- FLOATING GLASSMORPHIC BOTTOM NAVIGATION BAR -->
-  <nav class="bottom-nav-bar" id="bottomNavBar" aria-label="Invitation Navigation">
-    <a href="#hero" class="bottom-nav-item active"><span class="nav-icon">🏠</span>Home</a>
-    <a href="#interfaithSection" class="bottom-nav-item"><span class="nav-icon">🕊️</span>Unity</a>
-    <a href="#gallerySection" class="bottom-nav-item"><span class="nav-icon">📸</span>Story</a>
-    <a href="#venueSection" class="bottom-nav-item"><span class="nav-icon">📍</span>Venue</a>
-    <a href="#closingSection" class="bottom-nav-item"><span class="nav-icon">💍</span>Rings</a>
-  </nav>
-
   <!-- -------------------------------------------------------------
-       PHOTOREALISTIC 3D ISOMETRIC GOLD ENGAGEMENT RINGS (VINEETH & SOFIYA)
-  <!-- -------------------------------------------------------------
-       PHOTOREALISTIC 3D SOLID GOLD ENGAGEMENT RINGS (VINEETH & SOFIYA)
+       PHOTOREALISTIC 3D ENGAGEMENT RINGS (VINEETH & SOFIYA)
        ------------------------------------------------------------- -->
-  <div class="rings-wrapper" aria-hidden="true">
-    <!-- Left Ring: Vineeth's Photorealistic 3D Solid Gold Engagement Band -->
-    <div class="classic-ring ring-left" id="ringLeft">
+  <div class="rings-wrapper" id="ringsWrapper" aria-hidden="true">
+    <!-- Left Ring: Vineeth's Quantum Glide Diamond Ring for Men -->
+    <div class="classic-ring ring-left" id="ringLeft" role="button" tabindex="0" title="Click to view Vineeth's Ring in 360°">
       <div class="ring-img-container">
-        <img src="assets/ring-left-3d.jpg" alt="Vineeth's 3D Gold Ring" class="ring-photo-3d" />
-        <div class="ring-engraved-badge">VINEETH</div>
+        <img src="assets/ring-left-3d.png?v=6" alt="Vineeth's Quantum Glide Diamond Ring (3D)" class="ring-photo-3d" id="ringLeftImg" />
+        <div class="ring-sparkle-fx"></div>
+        <div class="ring-engraved-badge" id="badgeLeft">VINEETH · 360°</div>
       </div>
     </div>
 
-    <!-- Right Ring: Sofiya's Photorealistic 3D Solid Gold Engagement Band -->
-    <div class="classic-ring ring-right" id="ringRight">
+    <!-- Right Ring: Sofiya's Lab Grown Diamond Solitaire Ring -->
+    <div class="classic-ring ring-right" id="ringRight" role="button" tabindex="0" title="Click to view Sofiya's Ring in 360°">
       <div class="ring-img-container">
-        <img src="assets/ring-right-3d.jpg" alt="Sofiya's 3D Gold Ring" class="ring-photo-3d" />
-        <div class="ring-engraved-badge">SOFIYA</div>
+        <img src="assets/ring-right-3d.png?v=6" alt="Sofiya's Solitaire Diamond Ring (3D)" class="ring-photo-3d" id="ringRightImg" />
+        <div class="ring-sparkle-fx"></div>
+        <div class="ring-engraved-badge" id="badgeRight">SOFIYA · 360°</div>
       </div>
     </div>
 
-    <!-- Locked Position Badge -->
+    <!-- Interlocked 3D Weave: Men's lower band passing in front of Women's lower band -->
+    <div class="classic-ring ring-interlock-weave" id="ringInterlockWeave" aria-hidden="true">
+      <div class="ring-img-container">
+        <img src="assets/ring-left-3d.png?v=6" alt="" class="ring-photo-3d" />
+      </div>
+    </div>
+
+    <!-- Locked Position Badge (Active only when coincided & locked) -->
     <div class="locked-badge" id="lockedBadge">
       <span id="lockedBadgeText">✦ VINEETH & SOFIYA • TWO BECOME ONE ✦</span>
+    </div>
+  </div>
+
+  <!-- -------------------------------------------------------------
+       INTERACTIVE 360° LUXURY RING SHOWCASE LIGHTBOX MODAL
+       ------------------------------------------------------------- -->
+  <div class="ring-modal" id="ringModal" role="dialog" aria-modal="true" aria-label="360 Ring Showcase">
+    <div class="ring-modal-backdrop" id="ringModalBackdrop"></div>
+    <div class="ring-modal-content">
+      <button class="ring-modal-close" id="ringModalClose" aria-label="Close 360 viewer">&times;</button>
+      <div class="ring-modal-header">
+        <span class="ring-modal-kicker">✦ SACRED ENGAGEMENT RING · 360° SHOWCASE ✦</span>
+        <h3 class="ring-modal-title" id="ringModalTitle">Vineeth's Quantum Glide Diamond Ring</h3>
+        <p class="ring-modal-subtitle" id="ringModalSubtitle">Two-Tone Solid Gold & Diamond Band</p>
+      </div>
+
+      <div class="ring-turntable-stage" id="turntableStage">
+        <div class="turntable-canvas-wrapper" id="turntableWrapper">
+          <img id="turntableImg" src="assets/ring-left-3d.png?v=5" alt="360 Ring View" class="turntable-img" draggable="false" />
+          <div class="turntable-sparkle-fx"></div>
+        </div>
+        <div class="turntable-hint">
+          <span class="hint-icon">↔</span> Drag or swipe horizontally to spin 360°
+        </div>
+      </div>
+
+      <div class="turntable-controls">
+        <button class="turntable-btn active" id="turntableAutoBtn">
+          <span id="autoBtnIcon">⏸</span> Auto Spin 360°
+        </button>
+        <button class="turntable-btn" id="turntableResetBtn">
+          ↺ Reset Angle
+        </button>
+      </div>
+
+      <div class="ring-specs-grid" id="ringSpecsGrid">
+        <!-- Dynamically populated based on ring -->
+      </div>
     </div>
   </div>
 
@@ -293,6 +329,11 @@
           </div>
           <canvas id="scratchCanvas"></canvas>
           <div class="scratch-instruction" id="scratchInstruction">✦ SCRATCH HERE ✦</div>
+        </div>
+
+        <!-- Dedicated Sacred Rings Interlock Haven below scratch card -->
+        <div class="rings-lock-bay" id="ringsLockBay" aria-label="Sacred Engagement Rings Interlock Haven">
+          <div class="rings-lock-slot" id="ringsLockSlot"></div>
         </div>
       </div>
     </section>
@@ -414,14 +455,11 @@
       </div>
     </section>
 
-    <!-- 9. CLOSING & RING COLLISION LOCKED SECTION -->
+    <!-- 9. CLOSING SECTION -->
     <section class="closing-section" id="closingSection">
       <div class="container reveal">
         <div class="kicker">WITH ALL OUR HEARTS</div>
         <h2 class="section-title gold-text">Vineeth & Sofiya</h2>
-
-        <!-- Dedicated Ring Spotlight Stage (No Text Overlap!) -->
-        <div class="ring-spotlight-stage" id="ringSpotlightStage"></div>
 
         <p style="color: var(--text-muted); max-width: 520px; margin: 20px auto 0; line-height: 1.8;">
           We look forward to celebrating our engagement with you.<br>
@@ -454,13 +492,13 @@
       <span class="nav-label">Venue</span>
     </a>
     <a href="#closingSection" class="bottom-nav-item">
-      <span class="nav-icon">💍</span>
-      <span class="nav-label">Rings</span>
+      <span class="nav-icon">✨</span>
+      <span class="nav-label">Wishes</span>
     </a>
   </nav>
 
   <!-- External JavaScript -->
-  <script src="script.js?v=106"></script>
+  <script src="script.js?v=113"></script>
 </body>
 
 </html>

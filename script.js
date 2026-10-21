@@ -243,6 +243,7 @@ function completeOpening() {
   if (countdownInterval) clearInterval(countdownInterval);
   openingModal.classList.add('opened');
   document.body.classList.remove('locked');
+  document.body.style.overflow = '';
 }
 
 async function triggerUnwrapSequence(event) {
@@ -268,7 +269,7 @@ async function triggerUnwrapSequence(event) {
 
     // Trigger Ribbon Cutting Popper Confetti Burst
     if (typeof triggerMultiStagePop === 'function') {
-      triggerMultiStagePop(cx, cy);
+      try { triggerMultiStagePop(cx, cy); } catch (e) {}
     }
 
     // Add clicked state to wax seal wrapper
@@ -278,7 +279,7 @@ async function triggerUnwrapSequence(event) {
     if (envContainer) envContainer.classList.add('unwrapping');
 
     // Start background music playback
-    await startContinuousMusic();
+    startContinuousMusic().catch(() => {});
 
     // 5-Second Countdown Timer UI
     let secLeft = 5;
@@ -288,7 +289,10 @@ async function triggerUnwrapSequence(event) {
     countdownInterval = setInterval(() => {
       secLeft--;
       if (cdSecEl && secLeft >= 0) cdSecEl.textContent = secLeft;
-      if (secLeft <= 0) clearInterval(countdownInterval);
+      if (secLeft <= 0) {
+        clearInterval(countdownInterval);
+        completeOpening();
+      }
     }, 1000);
 
     // Smoothly fade out modal after 5 full seconds (5000ms)
@@ -301,10 +305,29 @@ async function triggerUnwrapSequence(event) {
   }
 }
 
-// Bind click events on Wax Seal, Letter Card, and Envelope Container
+// Bind click events on Wax Seal, Letter Card, Envelope, and Modal
 if (openInviteBtn) openInviteBtn.addEventListener('click', (e) => { e.stopPropagation(); triggerUnwrapSequence(e); });
 if (letterCard) letterCard.addEventListener('click', (e) => { e.stopPropagation(); triggerUnwrapSequence(e); });
 if (envContainer) envContainer.addEventListener('click', (e) => { e.stopPropagation(); triggerUnwrapSequence(e); });
+if (openingModal) openingModal.addEventListener('click', (e) => { triggerUnwrapSequence(e); });
+
+const cardEnteringBadge = document.getElementById('cardEnteringBadge');
+if (cardEnteringBadge) {
+  cardEnteringBadge.addEventListener('click', (e) => {
+    e.stopPropagation();
+    completeOpening();
+  });
+}
+
+// Accessibility: Pressing Enter, Space, or Escape opens the invitation
+window.addEventListener('keydown', (e) => {
+  if (openingModal && !openingModal.classList.contains('opened')) {
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
+      e.preventDefault();
+      completeOpening();
+    }
+  }
+});
 
 if (musicBtn) {
   musicBtn.addEventListener('click', async (e) => {
@@ -485,9 +508,12 @@ window.addEventListener('resize', initScratch);
 /* -------------------------------------------------------------
    ENGRAVED CLASSIC RINGS & SCRATCH REVEAL POP CRACKLE CELEBRATION
    ------------------------------------------------------------- */
+const ringsWrapper = document.getElementById('ringsWrapper');
 const ringLeft = document.getElementById('ringLeft');
 const ringRight = document.getElementById('ringRight');
+const ringInterlockWeave = document.getElementById('ringInterlockWeave');
 const lockedBadge = document.getElementById('lockedBadge');
+const lockedBadgeText = document.getElementById('lockedBadgeText');
 
 const colCanvas = document.getElementById('collisionCanvas');
 const colCtx = colCanvas.getContext('2d');
@@ -664,120 +690,399 @@ function animateCollisionParticles() {
 animateCollisionParticles();
 
 let scratchHasLocked = false;
-let bottomHasLocked = false;
+let ringAnimLoopId = null;
+let isScrolling = false;
+let scrollTimeout = null;
+let lastScrollY = window.scrollY;
+let scrollVelocity = 0;
+let smoothVelocity = 0;
+let lastScrollTime = performance.now();
 
-function handleScrollRings() {
-  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  if (docHeight <= 0) return;
-
+/* -------------------------------------------------------------
+   SCROLL-DRIVEN 3D PERSPECTIVE TUMBLING & SACRED INTERLOCK
+   - Freely floating on away-sides when above the scratch card
+   - Glides and locks below the scratch card in its dedicated slot (matching Image 2)
+   - Stably remains locked below the scratch card when scrolling down (never vanishes)
+   - Smoothly unlocks and returns to sides when scrolling back up
+   - Strictly stationary when not actively scrolling
+   ------------------------------------------------------------- */
+function updateRingsPhysics() {
   const scrollPos = window.scrollY;
   const screenW = window.innerWidth;
   const screenH = window.innerHeight;
-  const ringW = screenW >= 768 ? 140 : 105;
+  const ringW = screenW >= 1200 ? 128 : (screenW >= 768 ? 110 : 84);
 
-  // Horizontal side margins
-  const sideMarginLeft = screenW >= 768 ? screenW * 0.08 : screenW * 0.04;
+  // Outer away-side margins (placed far to the sides away from text and photos)
+  let sideMarginLeft = 8;
+  if (screenW >= 1280) {
+    const gutter = (screenW - 960) / 2;
+    sideMarginLeft = Math.max(16, Math.min(50, (gutter - ringW) / 2));
+  } else if (screenW >= 768) {
+    sideMarginLeft = 14;
+  } else {
+    sideMarginLeft = 6;
+  }
   const sideMarginRight = screenW - sideMarginLeft - ringW;
 
-  // Target interlocked X positions in center
-  const targetXLeft = (screenW / 2) - ringW + 24;
-  const targetXRight = (screenW / 2) - 24;
-
-  const deltaXLeft = targetXLeft - sideMarginLeft;
-  const deltaXRight = targetXRight - sideMarginRight;
-
-  // Find Scratch Card wrapper element Y position
-  const scratchWrapper = document.getElementById('scratchWrapper');
-  let scratchY = screenH * 1.5;
-  if (scratchWrapper) {
-    const rect = scratchWrapper.getBoundingClientRect();
-    scratchY = rect.top + window.scrollY;
-  }
-
-  // Find Closing Section Spotlight Stage Y position
-  const closingStage = document.getElementById('ringSpotlightStage');
-  let closingY = docHeight;
-  if (closingStage) {
-    const rect = closingStage.getBoundingClientRect();
-    closingY = rect.top + window.scrollY;
-  }
-
-  // Vertical Y entrance from top (-180px) falling down to screen floating height (screenH * 0.52)
-  const topEntranceProgress = Math.min(1, scrollPos / 350);
+  // Floating viewport resting Y position (when above the scratch card section)
+  const topEntranceProgress = Math.min(1, scrollPos / 260);
   const fallEase = topEntranceProgress * (2 - topEntranceProgress);
   const startY = -180;
-  const targetScreenY = screenH * 0.52;
-  const ringScreenY = startY + (targetScreenY - startY) * fallEase;
+  const floatingScreenY = startY + (screenH * 0.44 - startY) * fallEase;
 
-  // Compute scroll distances for Scratch Card lock and Closing lock
-  const scratchDist = scrollPos - (scratchY - screenH * 0.42);
-  const scratchRange = 420; // 420px scroll window for scratch card lock
-
-  const closingDist = scrollPos - (closingY - screenH * 0.65);
-  const closingRange = 450; // 450px scroll window for closing lock
-
-  let lockFactor = 0; // 0 = separated on sides, 1 = interlocked in center
-  let isScratchLock = false;
-  let isClosingLock = false;
-
-  if (Math.abs(scratchDist) < scratchRange) {
-    // Near Scratch Card section!
-    lockFactor = Math.cos((scratchDist / scratchRange) * (Math.PI / 2));
-    lockFactor = Math.max(0, Math.min(1, lockFactor * lockFactor));
-    isScratchLock = lockFactor > 0.82;
-  } else if (closingDist > 0) {
-    // Near Closing section at bottom!
-    lockFactor = Math.min(1, closingDist / (closingRange * 0.6));
-    isClosingLock = lockFactor > 0.82;
+  // Dedicated Rings Lock Slot below the Scratch Card
+  const slotEl = document.getElementById('ringsLockSlot');
+  let slotRect = null;
+  if (slotEl) {
+    slotRect = slotEl.getBoundingClientRect();
   }
 
-  // Smooth Interpolation for X positions
-  const currentDxLeft = deltaXLeft * lockFactor;
-  const currentDxRight = deltaXRight * lockFactor;
+  let lockFactor = 0;
+  let ringScreenY = floatingScreenY;
+  let targetCenterX = screenW / 2;
 
-  // Floating sway side-to-side motion when separated
-  const floatSwayL = (1 - lockFactor) * Math.sin(scrollPos * 0.008) * 10;
-  const floatSwayR = (1 - lockFactor) * Math.cos(scrollPos * 0.008) * 10;
+  if (slotRect) {
+    const slotCenterY = slotRect.top + slotRect.height / 2;
+    targetCenterX = slotRect.left + slotRect.width / 2;
+    const targetSlotY = slotCenterY - ringW / 2;
 
-  // Dynamic 3D tilt as rings converge to interlock
-  const tiltL = (1 - lockFactor) * 14 - (lockFactor * 12);
-  const tiltR = (1 - lockFactor) * -14 + (lockFactor * 12);
+    // Trigger lock as the slot approaches the center of viewport
+    const lockTriggerY = screenH * 0.52;
+    const approachDistance = 280;
+    const diff = slotCenterY - lockTriggerY;
 
-  if (ringLeft) ringLeft.style.transform = `translate3d(${currentDxLeft}px, ${ringScreenY + floatSwayL}px, 0) rotate(${tiltL}deg)`;
-  if (ringRight) ringRight.style.transform = `translate3d(${currentDxRight}px, ${ringScreenY + floatSwayR}px, 0) rotate(${tiltR}deg)`;
+    if (diff <= 0) {
+      // Scrolled to or past the slot: FULLY LOCKED & STABLE!
+      // Rings remain locked and anchored in the slot below the scratch card, scrolling naturally with the page
+      lockFactor = 1.0;
+      ringScreenY = targetSlotY;
+    } else if (diff < approachDistance) {
+      // Smoothly gliding into the lock below the scratch card
+      const t = 1 - (diff / approachDistance);
+      lockFactor = t * t * (3 - 2 * t);
+      ringScreenY = floatingScreenY + (targetSlotY - floatingScreenY) * lockFactor;
+    } else {
+      // Above the lock zone: freely floating on sides
+      lockFactor = 0;
+      ringScreenY = floatingScreenY;
+    }
+  }
 
-  // Handle Lock Celebration Triggers & Badges
-  const lockedBadge = document.getElementById('lockedBadge');
-  const lockedBadgeText = document.getElementById('lockedBadgeText');
+  // Interlocked target positions in the center slot:
+  // Offset tuned to match the ~44% intertwine ratio of Image 2
+  const interlockOffset = ringW * 0.22;
+  const targetXLeft = targetCenterX - ringW / 2 - interlockOffset;
+  const targetXRight = targetCenterX - ringW / 2 + interlockOffset;
 
-  if (isScratchLock) {
+  // Exact X positions (interpolating between away sides and center lock)
+  const currentXLeft = sideMarginLeft + (targetXLeft - sideMarginLeft) * lockFactor;
+  const currentXRight = sideMarginRight + (targetXRight - sideMarginRight) * lockFactor;
+
+  // Velocity damping when user is not actively scrolling
+  if (!isScrolling) {
+    scrollVelocity *= 0.76;
+  }
+  smoothVelocity += (scrollVelocity - smoothVelocity) * 0.22;
+  if (Math.abs(smoothVelocity) < 0.015) {
+    smoothVelocity = 0;
+  }
+
+  // DYNAMIC MOTION ONLY WHILE SCROLLING:
+  // When stable (stationary), smoothVelocity = 0, so wave offsets & dynamic tilts are 0!
+  const waveDamp = (1 - lockFactor * 0.85);
+  const velFactor = smoothVelocity / 18; // normalized factor
+
+  // Wave buoyancy & sway: zero when stationary, active during scrolling
+  const waveY_L = (Math.sin(scrollPos * 0.018) * 14 * velFactor) * waveDamp;
+  const waveY_R = (Math.sin(scrollPos * 0.018 + 2.5) * 14 * velFactor) * waveDamp;
+  const waveX_L = (Math.cos(scrollPos * 0.014) * 8 * velFactor) * waveDamp;
+  const waveX_R = (-Math.cos(scrollPos * 0.014) * 8 * velFactor) * waveDamp;
+
+  // 3D Perspective Tilts:
+  // Stable resting angles:
+  // Left: rotateX(8deg) rotateY(18deg) rotateZ(-6deg)
+  // Right: rotateX(8deg) rotateY(-18deg) rotateZ(6deg)
+  // Locked angles: lean in and interlace facing each other
+  const scrollTiltX = smoothVelocity * 0.55;
+  const scrollTiltY = Math.sin(scrollPos * 0.01) * 22 * velFactor;
+  const scrollTiltZ = smoothVelocity * 0.25;
+
+  const tiltX_L = (8 + scrollTiltX) * waveDamp;
+  const tiltX_R = (8 + scrollTiltX) * waveDamp;
+
+  const tiltY_L = (18 + scrollTiltY) * (1 - lockFactor) + (lockFactor * 22);
+  const tiltY_R = (-18 - scrollTiltY) * (1 - lockFactor) - (lockFactor * 22);
+
+  const tiltZ_L = (-6 + scrollTiltZ) * (1 - lockFactor) - (lockFactor * 6);
+  const tiltZ_R = (6 - scrollTiltZ) * (1 - lockFactor) + (lockFactor * 6);
+
+  if (ringLeft) {
+    ringLeft.style.transform = `translate3d(${currentXLeft + waveX_L}px, ${ringScreenY + waveY_L}px, 0) perspective(1000px) rotateX(${tiltX_L}deg) rotateY(${tiltY_L}deg) rotateZ(${tiltZ_L}deg)`;
+  }
+  if (ringRight) {
+    ringRight.style.transform = `translate3d(${currentXRight + waveX_R}px, ${ringScreenY + waveY_R}px, 0) perspective(1000px) rotateX(${tiltX_R}deg) rotateY(${tiltY_R}deg) rotateZ(${tiltZ_R}deg)`;
+  }
+
+  // Interlocked 3D weave: men's lower band passing in front of women's lower band
+  if (ringInterlockWeave) {
+    ringInterlockWeave.style.transform = ringLeft ? ringLeft.style.transform : '';
+    ringInterlockWeave.style.opacity = Math.max(0, (lockFactor - 0.65) / 0.35);
+  }
+
+  // Individual name badges fade away during union, fade back in when separating
+  const bLeft = document.getElementById('badgeLeft');
+  const bRight = document.getElementById('badgeRight');
+  if (bLeft) bLeft.style.opacity = Math.max(0, 1 - lockFactor * 2.2);
+  if (bRight) bRight.style.opacity = Math.max(0, 1 - lockFactor * 2.2);
+
+  // Union Celebration Badge & Multi-Stage Confetti Pop
+  if (lockFactor >= 0.95) {
     if (!scratchHasLocked) {
       scratchHasLocked = true;
-      triggerMultiStagePop(screenW / 2, ringScreenY + ringW / 2);
+      triggerMultiStagePop(targetCenterX, ringScreenY + ringW / 2);
     }
     if (lockedBadge) {
       if (lockedBadgeText) lockedBadgeText.textContent = "✦ VINEETH & SOFIYA • TWO BECOME ONE ✦";
+      lockedBadge.style.top = (ringScreenY + ringW + 16) + 'px';
+      lockedBadge.style.left = targetCenterX + 'px';
       lockedBadge.classList.add('active');
     }
-  } else if (isClosingLock) {
-    if (!bottomHasLocked) {
-      bottomHasLocked = true;
-      triggerMultiStagePop(screenW / 2, ringScreenY + ringW / 2);
-    }
-    if (lockedBadge) {
-      if (lockedBadgeText) lockedBadgeText.textContent = "✦ VINEETH & SOFIYA • FOREVER ENGAGED ✦";
-      lockedBadge.classList.add('active');
-    }
-  } else {
+  } else if (lockFactor < 0.6) {
     scratchHasLocked = false;
-    bottomHasLocked = false;
     if (lockedBadge) lockedBadge.classList.remove('active');
+  }
+
+  // Continue animation if actively scrolling or velocity has not settled to 0
+  if (isScrolling || Math.abs(smoothVelocity) > 0.02) {
+    ringAnimLoopId = requestAnimationFrame(updateRingsPhysics);
+  } else {
+    // When stable, stop the animation loop completely so the rings rest still!
+    ringAnimLoopId = null;
   }
 }
 
-window.addEventListener('scroll', handleScrollRings, { passive: true });
-window.addEventListener('resize', handleScrollRings);
-handleScrollRings();
+function handleRingScroll() {
+  const now = performance.now();
+  const dt = Math.max(1, now - lastScrollTime);
+  const currentScrollY = window.scrollY;
+  const rawVelocity = ((currentScrollY - lastScrollY) / dt) * 16;
+
+  scrollVelocity = Math.max(-28, Math.min(28, rawVelocity));
+  lastScrollY = currentScrollY;
+  lastScrollTime = now;
+  isScrolling = true;
+
+  if (scrollTimeout) clearTimeout(scrollTimeout);
+  scrollTimeout = setTimeout(() => {
+    isScrolling = false;
+  }, 100);
+
+  if (!ringAnimLoopId) {
+    ringAnimLoopId = requestAnimationFrame(updateRingsPhysics);
+  }
+}
+
+window.addEventListener('scroll', handleRingScroll, { passive: true });
+window.addEventListener('resize', () => {
+  if (!ringAnimLoopId) ringAnimLoopId = requestAnimationFrame(updateRingsPhysics);
+});
+
+// Render initial stable position once on page load
+updateRingsPhysics();
+
+/* -------------------------------------------------------------
+   INTERACTIVE 360° LUXURY RING SHOWCASE LIGHTBOX
+   ------------------------------------------------------------- */
+const ringModal = document.getElementById('ringModal');
+const ringModalBackdrop = document.getElementById('ringModalBackdrop');
+const ringModalClose = document.getElementById('ringModalClose');
+const ringModalTitle = document.getElementById('ringModalTitle');
+const ringModalSubtitle = document.getElementById('ringModalSubtitle');
+const turntableImg = document.getElementById('turntableImg');
+const turntableStage = document.getElementById('turntableStage');
+const turntableAutoBtn = document.getElementById('turntableAutoBtn');
+const turntableResetBtn = document.getElementById('turntableResetBtn');
+const autoBtnIcon = document.getElementById('autoBtnIcon');
+const ringSpecsGrid = document.getElementById('ringSpecsGrid');
+
+let currentModalRing = 'men';
+let turntableAngle = 0;
+let isDraggingTurntable = false;
+let startDragX = 0;
+let startAngle = 0;
+let isAutoSpinning = true;
+let autoSpinTimer = null;
+
+const TOTAL_MEN_FRAMES = 24;
+const menFrames = [];
+for (let i = 1; i <= TOTAL_MEN_FRAMES; i++) {
+  const pad = String(i).padStart(2, '0');
+  menFrames.push(`assets/turntable_men_clean/frame_${pad}.png`);
+}
+
+const RING_DATA = {
+  men: {
+    title: "Vineeth's Quantum Glide Diamond Ring",
+    subtitle: "Two-Tone Solid Gold & Diamond Band (Jewelbox India)",
+    baseImg: "assets/ring-left-3d.png?v=5",
+    hasTurntableFrames: true,
+    specs: [
+      { label: "Precious Metal", val: "14K / 18K Solid Two-Tone Yellow & White Gold" },
+      { label: "Diamonds", val: "3 Natural Round Brilliant Diamonds (SI-GH)" },
+      { label: "Setting", val: "Precision Flush Architectural Channel" },
+      { label: "Heritage", val: "Quantum Glide Collection · Jewelbox India" }
+    ]
+  },
+  women: {
+    title: "Sofiya's Solitaire Diamond Ring",
+    subtitle: "Lab-Grown Solitaire with Cathedral Channel Pillars (Dholakiya Gems)",
+    baseImg: "assets/ring-right-3d.png?v=6",
+    hasTurntableFrames: false,
+    specs: [
+      { label: "Precious Metal", val: "Solid 14K / 18K Rose Gold (Dholakiya Gems)" },
+      { label: "Center Stone", val: "1 to 4 Carat Round Brilliant Ideal Cut" },
+      { label: "Clarity & Color", val: "D Colorless · VVS1 Ultra-High Clarity" },
+      { label: "Setting Style", val: "Modern Elevated Cathedral Channel Pillars" },
+      { label: "Collection", val: "Dholakiya Gems Solitaire Collection" }
+    ]
+  }
+};
+
+function renderTurntableAngle(deg) {
+  turntableAngle = (deg % 360 + 360) % 360;
+
+  if (currentModalRing === 'men') {
+    // Exact 24-frame 360 turntable
+    const frameIndex = Math.floor((turntableAngle / 360) * TOTAL_MEN_FRAMES);
+    const safeIndex = Math.min(TOTAL_MEN_FRAMES - 1, Math.max(0, frameIndex));
+    turntableImg.src = menFrames[safeIndex];
+    turntableImg.style.transform = `perspective(800px) rotateY(${((turntableAngle % 15) - 7.5)}deg)`;
+  } else {
+    // 3D perspective rotation with realistic foreshortening
+    const tiltPitch = Math.sin(turntableAngle * (Math.PI / 180) * 2) * 10;
+    turntableImg.src = RING_DATA.women.baseImg;
+    turntableImg.style.transform = `perspective(900px) rotateY(${turntableAngle}deg) rotateX(${tiltPitch}deg)`;
+  }
+}
+
+function startAutoSpin() {
+  if (autoSpinTimer) clearInterval(autoSpinTimer);
+  isAutoSpinning = true;
+  if (turntableAutoBtn) turntableAutoBtn.classList.add('active');
+  if (autoBtnIcon) autoBtnIcon.textContent = '⏸';
+
+  autoSpinTimer = setInterval(() => {
+    turntableAngle = (turntableAngle + 1.2) % 360;
+    renderTurntableAngle(turntableAngle);
+  }, 32);
+}
+
+function stopAutoSpin() {
+  if (autoSpinTimer) {
+    clearInterval(autoSpinTimer);
+    autoSpinTimer = null;
+  }
+  isAutoSpinning = false;
+  if (turntableAutoBtn) turntableAutoBtn.classList.remove('active');
+  if (autoBtnIcon) autoBtnIcon.textContent = '▶';
+}
+
+function openRingModal(type) {
+  currentModalRing = type;
+  const data = RING_DATA[type] || RING_DATA.men;
+
+  if (ringModalTitle) ringModalTitle.textContent = data.title;
+  if (ringModalSubtitle) ringModalSubtitle.textContent = data.subtitle;
+
+  if (ringSpecsGrid) {
+    ringSpecsGrid.innerHTML = data.specs.map(s => `
+      <div class="ring-spec-card">
+        <div class="spec-label">${s.label}</div>
+        <div class="spec-val">${s.val}</div>
+      </div>
+    `).join('');
+  }
+
+  turntableAngle = 0;
+  renderTurntableAngle(0);
+  if (ringModal) ringModal.classList.add('active');
+  startAutoSpin();
+}
+
+function closeRingModal() {
+  if (ringModal) ringModal.classList.remove('active');
+  stopAutoSpin();
+}
+
+if (ringLeft) {
+  ringLeft.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openRingModal('men');
+  });
+}
+
+if (ringRight) {
+  ringRight.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openRingModal('women');
+  });
+}
+
+if (ringModalClose) ringModalClose.addEventListener('click', closeRingModal);
+if (ringModalBackdrop) ringModalBackdrop.addEventListener('click', closeRingModal);
+
+if (turntableAutoBtn) {
+  turntableAutoBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (isAutoSpinning) {
+      stopAutoSpin();
+    } else {
+      startAutoSpin();
+    }
+  });
+}
+
+if (turntableResetBtn) {
+  turntableResetBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    turntableAngle = 0;
+    renderTurntableAngle(0);
+  });
+}
+
+// Drag & Swipe rotation on 360 stage
+if (turntableStage) {
+  function onPointerDown(clientX) {
+    isDraggingTurntable = true;
+    startDragX = clientX;
+    startAngle = turntableAngle;
+    stopAutoSpin();
+  }
+
+  function onPointerMove(clientX) {
+    if (!isDraggingTurntable) return;
+    const deltaX = clientX - startDragX;
+    // 1px drag = 0.9 degrees of rotation
+    const newAngle = startAngle + deltaX * 0.9;
+    renderTurntableAngle(newAngle);
+  }
+
+  function onPointerUp() {
+    isDraggingTurntable = false;
+  }
+
+  turntableStage.addEventListener('mousedown', (e) => { onPointerDown(e.clientX); });
+  window.addEventListener('mousemove', (e) => { onPointerMove(e.clientX); });
+  window.addEventListener('mouseup', onPointerUp);
+
+  turntableStage.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches[0]) onPointerDown(e.touches[0].clientX);
+  }, { passive: true });
+  window.addEventListener('touchmove', (e) => {
+    if (e.touches && e.touches[0]) onPointerMove(e.touches[0].clientX);
+  }, { passive: true });
+  window.addEventListener('touchend', onPointerUp);
+}
 
 /* -------------------------------------------------------------
    CALENDAR INTEGRATION
