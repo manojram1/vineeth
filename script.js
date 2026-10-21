@@ -5,6 +5,43 @@ const CONFIG = {
   mapUrl: "https://share.google/mMGFLypsmjwbw9kCy"
 };
 
+const THEME_PALETTES = {
+  'rose-gold': {
+    starColors: ['#e0829d', '#ffccd5', '#ffffff'],
+    roseColors: [
+      { fill: '#e62e5c', highlight: '#ff7597' },
+      { fill: '#d81b60', highlight: '#ff669a' },
+      { fill: '#c2185b', highlight: '#f48fb1' }
+    ]
+  },
+  'midnight': {
+    starColors: ['#e6c875', '#fff3c4', '#60a5fa'],
+    roseColors: [
+      { fill: '#d4af37', highlight: '#fff3c4' },
+      { fill: '#b8860b', highlight: '#f5e3ad' },
+      { fill: '#e6c875', highlight: '#ffffff' }
+    ]
+  },
+  'emerald': {
+    starColors: ['#e5c170', '#86efac', '#f7e4b2'],
+    roseColors: [
+      { fill: '#10b981', highlight: '#f7e4b2' },
+      { fill: '#059669', highlight: '#e5c170' },
+      { fill: '#d97706', highlight: '#fef3c7' }
+    ]
+  },
+  'burgundy': {
+    starColors: ['#f2a6b8', '#fcdbe3', '#ffd700'],
+    roseColors: [
+      { fill: '#9f1239', highlight: '#f2a6b8' },
+      { fill: '#881337', highlight: '#fcdbe3' },
+      { fill: '#be123c', highlight: '#ffe4e6' }
+    ]
+  }
+};
+
+let currentStarColors = THEME_PALETTES['rose-gold'].starColors;
+
 /* -------------------------------------------------------------
    BACKGROUND CANVAS: FLOATING GOLD PARTICLES & STARLIGHT
    ------------------------------------------------------------- */
@@ -37,7 +74,7 @@ class StarParticle {
   draw() {
     bgCtx.save();
     bgCtx.globalAlpha = Math.max(0.1, Math.min(0.9, this.alpha));
-    bgCtx.fillStyle = Math.random() > 0.4 ? '#e0829d' : '#ffccd5';
+    bgCtx.fillStyle = currentStarColors[Math.floor(Math.random() * currentStarColors.length)];
     bgCtx.beginPath();
     bgCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
     bgCtx.fill();
@@ -150,10 +187,32 @@ function animatePetals() {
 animatePetals();
 
 /* -------------------------------------------------------------
-   CONTINUOUS MUSIC PLAYBACK SYSTEM
+   DYNAMIC STYLE THEME SWITCHER & CANVAS PALETTE SYSTEM
+   ------------------------------------------------------------- */
+const themeBtns = document.querySelectorAll('.theme-btn');
+themeBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const selectedTheme = btn.getAttribute('data-theme-val');
+    document.body.setAttribute('data-theme', selectedTheme);
+    themeBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Dynamically transform canvas particle palettes
+    const pal = THEME_PALETTES[selectedTheme] || THEME_PALETTES['rose-gold'];
+    currentStarColors = pal.starColors;
+    petals.forEach(p => {
+      p.colorScheme = pal.roseColors[Math.floor(Math.random() * pal.roseColors.length)];
+    });
+  });
+});
+
+/* -------------------------------------------------------------
+   CONTINUOUS MUSIC PLAYBACK & 3D ENVELOPE UNWRAPPING SYSTEM
    ------------------------------------------------------------- */
 const openingModal = document.getElementById('openingModal');
 const openInviteBtn = document.getElementById('openInviteBtn');
+const envContainer = document.getElementById('envContainer');
+const letterCard = document.getElementById('letterCard');
 const musicBtn = document.getElementById('musicBtn');
 const bgMusic = document.getElementById('bgMusic');
 
@@ -174,20 +233,96 @@ async function startContinuousMusic() {
   }
 }
 
-openInviteBtn.addEventListener('click', async () => {
+let isUnwrapping = false;
+let unwrapTimeout = null;
+let countdownInterval = null;
+
+function completeOpening() {
+  if (!openingModal || openingModal.classList.contains('opened')) return;
+  if (unwrapTimeout) clearTimeout(unwrapTimeout);
+  if (countdownInterval) clearInterval(countdownInterval);
   openingModal.classList.add('opened');
   document.body.classList.remove('locked');
-  await startContinuousMusic();
-});
+}
 
-musicBtn.addEventListener('click', async () => {
-  if (bgMusic.paused) {
+async function triggerUnwrapSequence(event) {
+  if (openingModal && openingModal.classList.contains('opened')) return;
+
+  if (!isUnwrapping) {
+    isUnwrapping = true;
+
+    // Calculate center of wax seal coin button or event click point for ribbon cutting popper burst
+    let cx = window.innerWidth / 2;
+    let cy = window.innerHeight * 0.48;
+    if (openInviteBtn) {
+      const rect = openInviteBtn.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        cx = rect.left + rect.width / 2;
+        cy = rect.top + rect.height / 2;
+      }
+    }
+    if (event && event.clientX && event.clientY) {
+      cx = event.clientX;
+      cy = event.clientY;
+    }
+
+    // Trigger Ribbon Cutting Popper Confetti Burst
+    if (typeof triggerMultiStagePop === 'function') {
+      triggerMultiStagePop(cx, cy);
+    }
+
+    // Add clicked state to wax seal wrapper
+    if (openInviteBtn) openInviteBtn.classList.add('clicked');
+
+    // Trigger 3D Envelope Flap Open, Ribbon Split & Invitation Card Slide Out
+    if (envContainer) envContainer.classList.add('unwrapping');
+
+    // Start background music playback
     await startContinuousMusic();
+
+    // 5-Second Countdown Timer UI
+    let secLeft = 5;
+    const cdSecEl = document.getElementById('countdownSec');
+    if (cdSecEl) cdSecEl.textContent = secLeft;
+
+    countdownInterval = setInterval(() => {
+      secLeft--;
+      if (cdSecEl && secLeft >= 0) cdSecEl.textContent = secLeft;
+      if (secLeft <= 0) clearInterval(countdownInterval);
+    }, 1000);
+
+    // Smoothly fade out modal after 5 full seconds (5000ms)
+    unwrapTimeout = setTimeout(() => {
+      completeOpening();
+    }, 5000);
   } else {
-    bgMusic.pause();
-    musicBtn.classList.remove('playing');
+    // If clicked AGAIN while popped out during the 5s window, open immediately!
+    completeOpening();
   }
-});
+}
+
+// Bind click events on Wax Seal, Letter Card, and Envelope Container
+if (openInviteBtn) openInviteBtn.addEventListener('click', (e) => { e.stopPropagation(); triggerUnwrapSequence(e); });
+if (letterCard) letterCard.addEventListener('click', (e) => { e.stopPropagation(); triggerUnwrapSequence(e); });
+if (envContainer) envContainer.addEventListener('click', (e) => { e.stopPropagation(); triggerUnwrapSequence(e); });
+
+if (musicBtn) {
+  musicBtn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    const musicIcon = document.getElementById('musicIcon');
+    if (bgMusic.paused || bgMusic.muted) {
+      bgMusic.muted = false;
+      await startContinuousMusic();
+      musicBtn.classList.add('playing');
+      if (musicIcon) musicIcon.textContent = '🎵';
+    } else {
+      bgMusic.muted = true;
+      bgMusic.pause();
+      musicBtn.classList.remove('playing');
+      if (musicIcon) musicIcon.textContent = '🔇';
+    }
+  });
+}
 
 function autoResumeAudio() {
   if (openingModal.classList.contains('opened') && bgMusic.paused) {
@@ -221,12 +356,14 @@ setInterval(updateCountdown, 1000);
 /* -------------------------------------------------------------
    SCROLL REVEAL OBSERVER & BOTTOM NAV HIGHLIGHTING
    ------------------------------------------------------------- */
-const revealObserver = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) entry.target.classList.add('visible');
-  });
-}, { threshold: 0.12 });
-document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+if (typeof IntersectionObserver !== 'undefined') {
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+}
 
 const navItems = document.querySelectorAll('.bottom-nav-item');
 const navSections = document.querySelectorAll('section[id], header[id]');
@@ -286,7 +423,7 @@ function initScratch() {
   const dpr = window.devicePixelRatio || 1;
   scratchCanvas.width = rect.width * dpr;
   scratchCanvas.height = rect.height * dpr;
-  sCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (sCtx.setTransform) sCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
   const grad = sCtx.createLinearGradient(0, 0, rect.width, rect.height);
   grad.addColorStop(0, '#e57d9b');
@@ -363,9 +500,9 @@ function resizeColCanvas() {
 resizeColCanvas();
 window.addEventListener('resize', resizeColCanvas);
 
-// High-Energy "Pop Cracking" Fireworks & Confetti Celebration
+// High-Energy "Pop Cracking" Ribbon Cutting & Falling Pop Paper Celebration
 function triggerPopCrackleBurst(cx, cy) {
-  const colors = ['#d96b8d', '#ffc2d1', '#c84b72', '#ffffff', '#ff6b81', '#ffe3eb', '#f5a6bd'];
+  const popPaperColors = ['#f48fb1', '#ffd700', '#ffffff', '#ff4081', '#60a5fa', '#a7f3d0', '#f8b4c4', '#ffe082', '#d96b8d'];
 
   // Popping Shockwave Ring
   colParticles.push({
@@ -373,37 +510,37 @@ function triggerPopCrackleBurst(cx, cy) {
     x: cx,
     y: cy,
     radius: 10,
-    maxRadius: 180,
-    alpha: 0.9,
-    color: '#ffc2d1',
-    lineWidth: 5
+    maxRadius: 220,
+    alpha: 0.95,
+    color: '#ffd700',
+    lineWidth: 6
   });
 
-  // 1. Confetti Ribbon Poppers
-  for (let i = 0; i < 90; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 14 + 4;
+  // 1. Confetti & Falling Pop Papers Bursting Upward then Fluttering Down
+  for (let i = 0; i < 110; i++) {
+    const angle = (Math.random() * 0.85 + 0.075) * -Math.PI; // Upward arc blast
+    const speed = Math.random() * 16 + 4;
     colParticles.push({
       type: 'confetti',
-      x: cx,
+      x: cx + (Math.random() * 50 - 25),
       y: cy,
       vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 2,
-      w: Math.random() * 8 + 4,
-      h: Math.random() * 14 + 6,
-      color: colors[Math.floor(Math.random() * colors.length)],
+      vy: Math.sin(angle) * speed - 4,
+      w: Math.random() * 10 + 4,
+      h: Math.random() * 16 + 8,
+      color: popPaperColors[Math.floor(Math.random() * popPaperColors.length)],
       alpha: 1,
-      decay: Math.random() * 0.015 + 0.008,
+      decay: Math.random() * 0.012 + 0.005, // Slower decay so paper drops flutter and fall across page
       rotation: Math.random() * Math.PI * 2,
-      rotSpeed: (Math.random() - 0.5) * 0.2,
-      gravity: 0.15
+      rotSpeed: (Math.random() - 0.5) * 0.28,
+      gravity: 0.18
     });
   }
 
-  // 2. High Velocity Golden Star Particles
-  for (let i = 0; i < 80; i++) {
+  // 2. High Velocity Golden & Silver Sparkle Particles
+  for (let i = 0; i < 85; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 12 + 2;
+    const speed = Math.random() * 14 + 3;
     colParticles.push({
       type: 'star',
       x: cx,
@@ -411,9 +548,9 @@ function triggerPopCrackleBurst(cx, cy) {
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
       size: Math.random() * 6 + 3,
-      color: Math.random() > 0.3 ? '#f9e4b7' : '#ffffff',
+      color: Math.random() > 0.3 ? '#ffd700' : '#ffffff',
       alpha: 1,
-      decay: Math.random() * 0.025 + 0.01
+      decay: Math.random() * 0.02 + 0.008
     });
   }
 
@@ -526,84 +663,115 @@ function animateCollisionParticles() {
 }
 animateCollisionParticles();
 
-let hasCollided = false;
+let scratchHasLocked = false;
+let bottomHasLocked = false;
 
 function handleScrollRings() {
   const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-  const scrollPos = window.scrollY;
-  const progress = docHeight > 0 ? Math.max(0, Math.min(1, scrollPos / docHeight)) : 0;
+  if (docHeight <= 0) return;
 
+  const scrollPos = window.scrollY;
   const screenW = window.innerWidth;
   const screenH = window.innerHeight;
-  const ringW = screenW >= 768 ? 125 : 95;
-  const sideMargin = screenW >= 768 ? screenW * 0.07 : screenW * 0.04;
+  const ringW = screenW >= 768 ? 140 : 105;
 
-  const startXLeft = sideMargin;
-  const startXRight = screenW - sideMargin - ringW;
+  // Horizontal side margins
+  const sideMarginLeft = screenW >= 768 ? screenW * 0.08 : screenW * 0.04;
+  const sideMarginRight = screenW - sideMarginLeft - ringW;
 
-  const targetXLeft = (screenW / 2) - ringW + 20;
-  const targetXRight = (screenW / 2) - 20;
+  // Target interlocked X positions in center
+  const targetXLeft = (screenW / 2) - ringW + 24;
+  const targetXRight = (screenW / 2) - 24;
 
-  const deltaLeft = targetXLeft - startXLeft;
-  const deltaRight = targetXRight - startXRight;
+  const deltaXLeft = targetXLeft - sideMarginLeft;
+  const deltaXRight = targetXRight - sideMarginRight;
 
-  const ringStage = document.getElementById('ringSpotlightStage');
-  let targetOffsetY = 0;
-  if (ringStage) {
-    const stageRect = ringStage.getBoundingClientRect();
-    const initialRingY = screenH * 0.28;
-    const stageCenterY = stageRect.top + (stageRect.height / 2);
-    targetOffsetY = stageCenterY - initialRingY;
+  // Find Scratch Card wrapper element Y position
+  const scratchWrapper = document.getElementById('scratchWrapper');
+  let scratchY = screenH * 1.5;
+  if (scratchWrapper) {
+    const rect = scratchWrapper.getBoundingClientRect();
+    scratchY = rect.top + window.scrollY;
   }
 
-  if (progress < 0.86) {
-    hasCollided = false;
-    lockedBadge.classList.remove('active');
+  // Find Closing Section Spotlight Stage Y position
+  const closingStage = document.getElementById('ringSpotlightStage');
+  let closingY = docHeight;
+  if (closingStage) {
+    const rect = closingStage.getBoundingClientRect();
+    closingY = rect.top + window.scrollY;
+  }
 
-    const travelP = progress / 0.86;
-    const currentDxLeft = travelP * deltaLeft;
-    const currentDxRight = travelP * deltaRight;
+  // Vertical Y entrance from top (-180px) falling down to screen floating height (screenH * 0.52)
+  const topEntranceProgress = Math.min(1, scrollPos / 350);
+  const fallEase = topEntranceProgress * (2 - topEntranceProgress);
+  const startY = -180;
+  const targetScreenY = screenH * 0.52;
+  const ringScreenY = startY + (targetScreenY - startY) * fallEase;
 
-    const floatYLeft = Math.sin(progress * Math.PI * 5) * 14;
-    const floatYRight = Math.cos(progress * Math.PI * 5) * 14;
+  // Compute scroll distances for Scratch Card lock and Closing lock
+  const scratchDist = scrollPos - (scratchY - screenH * 0.42);
+  const scratchRange = 420; // 420px scroll window for scratch card lock
 
-    const rotL = progress * 360;
-    const rotR = -progress * 360;
+  const closingDist = scrollPos - (closingY - screenH * 0.65);
+  const closingRange = 450; // 450px scroll window for closing lock
 
-    ringLeft.style.transform = `translate3d(${currentDxLeft}px, ${floatYLeft}px, 0) rotate(${rotL}deg)`;
-    ringRight.style.transform = `translate3d(${currentDxRight}px, ${floatYRight}px, 0) rotate(${rotR}deg)`;
+  let lockFactor = 0; // 0 = separated on sides, 1 = interlocked in center
+  let isScratchLock = false;
+  let isClosingLock = false;
 
-  } else {
-    const lockProgress = Math.min(1, (progress - 0.86) / 0.14);
-    const easeLock = lockProgress * lockProgress * (3 - 2 * lockProgress);
+  if (Math.abs(scratchDist) < scratchRange) {
+    // Near Scratch Card section!
+    lockFactor = Math.cos((scratchDist / scratchRange) * (Math.PI / 2));
+    lockFactor = Math.max(0, Math.min(1, lockFactor * lockFactor));
+    isScratchLock = lockFactor > 0.82;
+  } else if (closingDist > 0) {
+    // Near Closing section at bottom!
+    lockFactor = Math.min(1, closingDist / (closingRange * 0.6));
+    isClosingLock = lockFactor > 0.82;
+  }
 
-    const currentDxLeft = deltaLeft;
-    const currentDxRight = deltaRight;
+  // Smooth Interpolation for X positions
+  const currentDxLeft = deltaXLeft * lockFactor;
+  const currentDxRight = deltaXRight * lockFactor;
 
-    const floatYLeft = Math.sin(0.86 * Math.PI * 5) * 14;
-    const floatYRight = Math.cos(0.86 * Math.PI * 5) * 14;
+  // Floating sway side-to-side motion when separated
+  const floatSwayL = (1 - lockFactor) * Math.sin(scrollPos * 0.008) * 10;
+  const floatSwayR = (1 - lockFactor) * Math.cos(scrollPos * 0.008) * 10;
 
-    const currentDyLeft = floatYLeft * (1 - easeLock) + targetOffsetY * easeLock;
-    const currentDyRight = floatYRight * (1 - easeLock) + targetOffsetY * easeLock;
+  // Dynamic 3D tilt as rings converge to interlock
+  const tiltL = (1 - lockFactor) * 14 - (lockFactor * 12);
+  const tiltR = (1 - lockFactor) * -14 + (lockFactor * 12);
 
-    const rotL = 360 + easeLock * 20;
-    const rotR = -360 - easeLock * 20;
+  if (ringLeft) ringLeft.style.transform = `translate3d(${currentDxLeft}px, ${ringScreenY + floatSwayL}px, 0) rotate(${tiltL}deg)`;
+  if (ringRight) ringRight.style.transform = `translate3d(${currentDxRight}px, ${ringScreenY + floatSwayR}px, 0) rotate(${tiltR}deg)`;
 
-    ringLeft.style.transform = `translate3d(${currentDxLeft}px, ${currentDyLeft}px, 0) rotate(${rotL}deg)`;
-    ringRight.style.transform = `translate3d(${currentDxRight}px, ${currentDyRight}px, 0) rotate(${rotR}deg)`;
+  // Handle Lock Celebration Triggers & Badges
+  const lockedBadge = document.getElementById('lockedBadge');
+  const lockedBadgeText = document.getElementById('lockedBadgeText');
 
-    if (progress >= 0.93) {
-      if (!hasCollided) {
-        hasCollided = true;
-        const ringStageRect = ringStage.getBoundingClientRect();
-        triggerSparkleBurst(screenW / 2, ringStageRect.top + ringStageRect.height / 2);
-        if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
-      }
-      lockedBadge.classList.add('active');
-    } else {
-      hasCollided = false;
-      lockedBadge.classList.remove('active');
+  if (isScratchLock) {
+    if (!scratchHasLocked) {
+      scratchHasLocked = true;
+      triggerMultiStagePop(screenW / 2, ringScreenY + ringW / 2);
     }
+    if (lockedBadge) {
+      if (lockedBadgeText) lockedBadgeText.textContent = "✦ VINEETH & SOFIYA • TWO BECOME ONE ✦";
+      lockedBadge.classList.add('active');
+    }
+  } else if (isClosingLock) {
+    if (!bottomHasLocked) {
+      bottomHasLocked = true;
+      triggerMultiStagePop(screenW / 2, ringScreenY + ringW / 2);
+    }
+    if (lockedBadge) {
+      if (lockedBadgeText) lockedBadgeText.textContent = "✦ VINEETH & SOFIYA • FOREVER ENGAGED ✦";
+      lockedBadge.classList.add('active');
+    }
+  } else {
+    scratchHasLocked = false;
+    bottomHasLocked = false;
+    if (lockedBadge) lockedBadge.classList.remove('active');
   }
 }
 

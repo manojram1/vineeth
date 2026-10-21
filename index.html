@@ -21,10 +21,10 @@
     rel="stylesheet">
 
   <!-- External Stylesheet -->
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=106" />
 </head>
 
-<body class="locked">
+<body class="locked" data-theme="rose-gold">
 
   <!-- Canvas Layers -->
   <canvas id="bgCanvas"></canvas>
@@ -32,162 +32,183 @@
   <canvas id="collisionCanvas"></canvas>
   <div class="grain"></div>
 
-  <!-- Opening Envelope Cover Modal -->
+  <!-- FLOATING STYLE & THEME SWITCHER BAR -->
+  <div class="theme-switcher-bar" id="themeSwitcher" role="toolbar" aria-label="Style Theme Switcher">
+    <div class="theme-switcher-label">✨ STYLE THEME</div>
+    <div class="theme-options">
+      <button class="theme-btn active" data-theme-val="rose-gold" title="Rose Gold & Blush">
+        <span class="theme-swatch rose-gold"></span>
+        <span class="theme-name">Rose Gold</span>
+      </button>
+      <button class="theme-btn" data-theme-val="midnight" title="Midnight Velvet & Gold">
+        <span class="theme-swatch midnight"></span>
+        <span class="theme-name">Midnight</span>
+      </button>
+      <button class="theme-btn" data-theme-val="emerald" title="Royal Emerald & Gold">
+        <span class="theme-swatch emerald"></span>
+        <span class="theme-name">Emerald</span>
+      </button>
+      <button class="theme-btn" data-theme-val="burgundy" title="Burgundy Heritage Velvet">
+        <span class="theme-swatch burgundy"></span>
+        <span class="theme-name">Burgundy</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 3D ROYAL ENVELOPE OPENING LANDING MODAL -->
   <div class="opening" id="openingModal">
-    <div class="cover-card">
+    <div class="envelope-wrapper">
+      <div class="envelope-box" id="envContainer">
+        
+        <!-- INNER SILK LINING / ENVELOPE INTERIOR -->
+        <div class="env-interior"></div>
 
-      <!-- Royal Gold Filigree Monogram Crest -->
-      <div class="cover-monogram-emblem">
-        <svg viewBox="0 0 140 140" width="85" height="85">
-          <defs>
-            <linearGradient id="goldEmblemGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#fff4c2" />
-              <stop offset="30%" stop-color="#e2b765" />
-              <stop offset="70%" stop-color="#b8862d" />
-              <stop offset="100%" stop-color="#f5d688" />
-            </linearGradient>
-          </defs>
-          <circle cx="70" cy="70" r="64" fill="none" stroke="url(#goldEmblemGrad)" stroke-width="1.5"
-            stroke-dasharray="4,2" />
-          <circle cx="70" cy="70" r="58" fill="none" stroke="url(#goldEmblemGrad)" stroke-width="1" />
-          <!-- Calligraphy V & S -->
-          <path d="M 48 50 L 60 84 L 72 50 M 66 56 C 82 50 88 66 74 74 C 60 82 80 96 86 82" fill="none"
-            stroke="url(#goldEmblemGrad)" stroke-width="2.5" stroke-linecap="round" />
-          <polygon points="70,26 72,32 78,34 72,36 70,42 68,36 62,34 68,32" fill="#f9e4b7" />
-        </svg>
-      </div>
+        <!-- INVITATION LETTER CARD INSIDE -->
+        <div class="letter-card" id="letterCard" role="button" tabindex="0" title="Click to enter invitation immediately">
+          <div class="card-inner-border"></div>
+          <div class="card-corner-filigree top-left">✦</div>
+          <div class="card-corner-filigree top-right">✦</div>
 
-      <div class="cover-eyebrow">Engagement Invitation</div>
-      <h1 class="cover-title gold-text">Vineeth & Sofiya</h1>
-      <div class="ornament-line"></div>
+          <!-- COUPLE PORTRAIT THUMBNAIL SECTION -->
+          <div class="card-couple-thumb-frame">
+            <div class="card-photo-ring">
+              <img src="assets/couple-1.jpg" alt="Vineeth & Sofiya Portrait" class="card-photo-img" />
+            </div>
+          </div>
 
-      <!-- Interactive Opening Ring Lock Trigger -->
-      <div class="ring-unlock-wrapper" id="openInviteBtn" role="button"
-        aria-label="Tap engagement ring to unwrap invitation">
-        <div class="ring-unlock-btn">
-          <svg viewBox="0 0 100 100" width="45" height="45">
-            <ellipse cx="40" cy="50" rx="26" ry="26" fill="none" stroke="url(#goldEmblemGrad)" stroke-width="6" />
-            <ellipse cx="60" cy="50" rx="26" ry="26" fill="none" stroke="url(#goldEmblemGrad)" stroke-width="6" />
-            <polygon points="50,30 52,36 58,38 52,40 50,46 48,40 42,38 48,36" fill="#ffffff" />
-          </svg>
+          <div class="cover-monogram-emblem">
+            <svg viewBox="0 0 160 160" width="52" height="52">
+              <defs>
+                <linearGradient id="roseGoldCrest" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#fff0f4" />
+                  <stop offset="30%" stop-color="#e57d9b" />
+                  <stop offset="70%" stop-color="#c84b72" />
+                  <stop offset="100%" stop-color="#a63255" />
+                </linearGradient>
+                <radialGradient id="diyaGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#ffd54f" stop-opacity="1" />
+                  <stop offset="100%" stop-color="#ff9800" stop-opacity="0" />
+                </radialGradient>
+              </defs>
+              <circle cx="80" cy="80" r="74" fill="none" stroke="url(#roseGoldCrest)" stroke-width="1.5" stroke-dasharray="6,3" />
+              <circle cx="80" cy="80" r="68" fill="none" stroke="url(#roseGoldCrest)" stroke-width="1" />
+              <!-- Nilavilakku Diya -->
+              <g transform="translate(25, 45) scale(0.65)" class="diya-flame-anim">
+                <ellipse cx="25" cy="40" rx="18" ry="6" fill="url(#roseGoldCrest)" />
+                <path d="M 12 40 C 15 55 35 55 38 40 Z" fill="url(#roseGoldCrest)" />
+                <path d="M 25 10 C 18 25 22 34 25 34 C 28 34 32 25 25 10 Z" fill="#ffb74d" />
+                <circle cx="25" cy="22" r="6" fill="url(#diyaGlow)" />
+              </g>
+              <!-- Grace Cross & Dove -->
+              <g transform="translate(100, 45) scale(0.65)" class="dove-cross-anim">
+                <path d="M 25 10 L 25 45 M 15 22 L 35 22" fill="none" stroke="url(#roseGoldCrest)" stroke-width="3" stroke-linecap="round" />
+                <path d="M 10 18 C 18 8 32 8 40 18 C 30 22 20 22 10 18 Z" fill="url(#roseGoldCrest)" opacity="0.85" />
+              </g>
+              <!-- Monogram V & S -->
+              <path d="M 56 60 L 70 98 L 84 60 M 76 66 C 94 60 102 78 86 88 C 70 98 94 112 102 96" fill="none" stroke="url(#roseGoldCrest)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+
+          <div class="cover-eyebrow">🪔 SACRED INTERFAITH UNION 🕊️</div>
+          <h1 class="cover-title gold-text">Vineeth & Sofiya</h1>
+          <p class="cover-interfaith-tag">Two Faiths · Two Heritage Traditions · One Golden Family</p>
+          <div class="cover-date-badge">13 NOVEMBER 2026 · TRIVANDRUM</div>
+
+          <!-- 5-SECOND PROGRESS BADGE & TAP TO ENTER NOW -->
+          <div class="card-entering-badge" id="cardEnteringBadge">
+            <span class="entering-text">✦ ENTERING IN <b id="countdownSec">5</b>s (TAP TO ENTER) ✦</span>
+            <div class="entering-progress-bar"><div class="entering-progress-fill" id="progressFill"></div></div>
+          </div>
         </div>
-        <div class="ring-unlock-hint">✦ TAP RING TO UNWRAP ✦</div>
+
+        <!-- ENVELOPE FRONT POCKET & SIDE FLAPS -->
+        <div class="env-front-fold"></div>
+
+        <!-- 3D TOP FLAP THAT OPENS -->
+        <div class="env-top-flap" id="envTopFlap">
+          <div class="flap-border-gold"></div>
+        </div>
+
+        <!-- SLEEK THIN LUXURY RIBBON AROUND ENVELOPE WITH CENTER WAX COIN NODE -->
+        <div class="envelope-ribbon-bar" id="envelopeRibbon">
+          <div class="ribbon-band ribbon-left" id="ribbonLeft">
+            <div class="ribbon-cut-edge"></div>
+          </div>
+          <div class="ribbon-band ribbon-right" id="ribbonRight">
+            <div class="ribbon-cut-edge"></div>
+          </div>
+        </div>
+
+        <!-- GOLDEN WAX SEAL BUTTON & ACTION BADGE -->
+        <div class="wax-seal-wrapper" id="openInviteBtn" role="button" tabindex="0" aria-label="Tap Wax Seal to open invitation">
+          <div class="wax-seal-btn" id="waxSeal">
+            <svg viewBox="0 0 100 100" width="56" height="56">
+              <defs>
+                <linearGradient id="waxGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#fff2b2" />
+                  <stop offset="35%" stop-color="#e6b800" />
+                  <stop offset="75%" stop-color="#b38600" />
+                  <stop offset="100%" stop-color="#735300" />
+                </linearGradient>
+              </defs>
+              <circle cx="50" cy="50" r="46" fill="url(#waxGoldGrad)" stroke="#ffffff" stroke-width="2.5" />
+              <circle cx="50" cy="50" r="39" fill="none" stroke="#fff5cc" stroke-width="1.5" stroke-dasharray="5,2" />
+              <ellipse cx="43" cy="48" rx="14" ry="14" fill="none" stroke="#ffffff" stroke-width="2.5" />
+              <ellipse cx="57" cy="48" rx="14" ry="14" fill="none" stroke="#ffffff" stroke-width="2.5" />
+              <polygon points="50,34 52,38 56,40 52,42 50,46 48,42 44,40 48,38" fill="#ffffff" />
+            </svg>
+            <div class="seal-glow-ring"></div>
+          </div>
+          <div class="seal-action-hint">✦ TAP WAX SEAL TO OPEN INVITATION ✦</div>
+        </div>
+
       </div>
     </div>
   </div>
 
   <!-- Music Player Toggle -->
-  <button class="music-toggle" id="musicBtn" aria-label="Toggle romantic music">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M9 18V5l12-2v13"></path>
-      <circle cx="6" cy="18" r="3"></circle>
-      <circle cx="18" cy="16" r="3"></circle>
-    </svg>
+  <!-- FLOATING MUSIC TOGGLE BUTTON WITH MUTE & PLAY INDICATOR -->
+  <button class="music-toggle" id="musicBtn" aria-label="Toggle romantic music" title="Click to mute or play background music">
+    <span class="music-icon" id="musicIcon">🎵</span>
   </button>
   <audio id="bgMusic" loop preload="auto">
     <source src="assets/engagement.mp3" type="audio/mpeg">
-    <source src="assets/wedding-music.mp3" type="audio/mpeg">
   </audio>
 
   <!-- FLOATING GLASSMORPHIC BOTTOM NAVIGATION BAR -->
   <nav class="bottom-nav-bar" id="bottomNavBar" aria-label="Invitation Navigation">
-    <a href="#heroSection" class="bottom-nav-item active"><span class="nav-icon">🏠</span>Home</a>
-    <a href="#harmonySection" class="bottom-nav-item"><span class="nav-icon">🕊️</span>Faiths</a>
+    <a href="#hero" class="bottom-nav-item active"><span class="nav-icon">🏠</span>Home</a>
+    <a href="#interfaithSection" class="bottom-nav-item"><span class="nav-icon">🕊️</span>Unity</a>
     <a href="#gallerySection" class="bottom-nav-item"><span class="nav-icon">📸</span>Story</a>
     <a href="#venueSection" class="bottom-nav-item"><span class="nav-icon">📍</span>Venue</a>
     <a href="#closingSection" class="bottom-nav-item"><span class="nav-icon">💍</span>Rings</a>
   </nav>
 
   <!-- -------------------------------------------------------------
-       CLASSIC ROUND GOLD RINGS WITH TRANSPARENT HOLE (VINEETH & SOFIYA)
+       PHOTOREALISTIC 3D ISOMETRIC GOLD ENGAGEMENT RINGS (VINEETH & SOFIYA)
+  <!-- -------------------------------------------------------------
+       PHOTOREALISTIC 3D SOLID GOLD ENGAGEMENT RINGS (VINEETH & SOFIYA)
        ------------------------------------------------------------- -->
   <div class="rings-wrapper" aria-hidden="true">
-    <!-- Left Ring: Vineeth -->
+    <!-- Left Ring: Vineeth's Photorealistic 3D Solid Gold Engagement Band -->
     <div class="classic-ring ring-left" id="ringLeft">
-      <svg viewBox="0 0 180 180" width="100%" height="100%">
-        <defs>
-          <linearGradient id="goldRingLeft" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#fff4c2" />
-            <stop offset="25%" stop-color="#e2b765" />
-            <stop offset="50%" stop-color="#8a5b14" />
-            <stop offset="75%" stop-color="#f5d688" />
-            <stop offset="100%" stop-color="#ab771c" />
-          </linearGradient>
-          <filter id="glowL" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-        </defs>
-
-        <!-- Shadow -->
-        <circle cx="90" cy="90" r="70" fill="none" stroke="rgba(0,0,0,0.6)" stroke-width="18" filter="blur(8px)" />
-
-        <!-- Classic Smooth Round Ring Band -->
-        <circle cx="90" cy="90" r="68" fill="none" stroke="url(#goldRingLeft)" stroke-width="20" filter="url(#glowL)" />
-        <circle cx="90" cy="90" r="77" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2" />
-        <circle cx="90" cy="90" r="59" fill="none" stroke="rgba(255,235,170,0.6)" stroke-width="2" />
-
-        <!-- 100% TRANSPARENT INTERIOR HOLE (NO BLACK BACKGROUND) -->
-        <circle cx="90" cy="90" r="57" fill="none" />
-
-        <!-- Engraved Name: VINEETH -->
-        <path id="arcLeft" d="M 32,90 A 58,58 0 1,1 148,90" fill="none" />
-        <text font-family="'Montserrat', sans-serif" font-weight="800" font-size="15" fill="#ffffff"
-          letter-spacing="3.5" text-anchor="middle">
-          <textPath href="#arcLeft" startOffset="50%">VINEETH</textPath>
-        </text>
-
-        <!-- Metallic Sparkle Glint -->
-        <circle cx="48" cy="48" r="3" fill="#ffffff" />
-        <polygon points="48,38 50,45 57,47 50,49 48,56 46,49 39,47 46,45" fill="#ffffff" />
-      </svg>
+      <div class="ring-img-container">
+        <img src="assets/ring-left-3d.jpg" alt="Vineeth's 3D Gold Ring" class="ring-photo-3d" />
+        <div class="ring-engraved-badge">VINEETH</div>
+      </div>
     </div>
 
-    <!-- Right Ring: Sofiya -->
+    <!-- Right Ring: Sofiya's Photorealistic 3D Solid Gold Engagement Band -->
     <div class="classic-ring ring-right" id="ringRight">
-      <svg viewBox="0 0 180 180" width="100%" height="100%">
-        <defs>
-          <linearGradient id="goldRingRight" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stop-color="#fff8d6" />
-            <stop offset="25%" stop-color="#f5ce82" />
-            <stop offset="50%" stop-color="#996719" />
-            <stop offset="75%" stop-color="#fde4a3" />
-            <stop offset="100%" stop-color="#b8862d" />
-          </linearGradient>
-          <filter id="glowR" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-        </defs>
-
-        <!-- Shadow -->
-        <circle cx="90" cy="90" r="70" fill="none" stroke="rgba(0,0,0,0.6)" stroke-width="18" filter="blur(8px)" />
-
-        <!-- Classic Smooth Round Ring Band -->
-        <circle cx="90" cy="90" r="68" fill="none" stroke="url(#goldRingRight)" stroke-width="20"
-          filter="url(#glowR)" />
-        <circle cx="90" cy="90" r="77" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="2" />
-        <circle cx="90" cy="90" r="59" fill="none" stroke="rgba(255,235,170,0.6)" stroke-width="2" />
-
-        <!-- 100% TRANSPARENT INTERIOR HOLE (NO BLACK BACKGROUND) -->
-        <circle cx="90" cy="90" r="57" fill="none" />
-
-        <!-- Engraved Name: SOFIYA -->
-        <path id="arcRight" d="M 32,90 A 58,58 0 1,1 148,90" fill="none" />
-        <text font-family="'Montserrat', sans-serif" font-weight="800" font-size="15" fill="#ffffff"
-          letter-spacing="3.5" text-anchor="middle">
-          <textPath href="#arcRight" startOffset="50%">SOFIYA</textPath>
-        </text>
-
-        <!-- Metallic Sparkle Glint -->
-        <circle cx="132" cy="48" r="3" fill="#ffffff" />
-        <polygon points="132,38 134,45 141,47 134,49 132,56 130,49 123,47 130,45" fill="#ffffff" />
-      </svg>
+      <div class="ring-img-container">
+        <img src="assets/ring-right-3d.jpg" alt="Sofiya's 3D Gold Ring" class="ring-photo-3d" />
+        <div class="ring-engraved-badge">SOFIYA</div>
+      </div>
     </div>
 
     <!-- Locked Position Badge -->
     <div class="locked-badge" id="lockedBadge">
-      <span>✦ VINEETH & SOFIYA • FOREVER ENGAGED ✦</span>
+      <span id="lockedBadgeText">✦ VINEETH & SOFIYA • TWO BECOME ONE ✦</span>
     </div>
   </div>
 
@@ -439,7 +460,7 @@
   </nav>
 
   <!-- External JavaScript -->
-  <script src="script.js"></script>
+  <script src="script.js?v=106"></script>
 </body>
 
 </html>
