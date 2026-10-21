@@ -711,7 +711,7 @@ function updateRingsPhysics() {
   const sideMarginRight = screenW - sideMarginLeft - ringW;
 
   // Floating viewport resting Y position: stationed at eye-level on away-sides right from landing
-  const floatingScreenY = screenH * 0.42;
+  const floatingScreenY = isMobile ? Math.min(screenH * 0.24, 185) : screenH * 0.42;
 
   // Dedicated Rings Lock Slot below the Scratch Card
   const slotEl = document.getElementById('ringsLockSlot');
