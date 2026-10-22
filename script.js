@@ -507,7 +507,7 @@ function doScratch(x, y) {
     const cx = cardRect.left + cardRect.width / 2;
     const cy = cardRect.top + cardRect.height / 2;
 
-    triggerMultiStagePop(cx, cy);
+    triggerScratchCrackerCelebration(cx, cy);
   }
 }
 
@@ -959,19 +959,132 @@ function playCrackerCelebrationSound() {
   } catch (err) {}
 }
 
-// Staggered Pop Burst for Scratch Reveal Celebration
-function triggerMultiStagePop(cx, cy) {
+// Authentic Pyrotechnic Firecracker Burst for Scratch Reveal
+function triggerCrackerBurst(cx, cy, intensity = 1.0, spreadAngle = null) {
+  const sparkColors = [
+    { color: '#FFFFFF', glow: '#FFF59D', width: 2.6 }, // Incandescent white-hot
+    { color: '#FFE082', glow: '#FFD700', width: 2.4 }, // Brilliant gold
+    { color: '#FFD700', glow: '#FFA000', width: 2.2 }, // Pure golden spark
+    { color: '#FF9800', glow: '#FF6D00', width: 2.0 }, // Sizzling amber
+    { color: '#FF5722', glow: '#E65100', width: 2.0 }, // Fiery orange
+    { color: '#FF1744', glow: '#D50000', width: 2.2 }, // Pyrotechnic crimson red
+    { color: '#E0F7FA', glow: '#80DEEA', width: 2.4 }  // Electric diamond silver
+  ];
+
+  // 1. Pyrotechnic Flash Shockwave
+  colParticles.push({
+    type: 'cracker-flash',
+    x: cx,
+    y: cy,
+    radius: 12,
+    maxRadius: 230 * intensity,
+    expandSpeed: 16 * intensity,
+    alpha: 0.95,
+    decay: 0.065,
+    color: '#FFF8E1',
+    lineWidth: 5
+  });
+
+  // 2. High-Velocity Incandescent Spark Streaks
+  const sparkCount = Math.floor(75 * intensity);
+  for (let i = 0; i < sparkCount; i++) {
+    let angle;
+    if (spreadAngle !== null) {
+      angle = spreadAngle + (Math.random() - 0.5) * Math.PI * 0.9;
+    } else {
+      angle = Math.random() * Math.PI * 2;
+    }
+    const speed = (Math.random() * 16 + 5) * intensity;
+    const style = sparkColors[Math.floor(Math.random() * sparkColors.length)];
+    const willBurst = Math.random() < 0.28; // 28% of sparks burst into secondary micro-crackles
+
+    colParticles.push({
+      type: 'cracker-spark',
+      x: cx + (Math.random() * 20 - 10),
+      y: cy + (Math.random() * 20 - 10),
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      color: style.color,
+      glowColor: style.glow,
+      lineWidth: style.width,
+      tail: Math.random() * 1.5 + 2.2,
+      friction: Math.random() * 0.02 + 0.93,
+      gravity: Math.random() * 0.08 + 0.12,
+      alpha: 1,
+      decay: Math.random() * 0.012 + 0.016, // Fast sizzling life
+      bursts: willBurst,
+      hasBursted: false
+    });
+  }
+
+  // 3. Radiant 4-Point Star Flares (Twinkling Firecracker Starbursts)
+  const starCount = Math.floor(32 * intensity);
+  for (let i = 0; i < starCount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (Math.random() * 12 + 3) * intensity;
+    colParticles.push({
+      type: 'cracker-star',
+      x: cx,
+      y: cy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      size: Math.random() * 3.5 + 2.5,
+      color: Math.random() > 0.4 ? '#FFD700' : '#FFFFFF',
+      glowColor: Math.random() > 0.5 ? '#FFA000' : '#FFD54F',
+      rotation: Math.random() * Math.PI,
+      alpha: 1,
+      decay: Math.random() * 0.015 + 0.02,
+      flicker: Math.random() * 5
+    });
+  }
+}
+
+// Multi-Stage Firecracker Sequence for Scratch Reveal
+function triggerScratchCrackerCelebration(cx, cy) {
+  // Play distinct pyrotechnic firecracker string sound
   playCrackerCelebrationSound();
 
+  // 1. Center initial firecracker explosion
+  triggerCrackerBurst(cx, cy, 1.25);
+
+  // 2. Left angled firecracker pop (t = 85ms)
+  setTimeout(() => {
+    triggerCrackerBurst(cx - 85, cy - 25, 0.9, -Math.PI * 0.65);
+  }, 85);
+
+  // 3. Right angled firecracker pop (t = 165ms)
+  setTimeout(() => {
+    triggerCrackerBurst(cx + 85, cy - 25, 0.9, -Math.PI * 0.35);
+  }, 165);
+
+  // 4. Center sparkling crackle fountain finale (t = 245ms)
+  setTimeout(() => {
+    triggerCrackerBurst(cx, cy - 35, 1.0, -Math.PI / 2);
+  }, 245);
+
+  if (navigator.vibrate) navigator.vibrate([30, 20, 40, 25, 50, 25, 70]);
+}
+
+// Dedicated Popper Effect for Ring Interlock Celebration (Confetti & Paper Shower)
+function triggerRingLockPopper(cx, cy) {
+  // Use celebratory party popper sound
+  playPartyPopperSound();
+
+  // Popper confetti bursts (shockwave + colorful flutter papers & ribbons)
   triggerPopCrackleBurst(cx, cy);
 
   setTimeout(() => {
-    triggerPopCrackleBurst(cx - 90, cy - 30);
-  }, 110);
+    triggerPopCrackleBurst(cx - 80, cy - 20);
+  }, 120);
 
   setTimeout(() => {
-    triggerPopCrackleBurst(cx + 90, cy - 30);
-  }, 220);
+    triggerPopCrackleBurst(cx + 80, cy - 20);
+  }, 240);
+}
+
+// Compatibility alias
+function triggerMultiStagePop(cx, cy) {
+  triggerScratchCrackerCelebration(cx, cy);
 }
 
 // Micro sparks while scratching
@@ -980,13 +1093,13 @@ function triggerScratchSpark(x, y) {
     const angle = Math.random() * Math.PI * 2;
     const speed = Math.random() * 4 + 1;
     colParticles.push({
-      type: 'star',
+      type: 'cracker-crackle',
       x: x,
       y: y,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
-      size: Math.random() * 3 + 1.5,
-      color: '#fcf6ba',
+      size: Math.random() * 2.5 + 1.2,
+      color: Math.random() > 0.4 ? '#FFF176' : '#FFD54F',
       alpha: 1,
       decay: 0.05
     });
@@ -994,7 +1107,7 @@ function triggerScratchSpark(x, y) {
 }
 
 function triggerSparkleBurst(cx, cy) {
-  triggerPopCrackleBurst(cx, cy);
+  triggerCrackerBurst(cx, cy, 1.0);
 }
 
 function animateCollisionParticles() {
@@ -1003,6 +1116,7 @@ function animateCollisionParticles() {
   for (let i = colParticles.length - 1; i >= 0; i--) {
     const p = colParticles[i];
 
+    // 1. Popper Shockwave Ring (for ring join popper)
     if (p.type === 'shockwave') {
       p.radius += 8;
       p.alpha -= 0.04;
@@ -1021,9 +1135,157 @@ function animateCollisionParticles() {
       continue;
     }
 
+    // 2. Cracker Explosion Flash Ring
+    if (p.type === 'cracker-flash') {
+      p.radius += p.expandSpeed || 14;
+      p.alpha -= p.decay || 0.06;
+      if (p.alpha <= 0 || p.radius >= p.maxRadius) {
+        colParticles.splice(i, 1);
+        continue;
+      }
+      colCtx.save();
+      colCtx.globalAlpha = Math.max(0, p.alpha);
+      colCtx.strokeStyle = p.color || '#FFF3B0';
+      colCtx.lineWidth = p.lineWidth || 4;
+      colCtx.shadowColor = '#FFA500';
+      colCtx.shadowBlur = 14;
+      colCtx.beginPath();
+      colCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      colCtx.stroke();
+      colCtx.restore();
+      continue;
+    }
+
     p.x += p.vx;
     p.y += p.vy;
 
+    // 3. Cracker Fiery Streaks (Incandescent sparks with light trails)
+    if (p.type === 'cracker-spark') {
+      p.vx *= p.friction || 0.94;
+      p.vy *= p.friction || 0.94;
+      p.vy += p.gravity || 0.12;
+      p.alpha -= p.decay || 0.022;
+
+      // Secondary micro-crackle pop burst
+      if (p.bursts && p.alpha < 0.62 && !p.hasBursted) {
+        p.hasBursted = true;
+        for (let k = 0; k < 4; k++) {
+          const microAngle = Math.random() * Math.PI * 2;
+          const microSpeed = Math.random() * 3.5 + 1;
+          colParticles.push({
+            type: 'cracker-crackle',
+            x: p.x,
+            y: p.y,
+            vx: Math.cos(microAngle) * microSpeed,
+            vy: Math.sin(microAngle) * microSpeed,
+            size: Math.random() * 2 + 1,
+            color: Math.random() > 0.4 ? '#FFF59D' : '#FFD54F',
+            alpha: 0.95,
+            decay: 0.04
+          });
+        }
+      }
+
+      if (p.alpha <= 0) {
+        colParticles.splice(i, 1);
+        continue;
+      }
+
+      colCtx.save();
+      colCtx.globalAlpha = Math.max(0, p.alpha);
+      colCtx.strokeStyle = p.color;
+      colCtx.lineWidth = p.lineWidth || 2.2;
+      colCtx.lineCap = 'round';
+      colCtx.shadowColor = p.glowColor || p.color;
+      colCtx.shadowBlur = p.glowBlur || 6;
+
+      colCtx.beginPath();
+      const tailLen = p.tail || 2.6;
+      colCtx.moveTo(p.x - p.vx * tailLen, p.y - p.vy * tailLen);
+      colCtx.lineTo(p.x, p.y);
+      colCtx.stroke();
+
+      // Bright white incandescent spark core
+      colCtx.fillStyle = '#FFFFFF';
+      colCtx.beginPath();
+      colCtx.arc(p.x, p.y, (p.lineWidth || 2.2) * 0.65, 0, Math.PI * 2);
+      colCtx.fill();
+
+      colCtx.restore();
+      continue;
+    }
+
+    // 4. Cracker Twinkling 4-Point Star Flares
+    if (p.type === 'cracker-star') {
+      p.vx *= 0.93;
+      p.vy *= 0.93;
+      p.vy += 0.06;
+      p.alpha -= p.decay || 0.024;
+      p.flicker = (p.flicker || 0) + 0.35;
+
+      if (p.alpha <= 0) {
+        colParticles.splice(i, 1);
+        continue;
+      }
+
+      const currentSize = Math.max(1, p.size * (1 + Math.sin(p.flicker) * 0.35));
+      colCtx.save();
+      colCtx.globalAlpha = Math.max(0, p.alpha);
+      colCtx.fillStyle = p.color;
+      colCtx.shadowColor = p.glowColor || '#FFD700';
+      colCtx.shadowBlur = 8;
+
+      colCtx.translate(p.x, p.y);
+      colCtx.rotate(p.rotation || 0);
+
+      // 4-point star diamond flare
+      colCtx.beginPath();
+      colCtx.moveTo(0, -currentSize * 2.2);
+      colCtx.lineTo(currentSize * 0.45, -currentSize * 0.45);
+      colCtx.lineTo(currentSize * 2.2, 0);
+      colCtx.lineTo(currentSize * 0.45, currentSize * 0.45);
+      colCtx.lineTo(0, currentSize * 2.2);
+      colCtx.lineTo(-currentSize * 0.45, currentSize * 0.45);
+      colCtx.lineTo(-currentSize * 2.2, 0);
+      colCtx.lineTo(-currentSize * 0.45, -currentSize * 0.45);
+      colCtx.closePath();
+      colCtx.fill();
+
+      // White center flare
+      colCtx.fillStyle = '#FFFFFF';
+      colCtx.beginPath();
+      colCtx.arc(0, 0, currentSize * 0.6, 0, Math.PI * 2);
+      colCtx.fill();
+
+      colCtx.restore();
+      continue;
+    }
+
+    // 5. Cracker Micro Sizzles & Sparks
+    if (p.type === 'cracker-crackle') {
+      p.vx *= 0.90;
+      p.vy *= 0.90;
+      p.vy += 0.08;
+      p.alpha -= p.decay || 0.035;
+
+      if (p.alpha <= 0) {
+        colParticles.splice(i, 1);
+        continue;
+      }
+
+      colCtx.save();
+      colCtx.globalAlpha = Math.max(0, p.alpha);
+      colCtx.fillStyle = p.color;
+      colCtx.shadowColor = '#FFA500';
+      colCtx.shadowBlur = 4;
+      colCtx.beginPath();
+      colCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      colCtx.fill();
+      colCtx.restore();
+      continue;
+    }
+
+    // 6. Popper Confetti & Flutter Papers (specifically for Ring Join Celebration)
     if (p.type === 'confetti' || p.type === 'ribbon' || p.type === 'petal') {
       p.vy += p.gravity || 0.1;
       p.vx *= 0.96;
@@ -1053,7 +1315,7 @@ function animateCollisionParticles() {
       continue;
     }
 
-    // Default Star / Sparkle
+    // 7. Default Star / Sparkle
     p.vx *= 0.95;
     p.vy *= 0.95;
     p.alpha -= p.decay;
@@ -1218,11 +1480,11 @@ function updateRingsPhysics() {
 
 
 
-  // Union Celebration Badge & Multi-Stage Confetti Pop
+  // Union Celebration Badge & Multi-Stage Confetti Pop (Preserves Popper Effect for Ring Interlock)
   if (lockFactor >= 0.95) {
     if (!scratchHasLocked) {
       scratchHasLocked = true;
-      triggerMultiStagePop(targetCenterX, ringScreenY + ringW / 2);
+      triggerRingLockPopper(targetCenterX, ringScreenY + ringW / 2);
     }
     if (lockedBadge) {
       if (lockedBadgeText) lockedBadgeText.textContent = "✦ VINEETH & SOFIYA • TWO BECOME ONE ✦";
