@@ -237,6 +237,7 @@ function completeOpening() {
   colParticles = [];
   colCtx.clearRect(0, 0, colCanvas.width, colCanvas.height);
   updateRingsPhysics();
+  highlightActiveNav();
 }
 
 async function triggerUnwrapSequence(event) {
@@ -261,7 +262,7 @@ async function triggerUnwrapSequence(event) {
       cy = event.clientY;
     }
 
-    // Trigger Ribbon Cutting Popper Confetti Burst on Envelope Page (plays notification chime immediately)
+    // Trigger Ribbon Cutting Popper Confetti Burst on Envelope Page (plays party popper sound immediately)
     triggerEnvelopePartyPopper(cx, cy);
 
     // Add clicked state to wax seal wrapper
@@ -270,7 +271,7 @@ async function triggerUnwrapSequence(event) {
     // Trigger 3D Envelope Flap Open, Ribbon Split & Invitation Card Slide Out
     if (envContainer) envContainer.classList.add('unwrapping');
 
-    // Start background music AFTER 2 seconds so the notification popup sound is heard clearly first
+    // Start background music AFTER 2 seconds so the party popper sound is heard clearly first
     songStartTimeout = setTimeout(() => {
       startContinuousMusic().catch(() => {});
     }, 2000);
@@ -374,26 +375,57 @@ if (typeof IntersectionObserver !== 'undefined') {
 const navItems = document.querySelectorAll('.bottom-nav-item');
 const navSections = document.querySelectorAll('section[id], header[id]');
 
+// Map each page section ID to its corresponding bottom navigation tab href
+const sectionNavMap = {
+  'hero': '#hero',
+  'messageSection': '#messageSection',
+  'interfaithSection': '#interfaithSection',
+  'scratchSection': '#interfaithSection',
+  'countdownSection': '#interfaithSection',
+  'gallerySection': '#gallerySection',
+  'ritesSection': '#gallerySection',
+  'venueSection': '#venueSection',
+  'closingSection': '#closingSection'
+};
+
 function highlightActiveNav() {
-  let currentSectionId = 'hero';
-  const scrollPosition = window.scrollY + window.innerHeight * 0.35;
+  // If the envelope modal is still locked or user is at the top of the page, always keep Home active
+  if (document.body.classList.contains('locked') || window.scrollY < 80) {
+    navItems.forEach(item => {
+      if (item.getAttribute('href') === '#hero') {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    });
+    return;
+  }
+
+  const scrollPosition = window.scrollY + window.innerHeight * 0.38;
+  let activeTarget = '#hero';
 
   navSections.forEach(section => {
-    const sectionTop = section.offsetTop;
-    const sectionHeight = section.offsetHeight;
-    if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-      currentSectionId = section.getAttribute('id');
+    const rect = section.getBoundingClientRect();
+    const sectionTop = rect.top + window.scrollY;
+    if (scrollPosition >= sectionTop - 60) {
+      const secId = section.getAttribute('id');
+      if (secId && sectionNavMap[secId]) {
+        activeTarget = sectionNavMap[secId];
+      }
     }
   });
 
-  if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) {
-    currentSectionId = 'closingSection';
+  // Only highlight Wishes if user has scrolled well down into the page and reached the footer
+  const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+  if (window.scrollY > 500 && (window.innerHeight + window.scrollY) >= scrollHeight - 80) {
+    activeTarget = '#closingSection';
   }
 
   navItems.forEach(item => {
-    item.classList.remove('active');
-    if (item.getAttribute('href') === `#${currentSectionId}`) {
+    if (item.getAttribute('href') === activeTarget) {
       item.classList.add('active');
+    } else {
+      item.classList.remove('active');
     }
   });
 }
@@ -401,6 +433,9 @@ function highlightActiveNav() {
 navItems.forEach(item => {
   item.addEventListener('click', (e) => {
     e.preventDefault();
+    navItems.forEach(nav => nav.classList.remove('active'));
+    item.classList.add('active');
+
     const targetId = item.getAttribute('href').replace('#', '');
     if (targetId === 'hero') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -609,8 +644,8 @@ function animateEnvelopePopper() {
 }
 animateEnvelopePopper();
 
-// Iconic iPhone Notification Chime synthesized via Web Audio API (0 assets, 100% reliable)
-function playIPhoneNotificationSound() {
+// Realistic Festive Party Popper Sound Effect synthesized via Web Audio API (snappy air pop + paper crackle blast)
+function playPartyPopperSound() {
   try {
     const AudioCtx = window.AudioContext || window.webkitAudioContext;
     if (!AudioCtx) return;
@@ -619,31 +654,75 @@ function playIPhoneNotificationSound() {
       ctx.resume().catch(() => {});
     }
 
-    const now = ctx.currentTime;
-    // Classic iOS 3-note ascending bell chime (G#5 -> B5 -> E6)
-    const notes = [
-      { freq: 830.61, time: now + 0.00, dur: 0.22 },  // G#5
-      { freq: 987.77, time: now + 0.10, dur: 0.25 },  // B5
-      { freq: 1318.51, time: now + 0.20, dur: 0.38 }  // E6
-    ];
+    const playSingleCannonPop = (delayMs, volume = 1.0, pitchMod = 1.0) => {
+      const startTime = ctx.currentTime + delayMs / 1000;
 
-    notes.forEach(n => {
+      // 1. Snappy pressure-release "POP" tone (fast pitch drop)
       const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+      const oscGain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(680 * pitchMod, startTime);
+      osc.frequency.exponentialRampToValueAtTime(70 * pitchMod, startTime + 0.045);
 
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(n.freq, n.time);
+      oscGain.gain.setValueAtTime(0.001, startTime);
+      oscGain.gain.linearRampToValueAtTime(0.75 * volume, startTime + 0.003);
+      oscGain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.06);
 
-      gain.gain.setValueAtTime(0.001, n.time);
-      gain.gain.linearRampToValueAtTime(0.28, n.time + 0.012);
-      gain.gain.exponentialRampToValueAtTime(0.0001, n.time + n.dur);
+      osc.connect(oscGain);
+      oscGain.connect(ctx.destination);
+      osc.start(startTime);
+      osc.stop(startTime + 0.065);
 
-      osc.connect(gain);
-      gain.connect(ctx.destination);
+      // 2. Canister sub-bass body thump
+      const sub = ctx.createOscillator();
+      const subGain = ctx.createGain();
+      sub.type = 'sine';
+      sub.frequency.setValueAtTime(130 * pitchMod, startTime);
+      sub.frequency.exponentialRampToValueAtTime(40, startTime + 0.075);
 
-      osc.start(n.time);
-      osc.stop(n.time + n.dur + 0.02);
-    });
+      subGain.gain.setValueAtTime(0.001, startTime);
+      subGain.gain.linearRampToValueAtTime(0.6 * volume, startTime + 0.004);
+      subGain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.08);
+
+      sub.connect(subGain);
+      subGain.connect(ctx.destination);
+      sub.start(startTime);
+      sub.stop(startTime + 0.085);
+
+      // 3. Confetti streamer rush & crackle (Bandpassed noise burst)
+      const bufferLength = Math.floor(ctx.sampleRate * 0.16);
+      const noiseBuffer = ctx.createBuffer(1, bufferLength, ctx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferLength; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferLength * 0.35));
+      }
+
+      const noiseSource = ctx.createBufferSource();
+      noiseSource.buffer = noiseBuffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(2200 * pitchMod, startTime);
+      filter.Q.setValueAtTime(1.6, startTime);
+
+      const noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0.001, startTime);
+      noiseGain.gain.linearRampToValueAtTime(0.65 * volume, startTime + 0.005);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.15);
+
+      noiseSource.connect(filter);
+      filter.connect(noiseGain);
+      noiseGain.connect(ctx.destination);
+
+      noiseSource.start(startTime);
+      noiseSource.stop(startTime + 0.16);
+    };
+
+    // Staggered multi-stage celebration pop matching the visual confetti cannons
+    playSingleCannonPop(0, 1.0, 1.0);       // Immediate center pop
+    playSingleCannonPop(85, 0.7, 1.18);     // Secondary left cannon pop
+    playSingleCannonPop(170, 0.55, 0.92);   // Third right cannon pop
+
   } catch (err) {}
 }
 
@@ -655,8 +734,8 @@ function triggerEnvelopePartyPopper(cx, cy) {
     '#FFD700', '#FFFFFF', '#FF6B8B', '#B30B2D'
   ];
 
-  // Play iPhone notification chime right when envelope begins opening
-  playIPhoneNotificationSound();
+  // Play realistic party popper sound right when envelope begins opening
+  playPartyPopperSound();
 
   function shootCannon(startX, startY, baseAngle, spread, count, powerMultiplier = 1) {
     // Expanding shockwave ring
@@ -792,8 +871,98 @@ function triggerPopCrackleBurst(cx, cy) {
   if (navigator.vibrate) navigator.vibrate([40, 40, 60, 40, 80]);
 }
 
+// Festive Multi-Burst Firecracker Sound Effect for Scratch Card Reveal
+// Distinct from the envelope popper: snappy pyrotechnic cracker pops with sizzling sparkle bursts
+function playCrackerCelebrationSound() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+
+    const now = ctx.currentTime;
+
+    // Helper: Single sharp firecracker snap
+    const fireSnap = (timeOffset, freqStart, freqEnd, snapVol, duration = 0.04) => {
+      const t = now + timeOffset;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sawtooth'; // Sharp acoustic snap of a firecracker
+      osc.frequency.setValueAtTime(freqStart, t);
+      osc.frequency.exponentialRampToValueAtTime(freqEnd, t + duration);
+
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(snapVol, t + 0.002);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + duration + 0.01);
+    };
+
+    // Helper: Sizzling cracker noise burst (sparkle / powder burst)
+    const fireNoiseCrackle = (timeOffset, centerFreq, noiseVol, duration = 0.08) => {
+      const t = now + timeOffset;
+      const bufferLength = Math.floor(ctx.sampleRate * duration);
+      const noiseBuffer = ctx.createBuffer(1, bufferLength, ctx.sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferLength; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferLength, 1.8);
+      }
+
+      const noise = ctx.createBufferSource();
+      noise.buffer = noiseBuffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(centerFreq, t);
+      filter.Q.setValueAtTime(3.2, t); // High resonance sizzle
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(noiseVol, t + 0.003);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+
+      noise.start(t);
+      noise.stop(t + duration + 0.01);
+    };
+
+    // Rapid celebratory firecracker burst cascade:
+    // 1. Initial loud lead cracker snap & burst
+    fireSnap(0.00, 1500, 130, 0.75, 0.05);
+    fireNoiseCrackle(0.00, 4000, 0.65, 0.12);
+
+    // 2. High-energy staggered cracker string snaps
+    fireSnap(0.045, 1900, 240, 0.50, 0.035);
+    fireNoiseCrackle(0.045, 4800, 0.45, 0.09);
+
+    fireSnap(0.10, 1300, 150, 0.60, 0.045);
+    fireNoiseCrackle(0.10, 3400, 0.55, 0.14);
+
+    fireSnap(0.155, 1700, 200, 0.45, 0.035);
+    fireNoiseCrackle(0.155, 5200, 0.40, 0.08);
+
+    fireSnap(0.22, 1150, 110, 0.65, 0.055);
+    fireNoiseCrackle(0.22, 3000, 0.50, 0.16);
+
+    // 3. Trailing sizzling golden sparkles
+    fireNoiseCrackle(0.26, 5800, 0.30, 0.22);
+
+  } catch (err) {}
+}
+
 // Staggered Pop Burst for Scratch Reveal Celebration
 function triggerMultiStagePop(cx, cy) {
+  playCrackerCelebrationSound();
+
   triggerPopCrackleBurst(cx, cy);
 
   setTimeout(() => {
@@ -1056,7 +1225,7 @@ function updateRingsPhysics() {
       triggerMultiStagePop(targetCenterX, ringScreenY + ringW / 2);
     }
     if (lockedBadge) {
-      if (lockedBadgeText) lockedBadgeText.textContent = "✦ VINEETH & SOFIYA DAS A • TWO BECOME ONE ✦";
+      if (lockedBadgeText) lockedBadgeText.textContent = "✦ VINEETH & SOFIYA • TWO BECOME ONE ✦";
       lockedBadge.style.top = (ringScreenY + ringW + 16) + 'px';
       lockedBadge.style.left = targetCenterX + 'px';
       lockedBadge.classList.add('active');
@@ -1108,7 +1277,7 @@ updateRingsPhysics();
    CALENDAR & QUICK SHARE INTEGRATION
    ------------------------------------------------------------- */
 document.getElementById('addToCalBtn').addEventListener('click', () => {
-  const calUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text=Vineeth+%26+Sofiya+Das+A+Engagement+Ceremony&dates=20261113T063000Z/20261113T103000Z&details=Engagement+Ring+Exchange+%26+Celebration&location=Little+Flower+Parish+Hall%2C+Sreekaryam+-+Kulathoor+Rd%2C+near+CET%2C+Sreekaryam%2C+Thiruvananthapuram";
+  const calUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text=Vineeth+%26+Sofiya+Engagement+Ceremony&dates=20261113T063000Z/20261113T103000Z&details=Engagement+Ring+Exchange+%26+Celebration&location=Little+Flower+Parish+Hall%2C+Sreekaryam+-+Kulathoor+Rd%2C+near+CET%2C+Sreekaryam%2C+Thiruvananthapuram";
   window.open(calUrl, '_blank');
 });
 
@@ -1158,7 +1327,7 @@ function openShareModal(fullMessage, shareUrl) {
     shareModalSms.href = "sms:?body=" + encodeURIComponent(fullMessage);
   }
   if (shareModalEmail) {
-    shareModalEmail.href = "mailto:?subject=" + encodeURIComponent("💍 Vineeth & Sofiya Das A — Engagement Ceremony Invitation") + "&body=" + encodeURIComponent(fullMessage);
+    shareModalEmail.href = "mailto:?subject=" + encodeURIComponent("💍 Vineeth & Sofiya — Engagement Ceremony Invitation") + "&body=" + encodeURIComponent(fullMessage);
   }
 
   // System share (Only available on secure origins like https:// or localhost, strictly NEVER on file://)
@@ -1173,7 +1342,7 @@ function openShareModal(fullMessage, shareUrl) {
         e.preventDefault();
         try {
           await navigator.share({
-            title: "Vineeth & Sofiya Das A — Engagement Ceremony Invitation",
+            title: "Vineeth & Sofiya — Engagement Ceremony Invitation",
             text: fullMessage,
             url: displayUrl
           });
