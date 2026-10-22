@@ -217,13 +217,15 @@ async function startContinuousMusic() {
 
 let isUnwrapping = false;
 let unwrapTimeout = null;
-let countdownInterval = null;
+let songStartTimeout = null;
 let unwrapStartTime = 0;
 
 function completeOpening() {
   if (!openingModal || openingModal.classList.contains('opened')) return;
   if (unwrapTimeout) clearTimeout(unwrapTimeout);
-  if (countdownInterval) clearInterval(countdownInterval);
+  if (songStartTimeout) clearTimeout(songStartTimeout);
+  // Ensure background music starts if it hasn't already
+  startContinuousMusic().catch(() => {});
   openingModal.classList.add('opened');
   document.body.classList.remove('locked');
   document.body.style.overflow = '';
@@ -259,7 +261,7 @@ async function triggerUnwrapSequence(event) {
       cy = event.clientY;
     }
 
-    // Trigger Ribbon Cutting Popper Confetti Burst on Envelope Page
+    // Trigger Ribbon Cutting Popper Confetti Burst on Envelope Page (plays notification chime immediately)
     triggerEnvelopePartyPopper(cx, cy);
 
     // Add clicked state to wax seal wrapper
@@ -268,29 +270,17 @@ async function triggerUnwrapSequence(event) {
     // Trigger 3D Envelope Flap Open, Ribbon Split & Invitation Card Slide Out
     if (envContainer) envContainer.classList.add('unwrapping');
 
-    // Start background music playback
-    startContinuousMusic().catch(() => {});
+    // Start background music AFTER 2 seconds so the notification popup sound is heard clearly first
+    songStartTimeout = setTimeout(() => {
+      startContinuousMusic().catch(() => {});
+    }, 2000);
 
-    // 5-Second Countdown Timer UI
-    let secLeft = 5;
-    const cdSecEl = document.getElementById('countdownSec');
-    if (cdSecEl) cdSecEl.textContent = secLeft;
-
-    countdownInterval = setInterval(() => {
-      secLeft--;
-      if (cdSecEl && secLeft >= 0) cdSecEl.textContent = secLeft;
-      if (secLeft <= 0) {
-        clearInterval(countdownInterval);
-        completeOpening();
-      }
-    }, 1000);
-
-    // Smoothly fade out modal after 5 full seconds (5000ms)
+    // Smoothly fade out modal after unwrapping celebration (no timer UI needed)
     unwrapTimeout = setTimeout(() => {
       completeOpening();
-    }, 5000);
+    }, 3800);
   } else {
-    // If clicked AGAIN while popped out during the 5s window, prevent rapid touch bouncing from killing popper
+    // If clicked AGAIN while popped out, prevent rapid touch bouncing from killing popper
     if (Date.now() - unwrapStartTime < 1500) {
       return;
     }
