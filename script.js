@@ -176,7 +176,8 @@ class FlowerPetal {
   }
 }
 
-for (let i = 0; i < 58; i++) petals.push(new FlowerPetal());
+const petalCount = window.innerWidth < 768 ? 16 : 22;
+for (let i = 0; i < petalCount; i++) petals.push(new FlowerPetal());
 
 function animatePetals() {
   pCtx.clearRect(0, 0, petalCanvas.width, petalCanvas.height);
@@ -217,6 +218,7 @@ async function startContinuousMusic() {
 let isUnwrapping = false;
 let unwrapTimeout = null;
 let countdownInterval = null;
+let unwrapStartTime = 0;
 
 function completeOpening() {
   if (!openingModal || openingModal.classList.contains('opened')) return;
@@ -225,6 +227,13 @@ function completeOpening() {
   openingModal.classList.add('opened');
   document.body.classList.remove('locked');
   document.body.style.overflow = '';
+  // Ensure no popper particles leak into the inside page
+  envParticles = [];
+  if (typeof envPopperCtx !== 'undefined' && envPopperCtx && envPopperCanvas) {
+    envPopperCtx.clearRect(0, 0, envPopperCanvas.width, envPopperCanvas.height);
+  }
+  colParticles = [];
+  colCtx.clearRect(0, 0, colCanvas.width, colCanvas.height);
   updateRingsPhysics();
 }
 
@@ -233,6 +242,7 @@ async function triggerUnwrapSequence(event) {
 
   if (!isUnwrapping) {
     isUnwrapping = true;
+    unwrapStartTime = Date.now();
 
     // Calculate center of wax seal coin button or event click point for ribbon cutting popper burst
     let cx = window.innerWidth / 2;
@@ -249,10 +259,8 @@ async function triggerUnwrapSequence(event) {
       cy = event.clientY;
     }
 
-    // Trigger Ribbon Cutting Popper Confetti Burst
-    if (typeof triggerMultiStagePop === 'function') {
-      try { triggerMultiStagePop(cx, cy); } catch (e) {}
-    }
+    // Trigger Ribbon Cutting Popper Confetti Burst on Envelope Page
+    triggerEnvelopePartyPopper(cx, cy);
 
     // Add clicked state to wax seal wrapper
     if (openInviteBtn) openInviteBtn.classList.add('clicked');
@@ -282,7 +290,10 @@ async function triggerUnwrapSequence(event) {
       completeOpening();
     }, 5000);
   } else {
-    // If clicked AGAIN while popped out during the 5s window, open immediately!
+    // If clicked AGAIN while popped out during the 5s window, prevent rapid touch bouncing from killing popper
+    if (Date.now() - unwrapStartTime < 1500) {
+      return;
+    }
     completeOpening();
   }
 }
@@ -497,6 +508,20 @@ const ringInterlockWeave = document.getElementById('ringInterlockWeave');
 const lockedBadge = document.getElementById('lockedBadge');
 const lockedBadgeText = document.getElementById('lockedBadgeText');
 
+const envPopperCanvas = document.getElementById('envelopePopperCanvas');
+const envPopperCtx = envPopperCanvas ? envPopperCanvas.getContext('2d') : null;
+let envParticles = [];
+
+function resizeEnvPopperCanvas() {
+  if (!envPopperCanvas) return;
+  envPopperCanvas.width = window.innerWidth;
+  envPopperCanvas.height = window.innerHeight;
+}
+if (envPopperCanvas) {
+  resizeEnvPopperCanvas();
+  window.addEventListener('resize', resizeEnvPopperCanvas);
+}
+
 const colCanvas = document.getElementById('collisionCanvas');
 const colCtx = colCanvas.getContext('2d');
 let colParticles = [];
@@ -507,6 +532,218 @@ function resizeColCanvas() {
 }
 resizeColCanvas();
 window.addEventListener('resize', resizeColCanvas);
+
+// Dedicated Party Popper Animation Loop on Envelope Page
+function animateEnvelopePopper() {
+  if (envPopperCtx && envPopperCanvas) {
+    envPopperCtx.clearRect(0, 0, envPopperCanvas.width, envPopperCanvas.height);
+
+    for (let i = envParticles.length - 1; i >= 0; i--) {
+      const p = envParticles[i];
+
+      if (p.type === 'shockwave') {
+        p.radius += 8;
+        p.alpha -= 0.035;
+        if (p.alpha <= 0 || p.radius >= p.maxRadius) {
+          envParticles.splice(i, 1);
+          continue;
+        }
+        envPopperCtx.save();
+        envPopperCtx.globalAlpha = Math.max(0, p.alpha);
+        envPopperCtx.strokeStyle = p.color;
+        envPopperCtx.lineWidth = p.lineWidth;
+        envPopperCtx.beginPath();
+        envPopperCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        envPopperCtx.stroke();
+        envPopperCtx.restore();
+        continue;
+      }
+
+      p.x += p.vx;
+      p.y += p.vy;
+
+      if (p.type === 'confetti' || p.type === 'ribbon' || p.type === 'petal') {
+        p.vy += p.gravity || 0.12;
+        p.vx *= 0.97;
+        p.rotation += p.rotSpeed || 0.05;
+        p.tilt = (p.tilt || 0) + (p.tiltSpeed || 0.08);
+        p.alpha -= p.decay;
+
+        if (p.alpha <= 0 || p.y > envPopperCanvas.height + 60) {
+          envParticles.splice(i, 1);
+          continue;
+        }
+
+        envPopperCtx.save();
+        envPopperCtx.translate(p.x, p.y);
+        envPopperCtx.rotate(p.rotation);
+        envPopperCtx.globalAlpha = Math.max(0, p.alpha);
+        envPopperCtx.fillStyle = p.color;
+
+        if (p.type === 'petal') {
+          envPopperCtx.beginPath();
+          envPopperCtx.ellipse(0, 0, p.w / 2, p.h / 2, Math.PI / 4, 0, Math.PI * 2);
+          envPopperCtx.fill();
+        } else if (p.type === 'ribbon') {
+          const ribbonW = p.w * Math.cos(p.tilt);
+          envPopperCtx.fillRect(-ribbonW / 2, -p.h / 2, ribbonW, p.h);
+        } else {
+          const flutterW = p.w * Math.cos(p.tilt);
+          envPopperCtx.fillRect(-flutterW / 2, -p.h / 2, flutterW, p.h);
+        }
+
+        envPopperCtx.restore();
+        continue;
+      }
+
+      // Default Star / Sparkle
+      p.vx *= 0.95;
+      p.vy *= 0.95;
+      p.alpha -= p.decay;
+
+      if (p.alpha <= 0) {
+        envParticles.splice(i, 1);
+        continue;
+      }
+
+      envPopperCtx.save();
+      envPopperCtx.globalAlpha = Math.max(0, p.alpha);
+      envPopperCtx.fillStyle = p.color;
+      envPopperCtx.beginPath();
+      envPopperCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      envPopperCtx.fill();
+      envPopperCtx.restore();
+    }
+  }
+  requestAnimationFrame(animateEnvelopePopper);
+}
+animateEnvelopePopper();
+
+// Iconic iPhone Notification Chime synthesized via Web Audio API (0 assets, 100% reliable)
+function playIPhoneNotificationSound() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+
+    const now = ctx.currentTime;
+    // Classic iOS 3-note ascending bell chime (G#5 -> B5 -> E6)
+    const notes = [
+      { freq: 830.61, time: now + 0.00, dur: 0.22 },  // G#5
+      { freq: 987.77, time: now + 0.10, dur: 0.25 },  // B5
+      { freq: 1318.51, time: now + 0.20, dur: 0.38 }  // E6
+    ];
+
+    notes.forEach(n => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(n.freq, n.time);
+
+      gain.gain.setValueAtTime(0.001, n.time);
+      gain.gain.linearRampToValueAtTime(0.28, n.time + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, n.time + n.dur);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(n.time);
+      osc.stop(n.time + n.dur + 0.02);
+    });
+  } catch (err) {}
+}
+
+// Multi-Stage Luxury Party Popper Explosion for Envelope Unwrapping
+function triggerEnvelopePartyPopper(cx, cy) {
+  const popColors = [
+    '#C59B27', '#B8860B', '#D4AF37', '#E5C170', // Burnished golds
+    '#8E163B', '#D93B68', '#C8102E', '#FAF2E6', // Royal rose, crimson, silk ivory
+    '#FFD700', '#FFFFFF', '#FF6B8B', '#B30B2D'
+  ];
+
+  // Play iPhone notification chime right when envelope begins opening
+  playIPhoneNotificationSound();
+
+  function shootCannon(startX, startY, baseAngle, spread, count, powerMultiplier = 1) {
+    // Expanding shockwave ring
+    envParticles.push({
+      type: 'shockwave',
+      x: startX,
+      y: startY,
+      radius: 12,
+      maxRadius: 260 * powerMultiplier,
+      alpha: 0.96,
+      color: '#ffd700',
+      lineWidth: 5
+    });
+
+    for (let i = 0; i < count; i++) {
+      const angle = baseAngle + (Math.random() - 0.5) * spread;
+      const speed = (Math.random() * 16 + 6) * powerMultiplier;
+      const isRibbon = Math.random() > 0.68;
+      const isPetal = !isRibbon && Math.random() > 0.60;
+
+      envParticles.push({
+        type: isRibbon ? 'ribbon' : (isPetal ? 'petal' : 'confetti'),
+        x: startX + (Math.random() * 20 - 10),
+        y: startY + (Math.random() * 20 - 10),
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - (Math.random() * 3 + 3),
+        w: isRibbon ? (Math.random() * 6 + 4) : (Math.random() * 11 + 6),
+        h: isRibbon ? (Math.random() * 30 + 16) : (Math.random() * 15 + 7),
+        color: popColors[Math.floor(Math.random() * popColors.length)],
+        alpha: 1,
+        decay: Math.random() * 0.006 + 0.004, // 2.5 - 3.5s duration on envelope screen
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.22,
+        tilt: Math.random() * Math.PI * 2,
+        tiltSpeed: (Math.random() - 0.5) * 0.16,
+        gravity: isRibbon ? 0.13 : (isPetal ? 0.10 : 0.16)
+      });
+    }
+
+    // Sparkling golden and white stars
+    for (let i = 0; i < Math.floor(count * 0.65); i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = (Math.random() * 14 + 4) * powerMultiplier;
+      envParticles.push({
+        type: 'star',
+        x: startX,
+        y: startY,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        size: Math.random() * 5.5 + 2.5,
+        color: Math.random() > 0.35 ? '#ffd700' : '#ffffff',
+        alpha: 1,
+        decay: Math.random() * 0.012 + 0.005
+      });
+    }
+  }
+
+  // 1. Immediate Center Pop directly from Wax Seal
+  shootCannon(cx, cy, -Math.PI / 2, Math.PI * 1.5, 110, 1.2);
+
+  // 2. Dual Party Cannon Bursts from Left and Right sides of Envelope (t=90ms)
+  setTimeout(() => {
+    const leftX = Math.max(20, cx - Math.min(window.innerWidth * 0.36, 190));
+    const rightX = Math.min(window.innerWidth - 20, cx + Math.min(window.innerWidth * 0.36, 190));
+    const cannonY = cy + 18;
+
+    shootCannon(leftX, cannonY, -Math.PI * 0.32, Math.PI * 0.52, 75, 1.1);
+    shootCannon(rightX, cannonY, -Math.PI * 0.68, Math.PI * 0.52, 75, 1.1);
+  }, 90);
+
+  // 3. Secondary Cascade Flutter Shower (t=190ms)
+  setTimeout(() => {
+    shootCannon(cx, cy - 25, -Math.PI / 2, Math.PI * 1.1, 60, 0.95);
+  }, 190);
+
+  if (navigator.vibrate) navigator.vibrate([40, 30, 60, 40, 80]);
+}
 
 // High-Energy "Pop Cracking" Ribbon Cutting & Falling Pop Paper Celebration
 function triggerPopCrackleBurst(cx, cy) {
@@ -628,7 +865,7 @@ function animateCollisionParticles() {
     p.x += p.vx;
     p.y += p.vy;
 
-    if (p.type === 'confetti') {
+    if (p.type === 'confetti' || p.type === 'ribbon' || p.type === 'petal') {
       p.vy += p.gravity || 0.1;
       p.vx *= 0.96;
       p.rotation += p.rotSpeed || 0.05;
@@ -644,7 +881,15 @@ function animateCollisionParticles() {
       colCtx.rotate(p.rotation);
       colCtx.globalAlpha = p.alpha;
       colCtx.fillStyle = p.color;
-      colCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+
+      if (p.type === 'petal') {
+        colCtx.beginPath();
+        colCtx.ellipse(0, 0, p.w / 2, p.h / 2, 0, 0, Math.PI * 2);
+        colCtx.fill();
+      } else {
+        colCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      }
+
       colCtx.restore();
       continue;
     }
@@ -711,7 +956,7 @@ function updateRingsPhysics() {
   const sideMarginRight = screenW - sideMarginLeft - ringW;
 
   // Floating viewport resting Y position: stationed at eye-level on away-sides right from landing
-  const floatingScreenY = isMobile ? Math.min(screenH * 0.28, 225) : screenH * 0.42;
+  const floatingScreenY = isMobile ? Math.min(screenH * 0.35, 255) : screenH * 0.42;
 
   // Dedicated Rings Lock Slot below the Scratch Card
   const slotEl = document.getElementById('ringsLockSlot');
