@@ -237,6 +237,7 @@ function completeOpening() {
   colParticles = [];
   colCtx.clearRect(0, 0, colCanvas.width, colCanvas.height);
   updateRingsPhysics();
+  highlightActiveNav();
 }
 
 async function triggerUnwrapSequence(event) {
@@ -374,26 +375,57 @@ if (typeof IntersectionObserver !== 'undefined') {
 const navItems = document.querySelectorAll('.bottom-nav-item');
 const navSections = document.querySelectorAll('section[id], header[id]');
 
+// Map each page section ID to its corresponding bottom navigation tab href
+const sectionNavMap = {
+  'hero': '#hero',
+  'messageSection': '#messageSection',
+  'interfaithSection': '#interfaithSection',
+  'scratchSection': '#interfaithSection',
+  'countdownSection': '#interfaithSection',
+  'gallerySection': '#gallerySection',
+  'ritesSection': '#gallerySection',
+  'venueSection': '#venueSection',
+  'closingSection': '#closingSection'
+};
+
 function highlightActiveNav() {
-  let currentSectionId = 'hero';
-  const scrollPosition = window.scrollY + window.innerHeight * 0.35;
+  // If the envelope modal is still locked or user is at the top of the page, always keep Home active
+  if (document.body.classList.contains('locked') || window.scrollY < 80) {
+    navItems.forEach(item => {
+      if (item.getAttribute('href') === '#hero') {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    });
+    return;
+  }
+
+  const scrollPosition = window.scrollY + window.innerHeight * 0.38;
+  let activeTarget = '#hero';
 
   navSections.forEach(section => {
-    const sectionTop = section.offsetTop;
-    const sectionHeight = section.offsetHeight;
-    if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-      currentSectionId = section.getAttribute('id');
+    const rect = section.getBoundingClientRect();
+    const sectionTop = rect.top + window.scrollY;
+    if (scrollPosition >= sectionTop - 60) {
+      const secId = section.getAttribute('id');
+      if (secId && sectionNavMap[secId]) {
+        activeTarget = sectionNavMap[secId];
+      }
     }
   });
 
-  if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50) {
-    currentSectionId = 'closingSection';
+  // Only highlight Wishes if user has scrolled well down into the page and reached the footer
+  const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+  if (window.scrollY > 500 && (window.innerHeight + window.scrollY) >= scrollHeight - 80) {
+    activeTarget = '#closingSection';
   }
 
   navItems.forEach(item => {
-    item.classList.remove('active');
-    if (item.getAttribute('href') === `#${currentSectionId}`) {
+    if (item.getAttribute('href') === activeTarget) {
       item.classList.add('active');
+    } else {
+      item.classList.remove('active');
     }
   });
 }
@@ -401,6 +433,9 @@ function highlightActiveNav() {
 navItems.forEach(item => {
   item.addEventListener('click', (e) => {
     e.preventDefault();
+    navItems.forEach(nav => nav.classList.remove('active'));
+    item.classList.add('active');
+
     const targetId = item.getAttribute('href').replace('#', '');
     if (targetId === 'hero') {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1056,7 +1091,7 @@ function updateRingsPhysics() {
       triggerMultiStagePop(targetCenterX, ringScreenY + ringW / 2);
     }
     if (lockedBadge) {
-      if (lockedBadgeText) lockedBadgeText.textContent = "✦ VINEETH & SOFIYA DAS A • TWO BECOME ONE ✦";
+      if (lockedBadgeText) lockedBadgeText.textContent = "✦ VINEETH & SOFIYA • TWO BECOME ONE ✦";
       lockedBadge.style.top = (ringScreenY + ringW + 16) + 'px';
       lockedBadge.style.left = targetCenterX + 'px';
       lockedBadge.classList.add('active');
@@ -1108,7 +1143,7 @@ updateRingsPhysics();
    CALENDAR & QUICK SHARE INTEGRATION
    ------------------------------------------------------------- */
 document.getElementById('addToCalBtn').addEventListener('click', () => {
-  const calUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text=Vineeth+%26+Sofiya+Das+A+Engagement+Ceremony&dates=20261113T063000Z/20261113T103000Z&details=Engagement+Ring+Exchange+%26+Celebration&location=Little+Flower+Parish+Hall%2C+Sreekaryam+-+Kulathoor+Rd%2C+near+CET%2C+Sreekaryam%2C+Thiruvananthapuram";
+  const calUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text=Vineeth+%26+Sofiya+Engagement+Ceremony&dates=20261113T063000Z/20261113T103000Z&details=Engagement+Ring+Exchange+%26+Celebration&location=Little+Flower+Parish+Hall%2C+Sreekaryam+-+Kulathoor+Rd%2C+near+CET%2C+Sreekaryam%2C+Thiruvananthapuram";
   window.open(calUrl, '_blank');
 });
 
@@ -1158,7 +1193,7 @@ function openShareModal(fullMessage, shareUrl) {
     shareModalSms.href = "sms:?body=" + encodeURIComponent(fullMessage);
   }
   if (shareModalEmail) {
-    shareModalEmail.href = "mailto:?subject=" + encodeURIComponent("💍 Vineeth & Sofiya Das A — Engagement Ceremony Invitation") + "&body=" + encodeURIComponent(fullMessage);
+    shareModalEmail.href = "mailto:?subject=" + encodeURIComponent("💍 Vineeth & Sofiya — Engagement Ceremony Invitation") + "&body=" + encodeURIComponent(fullMessage);
   }
 
   // System share (Only available on secure origins like https:// or localhost, strictly NEVER on file://)
@@ -1173,7 +1208,7 @@ function openShareModal(fullMessage, shareUrl) {
         e.preventDefault();
         try {
           await navigator.share({
-            title: "Vineeth & Sofiya Das A — Engagement Ceremony Invitation",
+            title: "Vineeth & Sofiya — Engagement Ceremony Invitation",
             text: fullMessage,
             url: displayUrl
           });
