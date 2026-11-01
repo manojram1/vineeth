@@ -1633,12 +1633,12 @@ if (shareModalCopyBtn) {
     const invitationLink = isWeb ? window.location.href : "https://vineeth-sofiya-engagement-invitation.vercel.app/";
     const fullMessage = 
       "💍 *Engagement Ceremony Invitation* 💍\n\n" +
-      "*Vineeth Rajendran & Sofiya Das A*\n\n" +
+      "*Vineeth Rajendran & Sofiya Das*\n\n" +
       "📅 *Date:* Friday, 13 November 2026\n" +
       "⏰ *Time:* Starts at 12:00 PM\n" +
       "⛪ *Venue:* Little Flower Parish Hall, Sreekaryam - Kulathoor Rd, near CET, Sreekaryam, Thiruvananthapuram\n" +
       "📍 *Location Map:* " + CONFIG.mapUrl + "\n\n" +
-      "✨ *View Wedding Invitation:* " + invitationLink;
+      "✨ *View Engagement Invitation:* " + invitationLink;
 
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1669,12 +1669,12 @@ if (shareBtn) {
     const invitationLink = isWeb ? window.location.href : "https://vineeth-sofiya-engagement-invitation.vercel.app/";
     const shareText = 
       "💍 *Engagement Ceremony Invitation* 💍\n\n" +
-      "*Vineeth Rajendran & Sofiya Das A*\n\n" +
+      "*Vineeth Rajendran & Sofiya Das*\n\n" +
       "📅 *Date:* Friday, 13 November 2026\n" +
       "⏰ *Time:* Starts at 12:00 PM\n" +
       "⛪ *Venue:* Little Flower Parish Hall, Sreekaryam - Kulathoor Rd, near CET, Sreekaryam, Thiruvananthapuram\n" +
       "📍 *Location Map:* " + CONFIG.mapUrl + "\n\n" +
-      "✨ *View Wedding Invitation:* " + invitationLink;
+      "✨ *View Engagement Invitation:* " + invitationLink;
 
     openShareModal(shareText, invitationLink);
   });
