@@ -21,7 +21,7 @@
     rel="stylesheet">
 
   <!-- External Stylesheet -->
-  <link rel="stylesheet" href="style.css?v=130" />
+  <link rel="stylesheet" href="style.css?v=140" />
 </head>
 
 <body class="locked">
@@ -319,7 +319,7 @@
         <div class="scratch-wrapper" id="scratchWrapper">
           <div class="scratch-content">
             <div class="scratch-date">13 NOVEMBER 2026</div>
-            <div class="scratch-venue">Friday · 12:00 PM<br>Little Flower Parish Hall, Sreekaryam</div>
+            <div class="scratch-venue">Friday · 12:00 PM<br>Little Flower Parish Hall, Manvila, Sreekaryam, Thiruvananthapuram</div>
           </div>
           <canvas id="scratchCanvas"></canvas>
           <div class="scratch-instruction" id="scratchInstruction">✦ SCRATCH HERE ✦</div>
@@ -379,7 +379,6 @@
               <div class="story-slide-frame">
                 <img src="assets/story-4.jpg" alt="Vineeth & Sofiya — Golden Moments" loading="lazy" />
                 <div class="story-slide-overlay">
-                  <span class="slide-tag">CHAPTER 01</span>
                   <h3 class="slide-caption-title">Golden Moments</h3>
                   <p class="slide-caption-desc">Cherished smiles that tell a timeless story of affection.</p>
                 </div>
@@ -391,7 +390,6 @@
               <div class="story-slide-frame">
                 <img src="assets/story-2.jpg" alt="Vineeth & Sofiya — Radiant Joy" loading="lazy" />
                 <div class="story-slide-overlay">
-                  <span class="slide-tag">CHAPTER 02</span>
                   <h3 class="slide-caption-title">Radiant Joy</h3>
                   <p class="slide-caption-desc">Laughter that lights up every quiet room we enter.</p>
                 </div>
@@ -403,7 +401,6 @@
               <div class="story-slide-frame">
                 <img src="assets/story-3.jpg" alt="Vineeth & Sofiya — Hand in Hand" loading="lazy" />
                 <div class="story-slide-overlay">
-                  <span class="slide-tag">CHAPTER 03</span>
                   <h3 class="slide-caption-title">Hand in Hand</h3>
                   <p class="slide-caption-desc">United in respect, guided by eternal faith and mutual love.</p>
                 </div>
@@ -415,7 +412,6 @@
               <div class="story-slide-frame">
                 <img src="assets/story-1.jpg" alt="Vineeth & Sofiya — Pure Togetherness" loading="lazy" />
                 <div class="story-slide-overlay">
-                  <span class="slide-tag">CHAPTER 04</span>
                   <h3 class="slide-caption-title">Pure Togetherness</h3>
                   <p class="slide-caption-desc">Two souls bound by destiny, stepping into forever with joy.</p>
                 </div>
@@ -427,7 +423,6 @@
               <div class="story-slide-frame">
                 <img src="assets/story-5.jpg" alt="Vineeth & Sofiya — A Golden Promise" loading="lazy" />
                 <div class="story-slide-overlay">
-                  <span class="slide-tag">CHAPTER 05</span>
                   <h3 class="slide-caption-title">A Golden Promise</h3>
                   <p class="slide-caption-desc">A lifetime of love, prayers, and harmonious blessings.</p>
                 </div>
@@ -444,20 +439,26 @@
           </button>
         </div>
 
-        <!-- Slider Navigation Indicators / Pagination Dots -->
-        <div class="story-slider-dots" id="storySliderDots" role="tablist" aria-label="Choose Slide">
-          <button class="slider-dot active" data-index="0" role="tab" aria-selected="true"
-            aria-label="Slide 1"></button>
-          <button class="slider-dot" data-index="1" role="tab" aria-selected="false" aria-label="Slide 2"></button>
-          <button class="slider-dot" data-index="2" role="tab" aria-selected="false" aria-label="Slide 3"></button>
-          <button class="slider-dot" data-index="3" role="tab" aria-selected="false" aria-label="Slide 4"></button>
-          <button class="slider-dot" data-index="4" role="tab" aria-selected="false" aria-label="Slide 5"></button>
+        <!-- Pill Dots Navigation -->
+        <div class="story-slider-meta reveal" id="storySliderMeta">
+          <div class="slider-controls-row">
+            <!-- Slider Navigation Indicators / Pagination Dots -->
+            <div class="story-slider-dots" id="storySliderDots" role="tablist" aria-label="Choose Slide">
+              <button class="slider-dot active" data-index="0" role="tab" aria-selected="true"
+                aria-label="Slide 1"></button>
+              <button class="slider-dot" data-index="1" role="tab" aria-selected="false" aria-label="Slide 2"></button>
+              <button class="slider-dot" data-index="2" role="tab" aria-selected="false" aria-label="Slide 3"></button>
+              <button class="slider-dot" data-index="3" role="tab" aria-selected="false" aria-label="Slide 4"></button>
+              <button class="slider-dot" data-index="4" role="tab" aria-selected="false" aria-label="Slide 5"></button>
+            </div>
+          </div>
+
+          <!-- 5-Second Auto-Play Timer Progress Bar -->
+          <div class="slider-timer-bar" title="Auto-advance progress (5s)">
+            <div class="slider-timer-fill" id="sliderTimerFill"></div>
+          </div>
         </div>
 
-        <!-- 5-Second Auto-Play Timer Progress Bar -->
-        <div class="slider-timer-bar" title="Auto-advance progress (5s)">
-          <div class="slider-timer-fill" id="sliderTimerFill"></div>
-        </div>
       </div>
     </section>
 
@@ -583,7 +584,7 @@
   </nav>
 
   <!-- External JavaScript -->
-  <script src="script.js?v=142"></script>
+  <script src="script.js?v=149"></script>
 </body>
 
 </html>

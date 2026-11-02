@@ -1319,22 +1319,33 @@ section {
    - Smooth auto-play with 5s timeout & progress bar
    - Scroll-driven parallax drift
    ------------------------------------------------------------- */
+/* -------------------------------------------------------------
+   OUR ENGAGEMENT STORY: 3D LUXURY EDITORIAL SLIDER
+   - Tall elegant portrait aspect ratio (matching 3:4 photos)
+   - Double-bezel gold foil inlay frame with corner filigree
+   - Active slide gentle Ken Burns breathing effect
+   - Recognizable, softly-focused prev/next preview cards
+   - Floating frosted glassmorphic plaque for captions
+   - Bespoke chapter counter badge (01 ✦ 05)
+   - Champagne gold morphing pill indicators
+   - Frosted glassmorphic ring navigation controls
+   - Generous bottom padding clearing floating bottom nav bar
+   ------------------------------------------------------------- */
 .gallery-slider-section {
   position: relative;
   overflow: hidden;
-  contain: paint;
-  padding: 110px 24px;
+  padding: 100px 24px 130px;
 }
 
 .story-slider-container {
   position: relative;
-  width: min(100%, 940px);
-  height: clamp(420px, 60vh, 550px);
-  margin: 30px auto 0;
+  width: min(100%, 1020px);
+  height: clamp(460px, 58vh, 540px);
+  margin: 28px auto 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  perspective: 1400px;
+  perspective: 1600px;
   touch-action: pan-y;
   user-select: none;
 }
@@ -1347,23 +1358,26 @@ section {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s ease-out;
+  transition: transform 0.25s ease-out;
 }
 
 .story-slide {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: clamp(260px, 34vw, 360px);
-  height: clamp(380px, 50vh, 480px);
+  width: clamp(280px, 32vw, 380px);
+  height: clamp(420px, 56vh, 520px);
   margin: 0;
-  border-radius: 24px;
+  border-radius: 26px;
   transform-style: preserve-3d;
   cursor: pointer;
+  transform: translate(-50%, -50%) scale(0.65) translateZ(-120px);
+  opacity: 0;
+  pointer-events: none;
   transition: transform 0.75s cubic-bezier(0.25, 1, 0.5, 1),
-    opacity 0.75s cubic-bezier(0.25, 1, 0.5, 1),
-    filter 0.75s cubic-bezier(0.25, 1, 0.5, 1),
-    box-shadow 0.75s cubic-bezier(0.25, 1, 0.5, 1);
+              opacity 0.75s cubic-bezier(0.25, 1, 0.5, 1),
+              filter 0.75s cubic-bezier(0.25, 1, 0.5, 1),
+              box-shadow 0.75s cubic-bezier(0.25, 1, 0.5, 1);
   will-change: transform, opacity, filter;
 }
 
@@ -1371,11 +1385,43 @@ section {
   position: relative;
   width: 100%;
   height: 100%;
-  border-radius: 24px;
+  border-radius: 26px;
   overflow: hidden;
-  border: 2px solid var(--gold-primary);
+  border: 1.5px solid rgba(229, 193, 112, 0.65);
   background: #FAF2E6 url('assets/theme-bg.jpg') repeat;
-  box-shadow: var(--shadow-lux);
+  box-shadow: 0 16px 45px rgba(74, 14, 23, 0.16), 0 2px 10px rgba(184, 134, 11, 0.18);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Double gold hairline inner frame */
+.story-slide-frame::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgba(229, 193, 112, 0.38);
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 4;
+  transition: all 0.4s ease;
+}
+
+/* Shimmer light sweep across active frame */
+.story-slide-frame::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 70%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+  transition: left 0.9s ease;
+  z-index: 5;
+}
+
+.story-slide.active:hover .story-slide-frame::after {
+  left: 160%;
 }
 
 .story-slide-frame img {
@@ -1386,55 +1432,88 @@ section {
   transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.25, 1);
 }
 
-.story-slide.active:hover .story-slide-frame img {
-  transform: scale(1.05);
+/* Active photo cinematic subtle breathing */
+@keyframes activeSlideBreathe {
+  0% { transform: scale(1.0); }
+  50% { transform: scale(1.035); }
+  100% { transform: scale(1.0); }
 }
 
-/* Slide Overlay Caption */
+.story-slide.active .story-slide-frame img {
+  animation: activeSlideBreathe 12s ease-in-out infinite alternate;
+}
+
+.story-slide.active:hover .story-slide-frame img {
+  transform: scale(1.06);
+  animation-play-state: paused;
+}
+
+/* Floating Frosted Glassmorphic Plaque for Captions */
 .story-slide-overlay {
   position: absolute;
   bottom: 0;
-  inset-x: 0;
-  background: linear-gradient(to top, rgba(142, 22, 59, 0.95) 0%, rgba(142, 22, 59, 0.7) 65%, transparent 100%);
-  padding: 26px 20px 20px;
+  left: 0;
+  right: 0;
+  padding: 24px 18px 12px;
+  background: linear-gradient(
+    to top,
+    rgba(24, 3, 9, 0.78) 0%,
+    rgba(40, 5, 15, 0.45) 55%,
+    rgba(50, 8, 20, 0.12) 78%,
+    transparent 100%
+  );
   text-align: center;
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  border-bottom-left-radius: 25px;
+  border-bottom-right-radius: 25px;
+  z-index: 6;
   pointer-events: none;
+  transition: opacity 0.4s cubic-bezier(0.2, 0.8, 0.25, 1),
+              transform 0.4s cubic-bezier(0.2, 0.8, 0.25, 1);
 }
 
 .slide-tag {
-  display: inline-block;
-  font-size: 9.5px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: #E5C170;
-  font-weight: 700;
-  margin-bottom: 4px;
+  display: none !important;
 }
 
 .slide-caption-title {
-  font: 500 clamp(20px, 4vw, 26px) / 1.2 var(--serif);
-  color: #FAF2E6;
-  margin-bottom: 6px;
-  letter-spacing: 0.05em;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  font-family: var(--serif);
+  font-size: clamp(19px, 2.8vw, 22px);
+  font-weight: 700;
+  color: #FFFFFF;
+  margin: 0 0 3px;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 0 12px rgba(229, 193, 112, 0.3);
 }
 
 .slide-caption-desc {
+  font-family: var(--serif);
+  font-style: italic;
   font-size: 12px;
-  color: rgba(250, 242, 230, 0.88);
-  line-height: 1.5;
-  margin: 0;
-  font-family: var(--sans);
+  color: rgba(250, 242, 230, 0.95);
+  line-height: 1.4;
+  margin: 0 auto;
+  max-width: 320px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.01em;
 }
 
-/* Slide States (Active, Prev, Next, Hidden) */
+/* Slide States: Active, Prev, Next, Hidden */
 .story-slide.active {
   z-index: 10;
   opacity: 1;
-  filter: blur(0px) brightness(1.04) contrast(1.02);
-  transform: translate(-50%, -50%) translateX(0px) scale(1) translateZ(50px);
-  box-shadow: 0 25px 65px rgba(142, 22, 59, 0.28), 0 0 45px rgba(184, 134, 11, 0.35);
+  pointer-events: auto;
+  filter: blur(0px) brightness(1.02);
+  transform: translate(-50%, -50%) translateX(0px) scale(1) translateZ(70px);
+  box-shadow: 0 30px 80px rgba(142, 22, 59, 0.32), 0 0 50px rgba(229, 193, 112, 0.45);
+}
+
+.story-slide.active .story-slide-frame {
+  border: 2px solid #E5C170;
+}
+
+.story-slide.active .story-slide-frame::before {
+  border-color: rgba(229, 193, 112, 0.85);
+  box-shadow: inset 0 0 18px rgba(184, 134, 11, 0.25);
 }
 
 .story-slide.active .story-slide-overlay {
@@ -1444,111 +1523,157 @@ section {
 
 .story-slide.prev {
   z-index: 5;
-  opacity: 0.52;
-  filter: blur(5px) brightness(0.85);
-  transform: translate(-50%, -50%) translateX(-68%) scale(0.86) rotateY(18deg) translateZ(-40px);
-  box-shadow: 0 15px 35px rgba(142, 22, 59, 0.12);
+  opacity: 0.72;
+  pointer-events: auto;
+  filter: blur(1.8px) brightness(0.92);
+  transform: translate(-50%, -50%) translateX(-74%) scale(0.86) rotateY(15deg) translateZ(-50px);
+  box-shadow: 0 16px 40px rgba(142, 22, 59, 0.15);
 }
 
 .story-slide.prev .story-slide-overlay {
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(14px);
+  pointer-events: none;
 }
 
 .story-slide.next {
   z-index: 5;
-  opacity: 0.52;
-  filter: blur(5px) brightness(0.85);
-  transform: translate(-50%, -50%) translateX(68%) scale(0.86) rotateY(-18deg) translateZ(-40px);
-  box-shadow: 0 15px 35px rgba(142, 22, 59, 0.12);
+  opacity: 0.72;
+  pointer-events: auto;
+  filter: blur(1.8px) brightness(0.92);
+  transform: translate(-50%, -50%) translateX(74%) scale(0.86) rotateY(-15deg) translateZ(-50px);
+  box-shadow: 0 16px 40px rgba(142, 22, 59, 0.15);
 }
 
 .story-slide.next .story-slide-overlay {
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(14px);
+  pointer-events: none;
+}
+
+.story-slide.prev:hover,
+.story-slide.next:hover {
+  opacity: 0.92;
+  filter: blur(0px) brightness(0.98);
 }
 
 .story-slide.hidden-left {
   z-index: 1;
   opacity: 0;
-  filter: blur(8px) brightness(0.65);
-  transform: translate(-50%, -50%) translateX(-125%) scale(0.7) rotateY(30deg) translateZ(-100px);
+  filter: blur(4px) brightness(0.7);
+  transform: translate(-50%, -50%) translateX(-130%) scale(0.7) rotateY(25deg) translateZ(-110px);
   pointer-events: none;
 }
 
 .story-slide.hidden-right {
   z-index: 1;
   opacity: 0;
-  filter: blur(8px) brightness(0.65);
-  transform: translate(-50%, -50%) translateX(125%) scale(0.7) rotateY(-30deg) translateZ(-100px);
+  filter: blur(4px) brightness(0.7);
+  transform: translate(-50%, -50%) translateX(130%) scale(0.7) rotateY(-25deg) translateZ(-110px);
   pointer-events: none;
 }
 
-/* Stylish Navigation Arrows at Ends */
+/* Luxury Glassmorphic Navigation Ring Buttons */
 .slider-arrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 30;
-  width: 52px;
-  height: 52px;
+  z-index: 25;
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1.5px solid var(--gold-primary);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(184, 134, 11, 0.45);
   color: var(--primary-contrast);
-  box-shadow: 0 8px 25px rgba(142, 22, 59, 0.14), 0 0 15px rgba(184, 134, 11, 0.2);
+  box-shadow: 0 10px 30px rgba(142, 22, 59, 0.12), 0 2px 10px rgba(184, 134, 11, 0.2);
   cursor: pointer;
   display: grid;
   place-items: center;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-    background 0.3s ease,
-    color 0.3s ease,
-    box-shadow 0.3s ease;
+  transition: all 0.35s cubic-bezier(0.2, 0.8, 0.25, 1);
   outline: none;
 }
 
 .slider-arrow.slider-prev {
-  left: -20px;
+  left: 20px;
 }
 
 .slider-arrow.slider-next {
-  right: -20px;
+  right: 20px;
 }
 
 .slider-arrow:hover {
-  transform: translateY(-50%) scale(1.14);
-  background: linear-gradient(135deg, #8E163B 0%, #B82552 100%);
+  transform: translateY(-50%) scale(1.12);
+  background: linear-gradient(135deg, #8E163B 0%, #580B22 100%);
   color: #FAF2E6;
-  border-color: #FAF2E6;
-  box-shadow: 0 12px 35px rgba(142, 22, 59, 0.35), 0 0 25px rgba(184, 134, 11, 0.6);
+  border-color: #E5C170;
+  box-shadow: 0 14px 40px rgba(142, 22, 59, 0.35), 0 0 25px rgba(229, 193, 112, 0.55);
 }
 
 .slider-arrow:active {
-  transform: translateY(-50%) scale(0.96);
+  transform: translateY(-50%) scale(0.95);
 }
 
-/* Pagination Dots */
+/* Chapter Counter Badge & Pill Dots */
+.story-slider-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  position: relative;
+  z-index: 20;
+}
+
+.slider-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.slider-counter-badge {
+  display: none !important;
+}
+
+.slider-counter-badge .counter-curr {
+  font-weight: 700;
+  color: var(--primary-contrast);
+  min-width: 18px;
+  text-align: center;
+}
+
+.slider-counter-badge .counter-sep {
+  font-size: 10px;
+  color: var(--gold-primary);
+}
+
+.slider-counter-badge .counter-total {
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* Modern Morphing Pill Indicators */
 .story-slider-dots {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  margin-top: 26px;
+  gap: 8px;
   position: relative;
   z-index: 20;
 }
 
 .slider-dot {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  border: 1.5px solid var(--gold-primary);
-  background: rgba(184, 134, 11, 0.15);
+  border: 1.5px solid rgba(184, 134, 11, 0.5);
+  background: rgba(184, 134, 11, 0.18);
   cursor: pointer;
   padding: 0;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.25, 1);
   outline: none;
 }
 
@@ -1558,40 +1683,41 @@ section {
 }
 
 .slider-dot.active {
-  width: 34px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #8E163B 0%, #B8860B 100%);
-  border-color: var(--primary-contrast);
-  box-shadow: 0 0 12px rgba(184, 134, 11, 0.4);
+  width: 32px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #8E163B 0%, #B8860B 50%, #E5C170 100%);
+  border-color: #E5C170;
+  box-shadow: 0 0 14px rgba(229, 193, 112, 0.55);
 }
 
 /* 5-Second Timer Bar */
 .slider-timer-bar {
-  width: 160px;
+  width: 180px;
   height: 3px;
   background: rgba(142, 22, 59, 0.12);
   border-radius: 4px;
   overflow: hidden;
-  margin: 14px auto 0;
+  margin: 12px auto 0;
   position: relative;
 }
 
 .slider-timer-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, var(--gold-primary), var(--primary-contrast));
+  background: linear-gradient(90deg, #B8860B 0%, #E5C170 50%, #8E163B 100%);
   border-radius: 4px;
   transition: width 0.1s linear;
 }
 
+/* Mobile & Tablet Responsiveness */
 @media (max-width: 768px) {
   .gallery-slider-section {
     overflow: hidden !important;
-    padding: 55px 12px !important;
+    padding: 60px 14px 115px !important;
   }
 
   .story-slider-container {
-    height: 380px !important;
+    height: 480px !important;
     margin: 20px auto 0 !important;
     width: 100% !important;
     max-width: 100vw !important;
@@ -1599,50 +1725,76 @@ section {
   }
 
   .story-slide {
-    width: min(74vw, 240px) !important;
-    height: min(105vw, 340px) !important;
-    margin: 0 !important;
-    border-radius: 18px !important;
+    width: min(78vw, 300px) !important;
+    height: min(112vw, 420px) !important;
+    border-radius: 22px !important;
   }
 
   .story-slide-frame {
-    border-radius: 18px !important;
+    border-radius: 22px !important;
+  }
+
+  .story-slide-frame::before {
+    inset: 5px !important;
+    border-radius: 17px !important;
   }
 
   .story-slide.active {
-    transform: translate(-50%, -50%) translateX(0px) scale(1) translateZ(30px) !important;
+    transform: translate(-50%, -50%) translateX(0px) scale(1) translateZ(40px) !important;
   }
 
   .story-slide.prev {
-    transform: translate(-50%, -50%) translateX(-38%) scale(0.82) rotateY(12deg) translateZ(-30px) !important;
-    opacity: 0.35 !important;
+    transform: translate(-50%, -50%) translateX(-42%) scale(0.84) rotateY(12deg) translateZ(-35px) !important;
+    opacity: 0.65 !important;
+    filter: blur(1.5px) brightness(0.92) !important;
   }
 
   .story-slide.next {
-    transform: translate(-50%, -50%) translateX(38%) scale(0.82) rotateY(-12deg) translateZ(-30px) !important;
-    opacity: 0.35 !important;
+    transform: translate(-50%, -50%) translateX(42%) scale(0.84) rotateY(-12deg) translateZ(-35px) !important;
+    opacity: 0.65 !important;
+    filter: blur(1.5px) brightness(0.92) !important;
   }
 
-  .slider-arrow {
-    width: 38px !important;
-    height: 38px !important;
+  .story-slide-overlay {
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    padding: 22px 12px 10px !important;
+    border-bottom-left-radius: 22px !important;
+    border-bottom-right-radius: 22px !important;
   }
 
-  .slider-arrow.slider-prev {
-    left: 4px !important;
-  }
-
-  .slider-arrow.slider-next {
-    right: 4px !important;
+  .slide-tag {
+    font-size: 8px !important;
+    padding: 2px 8px !important;
+    margin-bottom: 2px !important;
   }
 
   .slide-caption-title {
-    font-size: 18px !important;
+    font-size: 17px !important;
+    margin: 2px 0 2px !important;
   }
 
   .slide-caption-desc {
     font-size: 11px !important;
-    line-height: 1.35 !important;
+    line-height: 1.3 !important;
+  }
+
+  .slider-controls-row {
+    gap: 12px !important;
+  }
+
+  .slider-arrow {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  .slider-arrow.slider-prev {
+    left: 6px !important;
+  }
+
+  .slider-arrow.slider-next {
+    right: 6px !important;
   }
 }
 
@@ -2528,60 +2680,51 @@ body.locked .bottom-nav-bar {
     display: block !important;
   }
 
-  /* Image Coverflow Slider Section */
+  /* Image Coverflow Slider Section (Small Mobile) */
   .gallery-slider-section {
-    overflow: hidden !important;
-    contain: paint !important;
-    padding: 48px 10px !important;
-    width: 100% !important;
-    max-width: 100vw !important;
+    padding: 50px 10px 110px !important;
   }
 
   .story-slider-container {
-    height: 350px !important;
+    height: 440px !important;
     margin: 16px auto 0 !important;
-    width: 100% !important;
-    max-width: 100vw !important;
-    overflow: hidden !important;
-    contain: paint !important;
   }
 
   .story-slide {
-    width: min(72vw, 230px) !important;
-    height: min(98vw, 310px) !important;
-    margin: 0 !important;
-    border-radius: 18px !important;
+    width: min(80vw, 270px) !important;
+    height: min(114vw, 385px) !important;
+    border-radius: 20px !important;
   }
 
   .story-slide-frame {
-    border-radius: 18px !important;
+    border-radius: 20px !important;
   }
 
   .story-slide.active {
-    transform: translate(-50%, -50%) translateX(0px) scale(1) translateZ(20px) !important;
+    transform: translate(-50%, -50%) translateX(0px) scale(1) translateZ(35px) !important;
   }
 
   .story-slide.prev {
-    transform: translate(-50%, -50%) translateX(-36%) scale(0.82) rotateY(12deg) translateZ(-20px) !important;
-    opacity: 0.35 !important;
+    transform: translate(-50%, -50%) translateX(-38%) scale(0.82) rotateY(10deg) translateZ(-28px) !important;
+    opacity: 0.62 !important;
   }
 
   .story-slide.next {
-    transform: translate(-50%, -50%) translateX(36%) scale(0.82) rotateY(-12deg) translateZ(-20px) !important;
-    opacity: 0.35 !important;
+    transform: translate(-50%, -50%) translateX(38%) scale(0.82) rotateY(-10deg) translateZ(-28px) !important;
+    opacity: 0.62 !important;
   }
 
   .slider-arrow {
-    width: 36px !important;
-    height: 36px !important;
+    width: 38px !important;
+    height: 38px !important;
   }
 
   .slider-arrow.slider-prev {
-    left: 2px !important;
+    left: 4px !important;
   }
 
   .slider-arrow.slider-next {
-    right: 2px !important;
+    right: 4px !important;
   }
 
   .slide-caption-title {
