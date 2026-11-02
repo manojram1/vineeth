@@ -527,7 +527,7 @@ function doScratch(x, y) {
   sCtx.fill();
 
   scratchedPixels++;
-  if (scratchedPixels % 4 === 0) {
+  if (scratchedPixels % 2 === 0) {
     triggerScratchSpark(x, y);
   }
 
@@ -965,7 +965,7 @@ function playCrackerCelebrationSound() {
     const now = ctx.currentTime;
     const noiseBuffer = getSharedNoiseBuffer(ctx);
 
-    const fireSnap = (timeOffset, freqStart, freqEnd, snapVol, duration = 0.04) => {
+    const fireSnap = (timeOffset, freqStart, freqEnd, snapVol, duration = 0.045) => {
       const t = now + timeOffset;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -984,7 +984,7 @@ function playCrackerCelebrationSound() {
       osc.stop(t + duration + 0.01);
     };
 
-    const fireNoiseCrackle = (timeOffset, centerFreq, noiseVol, duration = 0.08) => {
+    const fireNoiseCrackle = (timeOffset, centerFreq, noiseVol, duration = 0.1) => {
       const t = now + timeOffset;
       const noise = ctx.createBufferSource();
       noise.buffer = noiseBuffer;
@@ -1007,17 +1007,54 @@ function playCrackerCelebrationSound() {
       noise.stop(t + duration + 0.01);
     };
 
-    // Staggered firecracker string snaps
-    fireSnap(0.00, 1500, 130, 0.7, 0.05);
-    fireNoiseCrackle(0.00, 4000, 0.6, 0.1);
+    const fireBassThump = (timeOffset, thumpFreq = 145, vol = 0.6, duration = 0.09) => {
+      const t = now + timeOffset;
+      const sub = ctx.createOscillator();
+      const gain = ctx.createGain();
+      sub.type = 'triangle';
+      sub.frequency.setValueAtTime(thumpFreq, t);
+      sub.frequency.exponentialRampToValueAtTime(32, t + duration);
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(vol, t + 0.003);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+      sub.connect(gain);
+      gain.connect(ctx.destination);
+      sub.start(t);
+      sub.stop(t + duration + 0.01);
+    };
 
-    fireSnap(0.05, 1800, 220, 0.45, 0.035);
-    fireNoiseCrackle(0.05, 4600, 0.4, 0.08);
+    // Authentic Indian Festive Cracker Garland / Ladi String (Syncopated snaps & sizzles)
+    // 0.00s: Initial ignition detonation
+    fireSnap(0.00, 1650, 130, 0.75, 0.05);
+    fireBassThump(0.00, 150, 0.65, 0.09);
+    fireNoiseCrackle(0.00, 3800, 0.65, 0.12);
 
-    fireSnap(0.11, 1250, 140, 0.55, 0.045);
-    fireNoiseCrackle(0.11, 3400, 0.45, 0.12);
+    // 0.07s: Rapid snappy second pop
+    fireSnap(0.07, 2100, 220, 0.55, 0.038);
+    fireNoiseCrackle(0.07, 4600, 0.45, 0.08);
 
-    fireNoiseCrackle(0.18, 5200, 0.28, 0.16);
+    // 0.14s: Sharp double crack
+    fireSnap(0.14, 1850, 180, 0.60, 0.042);
+    fireNoiseCrackle(0.14, 3200, 0.50, 0.10);
+
+    // 0.22s: Deep crackle burst
+    fireSnap(0.22, 1350, 120, 0.65, 0.048);
+    fireBassThump(0.22, 130, 0.50, 0.08);
+    fireNoiseCrackle(0.22, 4200, 0.55, 0.13);
+
+    // 0.31s: High sparkling volley
+    fireSnap(0.31, 2300, 260, 0.55, 0.035);
+    fireNoiseCrackle(0.31, 5100, 0.45, 0.10);
+
+    // 0.40s: Rapid pre-finale snap
+    fireSnap(0.40, 1750, 200, 0.60, 0.045);
+    fireNoiseCrackle(0.40, 3600, 0.50, 0.14);
+
+    // 0.49s: Grand Finale Cracker Super-Burst
+    fireSnap(0.49, 1100, 70, 0.85, 0.065);
+    fireBassThump(0.49, 160, 0.75, 0.11);
+    fireNoiseCrackle(0.49, 4400, 0.70, 0.22);
+    fireNoiseCrackle(0.55, 5800, 0.35, 0.18);
 
   } catch (err) {}
 }
@@ -1025,86 +1062,142 @@ function playCrackerCelebrationSound() {
 // Authentic Pyrotechnic Firecracker Burst for Scratch Reveal (Tuned for 60fps)
 function triggerCrackerBurst(cx, cy, intensity = 1.0, spreadAngle = null) {
   const sparkColors = [
-    { color: '#FFFFFF', width: 2.2 },
-    { color: '#FFE082', width: 2.0 },
-    { color: '#FFD700', width: 2.0 },
-    { color: '#FF9800', width: 1.8 },
-    { color: '#FF5722', width: 1.8 }
+    { color: '#FFFFFF', width: 2.6 },
+    { color: '#FFF59D', width: 2.3 },
+    { color: '#FFD700', width: 2.2 },
+    { color: '#FFB300', width: 2.0 },
+    { color: '#FF9100', width: 2.0 },
+    { color: '#FF5722', width: 1.8 },
+    { color: '#FF1744', width: 1.8 }
   ];
 
+  // Outer golden shockwave
   colParticles.push({
     type: 'cracker-flash',
     x: cx,
     y: cy,
     radius: 10,
-    maxRadius: 180 * intensity,
-    expandSpeed: 14 * intensity,
+    maxRadius: 210 * intensity,
+    expandSpeed: 15 * intensity,
     alpha: 0.95,
-    decay: 0.07,
-    color: '#FFF8E1',
-    lineWidth: 4
+    decay: 0.06,
+    color: '#FFD700',
+    lineWidth: 4.5
   });
 
-  const sparkCount = Math.floor(24 * intensity);
+  // Inner brilliant white flash ring
+  colParticles.push({
+    type: 'cracker-flash',
+    x: cx,
+    y: cy,
+    radius: 6,
+    maxRadius: 130 * intensity,
+    expandSpeed: 17 * intensity,
+    alpha: 0.90,
+    decay: 0.08,
+    color: '#FFFDF0',
+    lineWidth: 3
+  });
+
+  // Incandescent streamer sparks
+  const sparkCount = Math.floor(46 * intensity);
   for (let i = 0; i < sparkCount; i++) {
     let angle;
     if (spreadAngle !== null) {
-      angle = spreadAngle + (Math.random() - 0.5) * Math.PI * 0.85;
+      angle = spreadAngle + (Math.random() - 0.5) * Math.PI * 0.9;
     } else {
       angle = Math.random() * Math.PI * 2;
     }
-    const speed = (Math.random() * 13 + 4) * intensity;
+    const speed = (Math.random() * 15 + 4.5) * intensity;
     const style = sparkColors[Math.floor(Math.random() * sparkColors.length)];
 
     colParticles.push({
       type: 'cracker-spark',
-      x: cx + (Math.random() * 16 - 8),
-      y: cy + (Math.random() * 16 - 8),
+      x: cx + (Math.random() * 18 - 9),
+      y: cy + (Math.random() * 18 - 9),
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
       color: style.color,
       lineWidth: style.width,
-      tail: 2.2,
+      tail: Math.random() * 1.5 + 2.4,
       friction: 0.94,
-      gravity: 0.12,
+      gravity: 0.13,
       alpha: 1,
-      decay: Math.random() * 0.015 + 0.02
+      decay: Math.random() * 0.012 + 0.018
     });
   }
 
-  const starCount = Math.floor(12 * intensity);
+  // Glittering diamond stars
+  const starCount = Math.floor(22 * intensity);
   for (let i = 0; i < starCount; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const speed = (Math.random() * 10 + 2.5) * intensity;
+    const speed = (Math.random() * 11 + 3) * intensity;
     colParticles.push({
       type: 'cracker-star',
       x: cx,
       y: cy,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
-      size: Math.random() * 3 + 2,
-      color: Math.random() > 0.4 ? '#FFD700' : '#FFFFFF',
+      size: Math.random() * 3.5 + 2.5,
+      color: Math.random() > 0.35 ? '#FFD700' : '#FFFFFF',
       rotation: Math.random() * Math.PI,
       alpha: 1,
-      decay: Math.random() * 0.02 + 0.025
+      decay: Math.random() * 0.018 + 0.02
+    });
+  }
+
+  // Sizzling micro-crackles
+  const crackleCount = Math.floor(22 * intensity);
+  for (let i = 0; i < crackleCount; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = (Math.random() * 8 + 2) * intensity;
+    colParticles.push({
+      type: 'cracker-crackle',
+      x: cx + (Math.random() * 14 - 7),
+      y: cy + (Math.random() * 14 - 7),
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      size: Math.random() * 2.8 + 1.2,
+      color: Math.random() > 0.4 ? '#FFF59D' : '#FF9100',
+      alpha: 1.0,
+      decay: Math.random() * 0.025 + 0.03
     });
   }
 
   startColAnimLoop();
 }
 
-// Multi-Stage Firecracker Sequence for Scratch Reveal
+// Grand Multi-Stage Firecracker Celebration for Scratch Reveal
 function triggerScratchCrackerCelebration(cx, cy) {
   playCrackerCelebrationSound();
 
-  triggerCrackerBurst(cx, cy, 1.15);
+  // Wave 1: Immediate explosive center detonation
+  triggerCrackerBurst(cx, cy, 1.35);
 
+  // Wave 2: Left & right flanking fountain volleys
   setTimeout(() => {
-    triggerCrackerBurst(cx - 65, cy - 20, 0.85, -Math.PI * 0.65);
-    triggerCrackerBurst(cx + 65, cy - 20, 0.85, -Math.PI * 0.35);
-  }, 90);
+    triggerCrackerBurst(cx - 100, cy + 15, 1.1, -Math.PI * 0.68);
+    triggerCrackerBurst(cx + 100, cy + 15, 1.1, -Math.PI * 0.32);
+  }, 100);
 
-  if (navigator.vibrate) navigator.vibrate([25, 20, 35, 20, 45]);
+  // Wave 3: Upper corner aerial spark showers
+  setTimeout(() => {
+    triggerCrackerBurst(cx - 65, cy - 75, 1.15, -Math.PI * 0.55);
+    triggerCrackerBurst(cx + 65, cy - 75, 1.15, -Math.PI * 0.45);
+  }, 220);
+
+  // Wave 4: Wide celebratory crackle volleys across card edges
+  setTimeout(() => {
+    triggerCrackerBurst(cx - 130, cy - 25, 0.95);
+    triggerCrackerBurst(cx + 130, cy - 25, 0.95);
+  }, 350);
+
+  // Wave 5: Grand Finale Cracker Super-Burst showering golden embers over the revealed invitation
+  setTimeout(() => {
+    triggerCrackerBurst(cx, cy - 30, 1.5);
+  }, 480);
+
+  if (navigator.vibrate) navigator.vibrate([40, 25, 45, 25, 60, 30, 80]);
 }
 
 // Dedicated Popper Effect for Ring Interlock Celebration (Confetti & Paper Shower)
@@ -1126,21 +1219,42 @@ function triggerMultiStagePop(cx, cy) {
   triggerScratchCrackerCelebration(cx, cy);
 }
 
-// Micro spark while scratching (throttled)
+// Lively pyrotechnic spark while scratching
 function triggerScratchSpark(x, y) {
-  const angle = Math.random() * Math.PI * 2;
-  const speed = Math.random() * 3.5 + 1;
+  // Luminous trailing spark
+  const angle1 = Math.random() * Math.PI * 2;
+  const speed1 = Math.random() * 5 + 2.5;
   colParticles.push({
-    type: 'cracker-crackle',
+    type: 'cracker-spark',
     x: x,
     y: y,
-    vx: Math.cos(angle) * speed,
-    vy: Math.sin(angle) * speed,
-    size: Math.random() * 2 + 1,
-    color: Math.random() > 0.4 ? '#FFF176' : '#FFD54F',
-    alpha: 0.95,
-    decay: 0.045
+    vx: Math.cos(angle1) * speed1,
+    vy: Math.sin(angle1) * speed1 - 1.5,
+    lineWidth: 2,
+    tail: 2.2,
+    color: Math.random() > 0.4 ? '#FFF9C4' : '#FFD700',
+    alpha: 1.0,
+    decay: 0.045,
+    gravity: 0.16,
+    friction: 0.92
   });
+
+  // 2 sizzling micro embers
+  for (let k = 0; k < 2; k++) {
+    const angle2 = Math.random() * Math.PI * 2;
+    const speed2 = Math.random() * 3.5 + 1.2;
+    colParticles.push({
+      type: 'cracker-crackle',
+      x: x + (Math.random() * 6 - 3),
+      y: y + (Math.random() * 6 - 3),
+      vx: Math.cos(angle2) * speed2,
+      vy: Math.sin(angle2) * speed2,
+      size: Math.random() * 2.8 + 1.2,
+      color: Math.random() > 0.35 ? '#FFD54F' : '#FF9100',
+      alpha: 1.0,
+      decay: 0.04
+    });
+  }
   startColAnimLoop();
 }
 

@@ -1631,26 +1631,11 @@ section {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  margin-top: 4px;
-  flex-wrap: wrap;
+  margin-top: 6px;
 }
 
 .slider-counter-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 14px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(184, 134, 11, 0.35);
-  border-radius: 20px;
-  font-family: var(--serif);
-  font-size: 14px;
-  letter-spacing: 0.08em;
-  color: var(--primary-contrast);
-  box-shadow: 0 4px 16px rgba(142, 22, 59, 0.08);
-  margin-bottom: 0;
+  display: none !important;
 }
 
 .slider-counter-badge .counter-curr {
