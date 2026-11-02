@@ -240,6 +240,26 @@ function completeOpening() {
   highlightActiveNav();
 }
 
+if (typeof window !== 'undefined' && window.location.search && window.location.search.includes('unlocked')) {
+  document.body.classList.remove('locked');
+  if (openingModal) {
+    openingModal.classList.add('opened');
+    openingModal.style.display = 'none';
+  }
+  document.body.style.overflow = '';
+  // Make reveal elements visible immediately
+  document.querySelectorAll('.reveal').forEach(el => {
+    el.classList.add('visible');
+    el.style.opacity = '1';
+    el.style.transform = 'none';
+    el.style.transition = 'none';
+  });
+  if (window.location.search.includes('gallery')) {
+    const el = document.getElementById('gallerySection');
+    if (el) el.scrollIntoView({ behavior: 'instant', block: 'center' });
+  }
+}
+
 async function triggerUnwrapSequence(event) {
   if (openingModal && openingModal.classList.contains('opened')) return;
 
@@ -486,42 +506,107 @@ function initScratch() {
   }
 }
 
+let cachedScratchRect = null;
+function getScratchRect() {
+  if (!cachedScratchRect && scratchWrapper) {
+    cachedScratchRect = scratchWrapper.getBoundingClientRect();
+  }
+  return cachedScratchRect;
+}
+
+window.addEventListener('scroll', () => { cachedScratchRect = null; }, { passive: true });
+window.addEventListener('resize', () => { cachedScratchRect = null; initScratch(); }, { passive: true });
+
 function doScratch(x, y) {
-  const rect = scratchWrapper.getBoundingClientRect();
+  const rect = getScratchRect();
+  if (!rect) return;
+
   sCtx.globalCompositeOperation = 'destination-out';
   sCtx.beginPath();
   sCtx.arc(x - rect.left, y - rect.top, 32, 0, Math.PI * 2);
   sCtx.fill();
 
-  triggerScratchSpark(x, y);
-
   scratchedPixels++;
+  if (scratchedPixels % 4 === 0) {
+    triggerScratchSpark(x, y);
+  }
+
   if (scratchedPixels > 25 && !isRevealed) {
     isRevealed = true;
     scratchCanvas.style.opacity = '0';
-    document.getElementById('scratchInstruction').style.opacity = '0';
+    const instr = document.getElementById('scratchInstruction');
+    if (instr) instr.style.opacity = '0';
     
     scratchWrapper.classList.add('pop-bounce');
 
-    const cardRect = scratchWrapper.getBoundingClientRect();
-    const cx = cardRect.left + cardRect.width / 2;
-    const cy = cardRect.top + cardRect.height / 2;
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
 
     triggerScratchCrackerCelebration(cx, cy);
   }
 }
 
-scratchCanvas.addEventListener('pointerdown', (e) => { isScratching = true; doScratch(e.clientX, e.clientY); });
-scratchCanvas.addEventListener('pointermove', (e) => { if (isScratching) doScratch(e.clientX, e.clientY); });
+scratchCanvas.addEventListener('pointerdown', (e) => {
+  cachedScratchRect = null;
+  isScratching = true;
+  warmAudioCtx();
+  doScratch(e.clientX, e.clientY);
+});
+scratchCanvas.addEventListener('pointermove', (e) => {
+  if (isScratching) doScratch(e.clientX, e.clientY);
+});
 window.addEventListener('pointerup', () => isScratching = false);
-scratchCanvas.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+scratchCanvas.addEventListener('touchstart', (e) => {
+  cachedScratchRect = null;
+  warmAudioCtx();
+  e.preventDefault();
+}, { passive: false });
 scratchCanvas.addEventListener('touchmove', (e) => {
   e.preventDefault();
   if (e.touches[0]) doScratch(e.touches[0].clientX, e.touches[0].clientY);
 }, { passive: false });
 
 initScratch();
-window.addEventListener('resize', initScratch);
+
+/* -------------------------------------------------------------
+   HIGH-PERFORMANCE SHARED AUDIO ENGINE (ZERO HITCH / ZERO STALL)
+   - Single lazily-initialized shared AudioContext
+   - Pre-allocated reusable noise buffer (zero runtime allocations)
+   - Zero blocking audio driver spin-up on click/scratch/join
+   ------------------------------------------------------------- */
+let sharedAudioCtx = null;
+let sharedNoiseBuffer = null;
+
+function getSharedAudioCtx() {
+  if (!sharedAudioCtx) {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (AudioCtx) {
+      sharedAudioCtx = new AudioCtx();
+    }
+  }
+  if (sharedAudioCtx && sharedAudioCtx.state === 'suspended') {
+    sharedAudioCtx.resume().catch(() => {});
+  }
+  return sharedAudioCtx;
+}
+
+function warmAudioCtx() {
+  getSharedAudioCtx();
+}
+window.addEventListener('pointerdown', warmAudioCtx, { once: true, passive: true });
+window.addEventListener('touchstart', warmAudioCtx, { once: true, passive: true });
+
+function getSharedNoiseBuffer(ctx) {
+  if (!sharedNoiseBuffer || sharedNoiseBuffer.sampleRate !== ctx.sampleRate) {
+    const bufferLength = Math.floor(ctx.sampleRate * 0.22);
+    sharedNoiseBuffer = ctx.createBuffer(1, bufferLength, ctx.sampleRate);
+    const data = sharedNoiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferLength; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferLength * 0.38));
+    }
+  }
+  return sharedNoiseBuffer;
+}
 
 /* -------------------------------------------------------------
    ENGRAVED CLASSIC RINGS & SCRATCH REVEAL POP CRACKLE CELEBRATION
@@ -536,6 +621,7 @@ const lockedBadgeText = document.getElementById('lockedBadgeText');
 const envPopperCanvas = document.getElementById('envelopePopperCanvas');
 const envPopperCtx = envPopperCanvas ? envPopperCanvas.getContext('2d') : null;
 let envParticles = [];
+let envAnimRunning = false;
 
 function resizeEnvPopperCanvas() {
   if (!envPopperCanvas) return;
@@ -544,120 +630,135 @@ function resizeEnvPopperCanvas() {
 }
 if (envPopperCanvas) {
   resizeEnvPopperCanvas();
-  window.addEventListener('resize', resizeEnvPopperCanvas);
+  window.addEventListener('resize', resizeEnvPopperCanvas, { passive: true });
 }
 
-const colCanvas = document.getElementById('collisionCanvas');
-const colCtx = colCanvas.getContext('2d');
-let colParticles = [];
-
-function resizeColCanvas() {
-  colCanvas.width = window.innerWidth;
-  colCanvas.height = window.innerHeight;
+function startEnvAnimLoop() {
+  if (!envAnimRunning) {
+    envAnimRunning = true;
+    requestAnimationFrame(animateEnvelopePopper);
+  }
 }
-resizeColCanvas();
-window.addEventListener('resize', resizeColCanvas);
 
-// Dedicated Party Popper Animation Loop on Envelope Page
+// Dedicated Party Popper Animation Loop on Envelope Page (Stops when idle)
 function animateEnvelopePopper() {
-  if (envPopperCtx && envPopperCanvas) {
+  if (!envPopperCtx || !envPopperCanvas) {
+    envAnimRunning = false;
+    return;
+  }
+  if (envParticles.length === 0) {
     envPopperCtx.clearRect(0, 0, envPopperCanvas.width, envPopperCanvas.height);
+    envAnimRunning = false;
+    return;
+  }
 
-    for (let i = envParticles.length - 1; i >= 0; i--) {
-      const p = envParticles[i];
+  envPopperCtx.clearRect(0, 0, envPopperCanvas.width, envPopperCanvas.height);
 
-      if (p.type === 'shockwave') {
-        p.radius += 8;
-        p.alpha -= 0.035;
-        if (p.alpha <= 0 || p.radius >= p.maxRadius) {
-          envParticles.splice(i, 1);
-          continue;
-        }
-        envPopperCtx.save();
-        envPopperCtx.globalAlpha = Math.max(0, p.alpha);
-        envPopperCtx.strokeStyle = p.color;
-        envPopperCtx.lineWidth = p.lineWidth;
-        envPopperCtx.beginPath();
-        envPopperCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        envPopperCtx.stroke();
-        envPopperCtx.restore();
+  for (let i = envParticles.length - 1; i >= 0; i--) {
+    const p = envParticles[i];
+
+    if (p.type === 'shockwave') {
+      p.radius += 8;
+      p.alpha -= 0.04;
+      if (p.alpha <= 0 || p.radius >= p.maxRadius) {
+        envParticles.splice(i, 1);
         continue;
       }
+      envPopperCtx.globalAlpha = Math.max(0, p.alpha);
+      envPopperCtx.strokeStyle = p.color;
+      envPopperCtx.lineWidth = p.lineWidth || 4;
+      envPopperCtx.beginPath();
+      envPopperCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      envPopperCtx.stroke();
+      continue;
+    }
 
-      p.x += p.vx;
-      p.y += p.vy;
+    p.x += p.vx;
+    p.y += p.vy;
 
-      if (p.type === 'confetti' || p.type === 'ribbon' || p.type === 'petal') {
-        p.vy += p.gravity || 0.12;
-        p.vx *= 0.97;
-        p.rotation += p.rotSpeed || 0.05;
-        p.tilt = (p.tilt || 0) + (p.tiltSpeed || 0.08);
-        p.alpha -= p.decay;
-
-        if (p.alpha <= 0 || p.y > envPopperCanvas.height + 60) {
-          envParticles.splice(i, 1);
-          continue;
-        }
-
-        envPopperCtx.save();
-        envPopperCtx.translate(p.x, p.y);
-        envPopperCtx.rotate(p.rotation);
-        envPopperCtx.globalAlpha = Math.max(0, p.alpha);
-        envPopperCtx.fillStyle = p.color;
-
-        if (p.type === 'petal') {
-          envPopperCtx.beginPath();
-          envPopperCtx.ellipse(0, 0, p.w / 2, p.h / 2, Math.PI / 4, 0, Math.PI * 2);
-          envPopperCtx.fill();
-        } else if (p.type === 'ribbon') {
-          const ribbonW = p.w * Math.cos(p.tilt);
-          envPopperCtx.fillRect(-ribbonW / 2, -p.h / 2, ribbonW, p.h);
-        } else {
-          const flutterW = p.w * Math.cos(p.tilt);
-          envPopperCtx.fillRect(-flutterW / 2, -p.h / 2, flutterW, p.h);
-        }
-
-        envPopperCtx.restore();
-        continue;
-      }
-
-      // Default Star / Sparkle
-      p.vx *= 0.95;
-      p.vy *= 0.95;
+    if (p.type === 'confetti' || p.type === 'ribbon' || p.type === 'petal') {
+      p.vy += p.gravity || 0.12;
+      p.vx *= 0.97;
+      p.rotation += p.rotSpeed || 0.05;
+      p.tilt = (p.tilt || 0) + (p.tiltSpeed || 0.08);
       p.alpha -= p.decay;
 
-      if (p.alpha <= 0) {
+      if (p.alpha <= 0 || p.y > envPopperCanvas.height + 60) {
         envParticles.splice(i, 1);
         continue;
       }
 
       envPopperCtx.save();
+      envPopperCtx.translate(p.x, p.y);
+      envPopperCtx.rotate(p.rotation);
       envPopperCtx.globalAlpha = Math.max(0, p.alpha);
       envPopperCtx.fillStyle = p.color;
-      envPopperCtx.beginPath();
-      envPopperCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      envPopperCtx.fill();
+
+      if (p.type === 'petal') {
+        envPopperCtx.beginPath();
+        envPopperCtx.ellipse(0, 0, p.w / 2, p.h / 2, Math.PI / 4, 0, Math.PI * 2);
+        envPopperCtx.fill();
+      } else {
+        const flutterW = p.w * Math.cos(p.tilt);
+        envPopperCtx.fillRect(-flutterW / 2, -p.h / 2, flutterW, p.h);
+      }
+
       envPopperCtx.restore();
+      continue;
     }
+
+    p.vx *= 0.95;
+    p.vy *= 0.95;
+    p.alpha -= p.decay;
+
+    if (p.alpha <= 0) {
+      envParticles.splice(i, 1);
+      continue;
+    }
+
+    envPopperCtx.globalAlpha = Math.max(0, p.alpha);
+    envPopperCtx.fillStyle = p.color;
+    envPopperCtx.beginPath();
+    envPopperCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    envPopperCtx.fill();
   }
+
+  envPopperCtx.globalAlpha = 1.0;
   requestAnimationFrame(animateEnvelopePopper);
 }
-animateEnvelopePopper();
 
-// Realistic Festive Party Popper Sound Effect synthesized via Web Audio API (snappy air pop + paper crackle blast)
+const colCanvas = document.getElementById('collisionCanvas');
+const colCtx = colCanvas ? colCanvas.getContext('2d') : null;
+let colParticles = [];
+let colAnimRunning = false;
+
+function resizeColCanvas() {
+  if (!colCanvas) return;
+  colCanvas.width = window.innerWidth;
+  colCanvas.height = window.innerHeight;
+}
+if (colCanvas) {
+  resizeColCanvas();
+  window.addEventListener('resize', resizeColCanvas, { passive: true });
+}
+
+function startColAnimLoop() {
+  if (!colAnimRunning) {
+    colAnimRunning = true;
+    requestAnimationFrame(animateCollisionParticles);
+  }
+}
+
+// Synthesized Festive Party Popper Sound (Reuses shared audio context & pre-rendered buffer)
 function playPartyPopperSound() {
   try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
-    if (ctx.state === 'suspended') {
-      ctx.resume().catch(() => {});
-    }
+    const ctx = getSharedAudioCtx();
+    if (!ctx) return;
 
     const playSingleCannonPop = (delayMs, volume = 1.0, pitchMod = 1.0) => {
       const startTime = ctx.currentTime + delayMs / 1000;
 
-      // 1. Snappy pressure-release "POP" tone (fast pitch drop)
+      // Snappy pressure-release "POP" tone
       const osc = ctx.createOscillator();
       const oscGain = ctx.createGain();
       osc.type = 'triangle';
@@ -665,7 +766,7 @@ function playPartyPopperSound() {
       osc.frequency.exponentialRampToValueAtTime(70 * pitchMod, startTime + 0.045);
 
       oscGain.gain.setValueAtTime(0.001, startTime);
-      oscGain.gain.linearRampToValueAtTime(0.75 * volume, startTime + 0.003);
+      oscGain.gain.linearRampToValueAtTime(0.7 * volume, startTime + 0.003);
       oscGain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.06);
 
       osc.connect(oscGain);
@@ -673,7 +774,7 @@ function playPartyPopperSound() {
       osc.start(startTime);
       osc.stop(startTime + 0.065);
 
-      // 2. Canister sub-bass body thump
+      // Sub-bass body thump
       const sub = ctx.createOscillator();
       const subGain = ctx.createGain();
       sub.type = 'sine';
@@ -681,7 +782,7 @@ function playPartyPopperSound() {
       sub.frequency.exponentialRampToValueAtTime(40, startTime + 0.075);
 
       subGain.gain.setValueAtTime(0.001, startTime);
-      subGain.gain.linearRampToValueAtTime(0.6 * volume, startTime + 0.004);
+      subGain.gain.linearRampToValueAtTime(0.55 * volume, startTime + 0.004);
       subGain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.08);
 
       sub.connect(subGain);
@@ -689,14 +790,8 @@ function playPartyPopperSound() {
       sub.start(startTime);
       sub.stop(startTime + 0.085);
 
-      // 3. Confetti streamer rush & crackle (Bandpassed noise burst)
-      const bufferLength = Math.floor(ctx.sampleRate * 0.16);
-      const noiseBuffer = ctx.createBuffer(1, bufferLength, ctx.sampleRate);
-      const data = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < bufferLength; i++) {
-        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferLength * 0.35));
-      }
-
+      // Reusable noise buffer for streamer rustle (Zero allocations!)
+      const noiseBuffer = getSharedNoiseBuffer(ctx);
       const noiseSource = ctx.createBufferSource();
       noiseSource.buffer = noiseBuffer;
 
@@ -707,7 +802,7 @@ function playPartyPopperSound() {
 
       const noiseGain = ctx.createGain();
       noiseGain.gain.setValueAtTime(0.001, startTime);
-      noiseGain.gain.linearRampToValueAtTime(0.65 * volume, startTime + 0.005);
+      noiseGain.gain.linearRampToValueAtTime(0.6 * volume, startTime + 0.005);
       noiseGain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.15);
 
       noiseSource.connect(filter);
@@ -718,10 +813,8 @@ function playPartyPopperSound() {
       noiseSource.stop(startTime + 0.16);
     };
 
-    // Staggered multi-stage celebration pop matching the visual confetti cannons
-    playSingleCannonPop(0, 1.0, 1.0);       // Immediate center pop
-    playSingleCannonPop(85, 0.7, 1.18);     // Secondary left cannon pop
-    playSingleCannonPop(170, 0.55, 0.92);   // Third right cannon pop
+    playSingleCannonPop(0, 1.0, 1.0);
+    playSingleCannonPop(80, 0.65, 1.15);
 
   } catch (err) {}
 }
@@ -729,168 +822,155 @@ function playPartyPopperSound() {
 // Multi-Stage Luxury Party Popper Explosion for Envelope Unwrapping
 function triggerEnvelopePartyPopper(cx, cy) {
   const popColors = [
-    '#C59B27', '#B8860B', '#D4AF37', '#E5C170', // Burnished golds
-    '#8E163B', '#D93B68', '#C8102E', '#FAF2E6', // Royal rose, crimson, silk ivory
-    '#FFD700', '#FFFFFF', '#FF6B8B', '#B30B2D'
+    '#C59B27', '#B8860B', '#D4AF37', '#E5C170',
+    '#8E163B', '#D93B68', '#C8102E', '#FAF2E6',
+    '#FFD700', '#FFFFFF', '#FF6B8B'
   ];
 
-  // Play realistic party popper sound right when envelope begins opening
   playPartyPopperSound();
 
   function shootCannon(startX, startY, baseAngle, spread, count, powerMultiplier = 1) {
-    // Expanding shockwave ring
     envParticles.push({
       type: 'shockwave',
       x: startX,
       y: startY,
       radius: 12,
-      maxRadius: 260 * powerMultiplier,
-      alpha: 0.96,
+      maxRadius: 220 * powerMultiplier,
+      alpha: 0.95,
       color: '#ffd700',
-      lineWidth: 5
+      lineWidth: 4
     });
 
     for (let i = 0; i < count; i++) {
       const angle = baseAngle + (Math.random() - 0.5) * spread;
-      const speed = (Math.random() * 16 + 6) * powerMultiplier;
-      const isRibbon = Math.random() > 0.68;
+      const speed = (Math.random() * 14 + 5) * powerMultiplier;
+      const isRibbon = Math.random() > 0.65;
       const isPetal = !isRibbon && Math.random() > 0.60;
+      const color = popColors[Math.floor(Math.random() * popColors.length)];
 
       envParticles.push({
-        type: isRibbon ? 'ribbon' : (isPetal ? 'petal' : 'confetti'),
-        x: startX + (Math.random() * 20 - 10),
-        y: startY + (Math.random() * 20 - 10),
+        type: isPetal ? 'petal' : (isRibbon ? 'ribbon' : 'confetti'),
+        x: startX + (Math.random() * 16 - 8),
+        y: startY + (Math.random() * 16 - 8),
         vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - (Math.random() * 3 + 3),
-        w: isRibbon ? (Math.random() * 6 + 4) : (Math.random() * 11 + 6),
-        h: isRibbon ? (Math.random() * 30 + 16) : (Math.random() * 15 + 7),
-        color: popColors[Math.floor(Math.random() * popColors.length)],
+        vy: Math.sin(angle) * speed - 2.5,
+        w: isRibbon ? Math.random() * 5 + 3 : (isPetal ? Math.random() * 12 + 8 : Math.random() * 8 + 5),
+        h: isRibbon ? Math.random() * 18 + 12 : (isPetal ? Math.random() * 16 + 10 : Math.random() * 10 + 6),
+        color: color,
         alpha: 1,
-        decay: Math.random() * 0.006 + 0.004, // 2.5 - 3.5s duration on envelope screen
+        decay: Math.random() * 0.008 + 0.005,
         rotation: Math.random() * Math.PI * 2,
         rotSpeed: (Math.random() - 0.5) * 0.22,
-        tilt: Math.random() * Math.PI * 2,
-        tiltSpeed: (Math.random() - 0.5) * 0.16,
-        gravity: isRibbon ? 0.13 : (isPetal ? 0.10 : 0.16)
+        tilt: Math.random() * Math.PI,
+        tiltSpeed: Math.random() * 0.12 + 0.04,
+        gravity: isRibbon ? 0.15 : (isPetal ? 0.07 : 0.12)
       });
     }
 
-    // Sparkling golden and white stars
-    for (let i = 0; i < Math.floor(count * 0.65); i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = (Math.random() * 14 + 4) * powerMultiplier;
+    const sparkleCount = Math.floor(count * 0.45);
+    for (let j = 0; j < sparkleCount; j++) {
+      const sparkAngle = Math.random() * Math.PI * 2;
+      const sparkSpeed = (Math.random() * 16 + 4) * powerMultiplier;
       envParticles.push({
-        type: 'star',
+        type: 'sparkle',
         x: startX,
         y: startY,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        size: Math.random() * 5.5 + 2.5,
-        color: Math.random() > 0.35 ? '#ffd700' : '#ffffff',
+        vx: Math.cos(sparkAngle) * sparkSpeed,
+        vy: Math.sin(sparkAngle) * sparkSpeed,
+        size: Math.random() * 4 + 2,
+        color: Math.random() > 0.4 ? '#FFD700' : '#FFFFFF',
         alpha: 1,
-        decay: Math.random() * 0.012 + 0.005
+        decay: Math.random() * 0.02 + 0.015
       });
     }
+
+    startEnvAnimLoop();
   }
 
-  // 1. Immediate Center Pop directly from Wax Seal
-  shootCannon(cx, cy, -Math.PI / 2, Math.PI * 1.5, 110, 1.2);
-
-  // 2. Dual Party Cannon Bursts from Left and Right sides of Envelope (t=90ms)
+  shootCannon(cx, cy, -Math.PI / 2, Math.PI * 0.75, 45, 1.1);
   setTimeout(() => {
-    const leftX = Math.max(20, cx - Math.min(window.innerWidth * 0.36, 190));
-    const rightX = Math.min(window.innerWidth - 20, cx + Math.min(window.innerWidth * 0.36, 190));
-    const cannonY = cy + 18;
+    shootCannon(cx - 70, cy + 20, -Math.PI * 0.62, Math.PI * 0.5, 30, 0.95);
+    shootCannon(cx + 70, cy + 20, -Math.PI * 0.38, Math.PI * 0.5, 30, 0.95);
+  }, 100);
 
-    shootCannon(leftX, cannonY, -Math.PI * 0.32, Math.PI * 0.52, 75, 1.1);
-    shootCannon(rightX, cannonY, -Math.PI * 0.68, Math.PI * 0.52, 75, 1.1);
-  }, 90);
-
-  // 3. Secondary Cascade Flutter Shower (t=190ms)
-  setTimeout(() => {
-    shootCannon(cx, cy - 25, -Math.PI / 2, Math.PI * 1.1, 60, 0.95);
-  }, 190);
-
-  if (navigator.vibrate) navigator.vibrate([40, 30, 60, 40, 80]);
+  if (navigator.vibrate) navigator.vibrate([35, 30, 45]);
 }
 
-// High-Energy "Pop Cracking" Ribbon Cutting & Falling Pop Paper Celebration
+// Festive Burst for Ring Interlock Celebration (Tuned for Silky 60fps Performance)
 function triggerPopCrackleBurst(cx, cy) {
-  const popPaperColors = ['#C59B27', '#B8860B', '#D4AF37', '#4A0E17', '#800E26', '#FAF2E6', '#E5C170', '#9E1B32'];
+  const popPaperColors = [
+    '#C59B27', '#E5C170', '#8E163B', '#D93B68',
+    '#FFD700', '#FFFFFF', '#FAF2E6', '#FF8FA3'
+  ];
 
-  // Popping Shockwave Ring
   colParticles.push({
     type: 'shockwave',
     x: cx,
     y: cy,
     radius: 10,
-    maxRadius: 220,
+    maxRadius: 170,
     alpha: 0.95,
-    color: '#ffd700',
-    lineWidth: 6
+    color: '#E5C170',
+    lineWidth: 4
   });
 
-  // 1. Confetti & Falling Pop Papers Bursting Upward then Fluttering Down
-  for (let i = 0; i < 110; i++) {
-    const angle = (Math.random() * 0.85 + 0.075) * -Math.PI; // Upward arc blast
-    const speed = Math.random() * 16 + 4;
+  const confettiCount = 34;
+  for (let i = 0; i < confettiCount; i++) {
+    const angle = (Math.random() * 0.85 + 0.075) * -Math.PI;
+    const speed = Math.random() * 13 + 3.5;
     colParticles.push({
       type: 'confetti',
-      x: cx + (Math.random() * 50 - 25),
+      x: cx + (Math.random() * 24 - 12),
       y: cy,
       vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 4,
-      w: Math.random() * 10 + 4,
-      h: Math.random() * 16 + 8,
+      vy: Math.sin(angle) * speed - 3.2,
+      w: Math.random() * 7 + 4,
+      h: Math.random() * 11 + 6,
       color: popPaperColors[Math.floor(Math.random() * popPaperColors.length)],
       alpha: 1,
-      decay: Math.random() * 0.012 + 0.005, // Slower decay so paper drops flutter and fall across page
+      decay: Math.random() * 0.01 + 0.006,
       rotation: Math.random() * Math.PI * 2,
-      rotSpeed: (Math.random() - 0.5) * 0.28,
-      gravity: 0.18
+      rotSpeed: (Math.random() - 0.5) * 0.22,
+      gravity: 0.15
     });
   }
 
-  // 2. High Velocity Golden & Silver Sparkle Particles
-  for (let i = 0; i < 85; i++) {
+  const starCount = 20;
+  for (let i = 0; i < starCount; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 14 + 3;
+    const speed = Math.random() * 11 + 3;
     colParticles.push({
       type: 'star',
       x: cx,
       y: cy,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
-      size: Math.random() * 6 + 3,
+      size: Math.random() * 4.5 + 2,
       color: Math.random() > 0.3 ? '#ffd700' : '#ffffff',
       alpha: 1,
-      decay: Math.random() * 0.02 + 0.008
+      decay: Math.random() * 0.02 + 0.012
     });
   }
 
-  if (navigator.vibrate) navigator.vibrate([40, 40, 60, 40, 80]);
+  startColAnimLoop();
+  if (navigator.vibrate) navigator.vibrate([35, 30, 50]);
 }
 
 // Festive Multi-Burst Firecracker Sound Effect for Scratch Card Reveal
-// Distinct from the envelope popper: snappy pyrotechnic cracker pops with sizzling sparkle bursts
 function playCrackerCelebrationSound() {
   try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return;
-    const ctx = new AudioCtx();
-    if (ctx.state === 'suspended') {
-      ctx.resume().catch(() => {});
-    }
+    const ctx = getSharedAudioCtx();
+    if (!ctx) return;
 
     const now = ctx.currentTime;
+    const noiseBuffer = getSharedNoiseBuffer(ctx);
 
-    // Helper: Single sharp firecracker snap
     const fireSnap = (timeOffset, freqStart, freqEnd, snapVol, duration = 0.04) => {
       const t = now + timeOffset;
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      osc.type = 'sawtooth'; // Sharp acoustic snap of a firecracker
+      osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(freqStart, t);
       osc.frequency.exponentialRampToValueAtTime(freqEnd, t + duration);
 
@@ -904,23 +984,15 @@ function playCrackerCelebrationSound() {
       osc.stop(t + duration + 0.01);
     };
 
-    // Helper: Sizzling cracker noise burst (sparkle / powder burst)
     const fireNoiseCrackle = (timeOffset, centerFreq, noiseVol, duration = 0.08) => {
       const t = now + timeOffset;
-      const bufferLength = Math.floor(ctx.sampleRate * duration);
-      const noiseBuffer = ctx.createBuffer(1, bufferLength, ctx.sampleRate);
-      const data = noiseBuffer.getChannelData(0);
-      for (let i = 0; i < bufferLength; i++) {
-        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferLength, 1.8);
-      }
-
       const noise = ctx.createBufferSource();
       noise.buffer = noiseBuffer;
 
       const filter = ctx.createBiquadFilter();
       filter.type = 'bandpass';
       filter.frequency.setValueAtTime(centerFreq, t);
-      filter.Q.setValueAtTime(3.2, t); // High resonance sizzle
+      filter.Q.setValueAtTime(2.8, t);
 
       const gain = ctx.createGain();
       gain.gain.setValueAtTime(0.001, t);
@@ -935,151 +1007,118 @@ function playCrackerCelebrationSound() {
       noise.stop(t + duration + 0.01);
     };
 
-    // Rapid celebratory firecracker burst cascade:
-    // 1. Initial loud lead cracker snap & burst
-    fireSnap(0.00, 1500, 130, 0.75, 0.05);
-    fireNoiseCrackle(0.00, 4000, 0.65, 0.12);
+    // Staggered firecracker string snaps
+    fireSnap(0.00, 1500, 130, 0.7, 0.05);
+    fireNoiseCrackle(0.00, 4000, 0.6, 0.1);
 
-    // 2. High-energy staggered cracker string snaps
-    fireSnap(0.045, 1900, 240, 0.50, 0.035);
-    fireNoiseCrackle(0.045, 4800, 0.45, 0.09);
+    fireSnap(0.05, 1800, 220, 0.45, 0.035);
+    fireNoiseCrackle(0.05, 4600, 0.4, 0.08);
 
-    fireSnap(0.10, 1300, 150, 0.60, 0.045);
-    fireNoiseCrackle(0.10, 3400, 0.55, 0.14);
+    fireSnap(0.11, 1250, 140, 0.55, 0.045);
+    fireNoiseCrackle(0.11, 3400, 0.45, 0.12);
 
-    fireSnap(0.155, 1700, 200, 0.45, 0.035);
-    fireNoiseCrackle(0.155, 5200, 0.40, 0.08);
-
-    fireSnap(0.22, 1150, 110, 0.65, 0.055);
-    fireNoiseCrackle(0.22, 3000, 0.50, 0.16);
-
-    // 3. Trailing sizzling golden sparkles
-    fireNoiseCrackle(0.26, 5800, 0.30, 0.22);
+    fireNoiseCrackle(0.18, 5200, 0.28, 0.16);
 
   } catch (err) {}
 }
 
-// Authentic Pyrotechnic Firecracker Burst for Scratch Reveal
+// Authentic Pyrotechnic Firecracker Burst for Scratch Reveal (Tuned for 60fps)
 function triggerCrackerBurst(cx, cy, intensity = 1.0, spreadAngle = null) {
   const sparkColors = [
-    { color: '#FFFFFF', glow: '#FFF59D', width: 2.6 }, // Incandescent white-hot
-    { color: '#FFE082', glow: '#FFD700', width: 2.4 }, // Brilliant gold
-    { color: '#FFD700', glow: '#FFA000', width: 2.2 }, // Pure golden spark
-    { color: '#FF9800', glow: '#FF6D00', width: 2.0 }, // Sizzling amber
-    { color: '#FF5722', glow: '#E65100', width: 2.0 }, // Fiery orange
-    { color: '#FF1744', glow: '#D50000', width: 2.2 }, // Pyrotechnic crimson red
-    { color: '#E0F7FA', glow: '#80DEEA', width: 2.4 }  // Electric diamond silver
+    { color: '#FFFFFF', width: 2.2 },
+    { color: '#FFE082', width: 2.0 },
+    { color: '#FFD700', width: 2.0 },
+    { color: '#FF9800', width: 1.8 },
+    { color: '#FF5722', width: 1.8 }
   ];
 
-  // 1. Pyrotechnic Flash Shockwave
   colParticles.push({
     type: 'cracker-flash',
     x: cx,
     y: cy,
-    radius: 12,
-    maxRadius: 230 * intensity,
-    expandSpeed: 16 * intensity,
+    radius: 10,
+    maxRadius: 180 * intensity,
+    expandSpeed: 14 * intensity,
     alpha: 0.95,
-    decay: 0.065,
+    decay: 0.07,
     color: '#FFF8E1',
-    lineWidth: 5
+    lineWidth: 4
   });
 
-  // 2. High-Velocity Incandescent Spark Streaks
-  const sparkCount = Math.floor(75 * intensity);
+  const sparkCount = Math.floor(24 * intensity);
   for (let i = 0; i < sparkCount; i++) {
     let angle;
     if (spreadAngle !== null) {
-      angle = spreadAngle + (Math.random() - 0.5) * Math.PI * 0.9;
+      angle = spreadAngle + (Math.random() - 0.5) * Math.PI * 0.85;
     } else {
       angle = Math.random() * Math.PI * 2;
     }
-    const speed = (Math.random() * 16 + 5) * intensity;
+    const speed = (Math.random() * 13 + 4) * intensity;
     const style = sparkColors[Math.floor(Math.random() * sparkColors.length)];
-    const willBurst = Math.random() < 0.28; // 28% of sparks burst into secondary micro-crackles
 
     colParticles.push({
       type: 'cracker-spark',
-      x: cx + (Math.random() * 20 - 10),
-      y: cy + (Math.random() * 20 - 10),
+      x: cx + (Math.random() * 16 - 8),
+      y: cy + (Math.random() * 16 - 8),
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
       color: style.color,
-      glowColor: style.glow,
       lineWidth: style.width,
-      tail: Math.random() * 1.5 + 2.2,
-      friction: Math.random() * 0.02 + 0.93,
-      gravity: Math.random() * 0.08 + 0.12,
+      tail: 2.2,
+      friction: 0.94,
+      gravity: 0.12,
       alpha: 1,
-      decay: Math.random() * 0.012 + 0.016, // Fast sizzling life
-      bursts: willBurst,
-      hasBursted: false
+      decay: Math.random() * 0.015 + 0.02
     });
   }
 
-  // 3. Radiant 4-Point Star Flares (Twinkling Firecracker Starbursts)
-  const starCount = Math.floor(32 * intensity);
+  const starCount = Math.floor(12 * intensity);
   for (let i = 0; i < starCount; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const speed = (Math.random() * 12 + 3) * intensity;
+    const speed = (Math.random() * 10 + 2.5) * intensity;
     colParticles.push({
       type: 'cracker-star',
       x: cx,
       y: cy,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
-      size: Math.random() * 3.5 + 2.5,
+      size: Math.random() * 3 + 2,
       color: Math.random() > 0.4 ? '#FFD700' : '#FFFFFF',
-      glowColor: Math.random() > 0.5 ? '#FFA000' : '#FFD54F',
       rotation: Math.random() * Math.PI,
       alpha: 1,
-      decay: Math.random() * 0.015 + 0.02,
-      flicker: Math.random() * 5
+      decay: Math.random() * 0.02 + 0.025
     });
   }
+
+  startColAnimLoop();
 }
 
 // Multi-Stage Firecracker Sequence for Scratch Reveal
 function triggerScratchCrackerCelebration(cx, cy) {
-  // Play distinct pyrotechnic firecracker string sound
   playCrackerCelebrationSound();
 
-  // 1. Center initial firecracker explosion
-  triggerCrackerBurst(cx, cy, 1.25);
+  triggerCrackerBurst(cx, cy, 1.15);
 
-  // 2. Left angled firecracker pop (t = 85ms)
   setTimeout(() => {
-    triggerCrackerBurst(cx - 85, cy - 25, 0.9, -Math.PI * 0.65);
-  }, 85);
+    triggerCrackerBurst(cx - 65, cy - 20, 0.85, -Math.PI * 0.65);
+    triggerCrackerBurst(cx + 65, cy - 20, 0.85, -Math.PI * 0.35);
+  }, 90);
 
-  // 3. Right angled firecracker pop (t = 165ms)
-  setTimeout(() => {
-    triggerCrackerBurst(cx + 85, cy - 25, 0.9, -Math.PI * 0.35);
-  }, 165);
-
-  // 4. Center sparkling crackle fountain finale (t = 245ms)
-  setTimeout(() => {
-    triggerCrackerBurst(cx, cy - 35, 1.0, -Math.PI / 2);
-  }, 245);
-
-  if (navigator.vibrate) navigator.vibrate([30, 20, 40, 25, 50, 25, 70]);
+  if (navigator.vibrate) navigator.vibrate([25, 20, 35, 20, 45]);
 }
 
 // Dedicated Popper Effect for Ring Interlock Celebration (Confetti & Paper Shower)
 function triggerRingLockPopper(cx, cy) {
-  // Use celebratory party popper sound
   playPartyPopperSound();
 
-  // Popper confetti bursts (shockwave + colorful flutter papers & ribbons)
+  // Primary festive burst
   triggerPopCrackleBurst(cx, cy);
 
+  // Secondary lighter side pops
   setTimeout(() => {
-    triggerPopCrackleBurst(cx - 80, cy - 20);
+    triggerPopCrackleBurst(cx - 55, cy - 15);
+    triggerPopCrackleBurst(cx + 55, cy - 15);
   }, 120);
-
-  setTimeout(() => {
-    triggerPopCrackleBurst(cx + 80, cy - 20);
-  }, 240);
 }
 
 // Compatibility alias
@@ -1087,212 +1126,159 @@ function triggerMultiStagePop(cx, cy) {
   triggerScratchCrackerCelebration(cx, cy);
 }
 
-// Micro sparks while scratching
+// Micro spark while scratching (throttled)
 function triggerScratchSpark(x, y) {
-  for (let i = 0; i < 3; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 4 + 1;
-    colParticles.push({
-      type: 'cracker-crackle',
-      x: x,
-      y: y,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed,
-      size: Math.random() * 2.5 + 1.2,
-      color: Math.random() > 0.4 ? '#FFF176' : '#FFD54F',
-      alpha: 1,
-      decay: 0.05
-    });
-  }
+  const angle = Math.random() * Math.PI * 2;
+  const speed = Math.random() * 3.5 + 1;
+  colParticles.push({
+    type: 'cracker-crackle',
+    x: x,
+    y: y,
+    vx: Math.cos(angle) * speed,
+    vy: Math.sin(angle) * speed,
+    size: Math.random() * 2 + 1,
+    color: Math.random() > 0.4 ? '#FFF176' : '#FFD54F',
+    alpha: 0.95,
+    decay: 0.045
+  });
+  startColAnimLoop();
 }
 
 function triggerSparkleBurst(cx, cy) {
   triggerCrackerBurst(cx, cy, 1.0);
 }
 
+// High-Performance Particle Renderer (Zero shadowBlur convolutions, stops when idle)
 function animateCollisionParticles() {
+  if (colParticles.length === 0) {
+    if (colCtx && colCanvas) {
+      colCtx.clearRect(0, 0, colCanvas.width, colCanvas.height);
+    }
+    colAnimRunning = false;
+    return;
+  }
+
   colCtx.clearRect(0, 0, colCanvas.width, colCanvas.height);
 
   for (let i = colParticles.length - 1; i >= 0; i--) {
     const p = colParticles[i];
 
-    // 1. Popper Shockwave Ring (for ring join popper)
-    if (p.type === 'shockwave') {
-      p.radius += 8;
-      p.alpha -= 0.04;
+    // 1. Shockwaves & Flash Rings
+    if (p.type === 'shockwave' || p.type === 'cracker-flash') {
+      p.radius += p.expandSpeed || 8;
+      p.alpha -= p.decay || 0.04;
       if (p.alpha <= 0 || p.radius >= p.maxRadius) {
         colParticles.splice(i, 1);
         continue;
       }
-      colCtx.save();
-      colCtx.globalAlpha = p.alpha;
-      colCtx.strokeStyle = p.color;
-      colCtx.lineWidth = p.lineWidth;
-      colCtx.beginPath();
-      colCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      colCtx.stroke();
-      colCtx.restore();
-      continue;
-    }
-
-    // 2. Cracker Explosion Flash Ring
-    if (p.type === 'cracker-flash') {
-      p.radius += p.expandSpeed || 14;
-      p.alpha -= p.decay || 0.06;
-      if (p.alpha <= 0 || p.radius >= p.maxRadius) {
-        colParticles.splice(i, 1);
-        continue;
-      }
-      colCtx.save();
       colCtx.globalAlpha = Math.max(0, p.alpha);
-      colCtx.strokeStyle = p.color || '#FFF3B0';
+      colCtx.strokeStyle = p.color;
       colCtx.lineWidth = p.lineWidth || 4;
-      colCtx.shadowColor = '#FFA500';
-      colCtx.shadowBlur = 14;
       colCtx.beginPath();
       colCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
       colCtx.stroke();
-      colCtx.restore();
       continue;
     }
 
     p.x += p.vx;
     p.y += p.vy;
 
-    // 3. Cracker Fiery Streaks (Incandescent sparks with light trails)
+    // 2. Cracker Sparks (Clean incandescent lines)
     if (p.type === 'cracker-spark') {
       p.vx *= p.friction || 0.94;
       p.vy *= p.friction || 0.94;
       p.vy += p.gravity || 0.12;
-      p.alpha -= p.decay || 0.022;
-
-      // Secondary micro-crackle pop burst
-      if (p.bursts && p.alpha < 0.62 && !p.hasBursted) {
-        p.hasBursted = true;
-        for (let k = 0; k < 4; k++) {
-          const microAngle = Math.random() * Math.PI * 2;
-          const microSpeed = Math.random() * 3.5 + 1;
-          colParticles.push({
-            type: 'cracker-crackle',
-            x: p.x,
-            y: p.y,
-            vx: Math.cos(microAngle) * microSpeed,
-            vy: Math.sin(microAngle) * microSpeed,
-            size: Math.random() * 2 + 1,
-            color: Math.random() > 0.4 ? '#FFF59D' : '#FFD54F',
-            alpha: 0.95,
-            decay: 0.04
-          });
-        }
-      }
+      p.alpha -= p.decay || 0.025;
 
       if (p.alpha <= 0) {
         colParticles.splice(i, 1);
         continue;
       }
 
-      colCtx.save();
       colCtx.globalAlpha = Math.max(0, p.alpha);
       colCtx.strokeStyle = p.color;
-      colCtx.lineWidth = p.lineWidth || 2.2;
+      colCtx.lineWidth = p.lineWidth || 2;
       colCtx.lineCap = 'round';
-      colCtx.shadowColor = p.glowColor || p.color;
-      colCtx.shadowBlur = p.glowBlur || 6;
-
       colCtx.beginPath();
-      const tailLen = p.tail || 2.6;
+      const tailLen = p.tail || 2.2;
       colCtx.moveTo(p.x - p.vx * tailLen, p.y - p.vy * tailLen);
       colCtx.lineTo(p.x, p.y);
       colCtx.stroke();
 
-      // Bright white incandescent spark core
       colCtx.fillStyle = '#FFFFFF';
       colCtx.beginPath();
-      colCtx.arc(p.x, p.y, (p.lineWidth || 2.2) * 0.65, 0, Math.PI * 2);
+      colCtx.arc(p.x, p.y, (p.lineWidth || 2) * 0.6, 0, Math.PI * 2);
       colCtx.fill();
-
-      colCtx.restore();
       continue;
     }
 
-    // 4. Cracker Twinkling 4-Point Star Flares
+    // 3. Cracker Stars (4-point diamond star)
     if (p.type === 'cracker-star') {
       p.vx *= 0.93;
       p.vy *= 0.93;
       p.vy += 0.06;
-      p.alpha -= p.decay || 0.024;
-      p.flicker = (p.flicker || 0) + 0.35;
+      p.alpha -= p.decay || 0.025;
 
       if (p.alpha <= 0) {
         colParticles.splice(i, 1);
         continue;
       }
 
-      const currentSize = Math.max(1, p.size * (1 + Math.sin(p.flicker) * 0.35));
       colCtx.save();
       colCtx.globalAlpha = Math.max(0, p.alpha);
       colCtx.fillStyle = p.color;
-      colCtx.shadowColor = p.glowColor || '#FFD700';
-      colCtx.shadowBlur = 8;
-
       colCtx.translate(p.x, p.y);
       colCtx.rotate(p.rotation || 0);
 
-      // 4-point star diamond flare
+      const s = p.size;
       colCtx.beginPath();
-      colCtx.moveTo(0, -currentSize * 2.2);
-      colCtx.lineTo(currentSize * 0.45, -currentSize * 0.45);
-      colCtx.lineTo(currentSize * 2.2, 0);
-      colCtx.lineTo(currentSize * 0.45, currentSize * 0.45);
-      colCtx.lineTo(0, currentSize * 2.2);
-      colCtx.lineTo(-currentSize * 0.45, currentSize * 0.45);
-      colCtx.lineTo(-currentSize * 2.2, 0);
-      colCtx.lineTo(-currentSize * 0.45, -currentSize * 0.45);
+      colCtx.moveTo(0, -s * 2);
+      colCtx.lineTo(s * 0.45, -s * 0.45);
+      colCtx.lineTo(s * 2, 0);
+      colCtx.lineTo(s * 0.45, s * 0.45);
+      colCtx.lineTo(0, s * 2);
+      colCtx.lineTo(-s * 0.45, s * 0.45);
+      colCtx.lineTo(-s * 2, 0);
+      colCtx.lineTo(-s * 0.45, -s * 0.45);
       colCtx.closePath();
       colCtx.fill();
 
-      // White center flare
       colCtx.fillStyle = '#FFFFFF';
       colCtx.beginPath();
-      colCtx.arc(0, 0, currentSize * 0.6, 0, Math.PI * 2);
+      colCtx.arc(0, 0, s * 0.5, 0, Math.PI * 2);
       colCtx.fill();
-
       colCtx.restore();
       continue;
     }
 
-    // 5. Cracker Micro Sizzles & Sparks
+    // 4. Cracker Micro Sparkle
     if (p.type === 'cracker-crackle') {
       p.vx *= 0.90;
       p.vy *= 0.90;
       p.vy += 0.08;
-      p.alpha -= p.decay || 0.035;
+      p.alpha -= p.decay || 0.04;
 
       if (p.alpha <= 0) {
         colParticles.splice(i, 1);
         continue;
       }
 
-      colCtx.save();
       colCtx.globalAlpha = Math.max(0, p.alpha);
       colCtx.fillStyle = p.color;
-      colCtx.shadowColor = '#FFA500';
-      colCtx.shadowBlur = 4;
       colCtx.beginPath();
       colCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
       colCtx.fill();
-      colCtx.restore();
       continue;
     }
 
-    // 6. Popper Confetti & Flutter Papers (specifically for Ring Join Celebration)
-    if (p.type === 'confetti' || p.type === 'ribbon' || p.type === 'petal') {
-      p.vy += p.gravity || 0.1;
+    // 5. Confetti Papers & Flutter Ribbons
+    if (p.type === 'confetti' || p.type === 'ribbon') {
+      p.vy += p.gravity || 0.12;
       p.vx *= 0.96;
       p.rotation += p.rotSpeed || 0.05;
-      p.alpha -= p.decay;
+      p.alpha -= p.decay || 0.01;
 
-      if (p.alpha <= 0) {
+      if (p.alpha <= 0 || p.y > colCanvas.height + 40) {
         colParticles.splice(i, 1);
         continue;
       }
@@ -1300,22 +1286,14 @@ function animateCollisionParticles() {
       colCtx.save();
       colCtx.translate(p.x, p.y);
       colCtx.rotate(p.rotation);
-      colCtx.globalAlpha = p.alpha;
+      colCtx.globalAlpha = Math.max(0, p.alpha);
       colCtx.fillStyle = p.color;
-
-      if (p.type === 'petal') {
-        colCtx.beginPath();
-        colCtx.ellipse(0, 0, p.w / 2, p.h / 2, 0, 0, Math.PI * 2);
-        colCtx.fill();
-      } else {
-        colCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      }
-
+      colCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
       colCtx.restore();
       continue;
     }
 
-    // 7. Default Star / Sparkle
+    // Default Star / Sparkle
     p.vx *= 0.95;
     p.vy *= 0.95;
     p.alpha -= p.decay;
@@ -1325,17 +1303,16 @@ function animateCollisionParticles() {
       continue;
     }
 
-    colCtx.save();
-    colCtx.globalAlpha = p.alpha;
+    colCtx.globalAlpha = Math.max(0, p.alpha);
     colCtx.fillStyle = p.color;
     colCtx.beginPath();
     colCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
     colCtx.fill();
-    colCtx.restore();
   }
+
+  colCtx.globalAlpha = 1.0;
   requestAnimationFrame(animateCollisionParticles);
 }
-animateCollisionParticles();
 
 let scratchHasLocked = false;
 let ringAnimLoopId = null;
@@ -1733,6 +1710,12 @@ function updateStorySlider(newIndex) {
     dot.classList.toggle('active', isActive);
     dot.setAttribute('aria-selected', isActive ? 'true' : 'false');
   });
+
+  // Update luxury chapter counter badge (e.g. 01 / 05)
+  const currNumEl = document.getElementById('sliderCurrNum');
+  if (currNumEl) {
+    currNumEl.textContent = String(currentSlideIdx + 1).padStart(2, '0');
+  }
 
   restartSliderTimer();
 }
