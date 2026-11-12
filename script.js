@@ -1717,19 +1717,22 @@ function closeShareModal() {
 if (shareModalBackdrop) shareModalBackdrop.addEventListener('click', closeShareModal);
 if (shareModalClose) shareModalClose.addEventListener('click', closeShareModal);
 
+function getShareInvitationMessage(invitationLink) {
+  return "💍 *Engagement Ceremony Invitation* 💍\n\n" +
+    "*Vineeth Rajendran & Sofiya Das*\n\n" +
+    "✨ *View Invitation Card & Details:* " + invitationLink + "\n\n" +
+    "📅 *Date:* Friday, 13 November 2026\n" +
+    "⏰ *Time:* Starts at 12:00 PM\n" +
+    "⛪ *Venue:* Little Flower Parish Hall, Sreekaryam - Kulathoor Rd, near CET, Sreekaryam, Thiruvananthapuram\n" +
+    "📍 *Location Map:* " + CONFIG.mapUrl;
+}
+
 if (shareModalCopyBtn) {
   shareModalCopyBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     const isWeb = window.location.protocol.startsWith('http');
     const invitationLink = isWeb ? window.location.href : "https://vineeth-sofiya-engagement-invitation.vercel.app/";
-    const fullMessage = 
-      "💍 *Engagement Ceremony Invitation* 💍\n\n" +
-      "*Vineeth Rajendran & Sofiya Das*\n\n" +
-      "📅 *Date:* Friday, 13 November 2026\n" +
-      "⏰ *Time:* Starts at 12:00 PM\n" +
-      "⛪ *Venue:* Little Flower Parish Hall, Sreekaryam - Kulathoor Rd, near CET, Sreekaryam, Thiruvananthapuram\n" +
-      "📍 *Location Map:* " + CONFIG.mapUrl + "\n\n" +
-      "✨ *View Engagement Invitation:* " + invitationLink;
+    const fullMessage = getShareInvitationMessage(invitationLink);
 
     try {
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1758,14 +1761,7 @@ if (shareBtn) {
 
     const isWeb = window.location.protocol.startsWith('http');
     const invitationLink = isWeb ? window.location.href : "https://vineeth-sofiya-engagement-invitation.vercel.app/";
-    const shareText = 
-      "💍 *Engagement Ceremony Invitation* 💍\n\n" +
-      "*Vineeth Rajendran & Sofiya Das*\n\n" +
-      "📅 *Date:* Friday, 13 November 2026\n" +
-      "⏰ *Time:* Starts at 12:00 PM\n" +
-      "⛪ *Venue:* Little Flower Parish Hall, Sreekaryam - Kulathoor Rd, near CET, Sreekaryam, Thiruvananthapuram\n" +
-      "📍 *Location Map:* " + CONFIG.mapUrl + "\n\n" +
-      "✨ *View Engagement Invitation:* " + invitationLink;
+    const shareText = getShareInvitationMessage(invitationLink);
 
     openShareModal(shareText, invitationLink);
   });

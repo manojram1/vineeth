@@ -931,6 +931,28 @@ body.locked .rings-wrapper {
   transform: rotate(90deg) scale(1.08);
 }
 
+.share-card-preview-wrap {
+  width: 100%;
+  max-width: 130px;
+  margin: 0 auto 12px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1.5px solid rgba(229, 193, 112, 0.7);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65), 0 0 16px rgba(229, 193, 112, 0.3);
+}
+
+.share-card-preview-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.share-card-preview-wrap:hover .share-card-preview-img {
+  transform: scale(1.04);
+}
+
 .share-kicker {
   font-size: 9.5px;
   letter-spacing: 0.22em;
